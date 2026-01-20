@@ -21,9 +21,11 @@
 		"vite": "^7.2.6"
 	},
 	"dependencies": {
+		"@wagmi/connectors": "^7.1.2",
+		"@wagmi/core": "^3.2.2",
 		"autoprefixer": "^10.4.23",
 		"postcss": "^8.5.6",
 		"tailwindcss": "^4.1.18",
-		"viem": "^2.44.4"
+		"viem": "2.x"
 	}
 }

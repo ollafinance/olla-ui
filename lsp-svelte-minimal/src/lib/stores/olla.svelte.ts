@@ -1,5 +1,5 @@
 import { parseEther, formatEther, type Address } from 'viem';
-import { foundry } from 'viem/chains';
+import { readContract, writeContract, waitForTransactionReceipt } from '@wagmi/core';
 import { wallet } from './wallet.svelte';
 import OllaCoreABI from '../../../src/abis/OllaCore.json';
 import MockAztecABI from '../../../src/abis/MockAztec.json';
@@ -25,10 +25,10 @@ export class OllaProtocolStore {
     }
 
     async refreshData() {
-        if (!wallet.publicClient || !wallet.address) return;
+        if (!wallet.address) return;
         
         try {
-            const balance = await wallet.publicClient.readContract({
+            const balance = await readContract(wallet.config, {
                 address: ASSET_ADDRESS,
                 abi: MockAztecABI,
                 functionName: 'balanceOf',
@@ -36,7 +36,7 @@ export class OllaProtocolStore {
             }) as bigint;
             this.balance = formatEther(balance);
 
-            const allowance = await wallet.publicClient.readContract({
+            const allowance = await readContract(wallet.config, {
                 address: ASSET_ADDRESS,
                 abi: MockAztecABI,
                 functionName: 'allowance',
@@ -50,45 +50,39 @@ export class OllaProtocolStore {
 
     async mint() {
         await this.executeTx('mint', async () => {
-             return await wallet.client!.writeContract({
-                account: wallet.address!,
+             return await writeContract(wallet.config, {
                 address: ASSET_ADDRESS,
                 abi: MockAztecABI,
                 functionName: 'mint',
-                args: [wallet.address, parseEther('100')],
-                chain: foundry
+                args: [wallet.address!, parseEther('100')],
             });
         });
     }
 
     async approve() {
         await this.executeTx('approve', async () => {
-            return await wallet.client!.writeContract({
-                account: wallet.address!,
+            return await writeContract(wallet.config, {
                 address: ASSET_ADDRESS,
                 abi: MockAztecABI,
                 functionName: 'approve',
                 args: [OLLA_CORE_ADDRESS, parseEther('0.1')],
-                chain: foundry
             });
         });
     }
 
     async deposit() {
         await this.executeTx('deposit', async () => {
-            return await wallet.client!.writeContract({
-                account: wallet.address!,
+            return await writeContract(wallet.config, {
                 address: OLLA_CORE_ADDRESS,
                 abi: OllaCoreABI,
                 functionName: 'deposit',
-                args: [parseEther('0.1'), wallet.address],
-                chain: foundry
+                args: [parseEther('0.1'), wallet.address!],
             });
         });
     }
 
     private async executeTx(type: 'mint' | 'approve' | 'deposit', txFn: () => Promise<`0x${string}`>) {
-        if (!wallet.client || !wallet.publicClient || !wallet.address) return;
+        if (!wallet.address) return;
         
         this.isPending = true;
         this.error = undefined;
@@ -100,7 +94,7 @@ export class OllaProtocolStore {
             const hash = await txFn();
             this.hash = hash;
             
-            await wallet.publicClient.waitForTransactionReceipt({ hash });
+            await waitForTransactionReceipt(wallet.config, { hash });
             
             this.isConfirmed = true;
             await this.refreshData();

@@ -1,42 +1,61 @@
-import { createWalletClient, createPublicClient, custom, type WalletClient, type PublicClient, type Address } from 'viem';
-import { foundry } from 'viem/chains';
+import { createConfig, http, connect, reconnect, watchAccount, disconnect, type Config, type GetAccountReturnType } from '@wagmi/core';
+import { foundry } from '@wagmi/core/chains';
+import { injected } from '@wagmi/connectors';
+import type { Address } from 'viem';
 
 export class WalletStore {
     address = $state<Address | undefined>(undefined);
-    status = $state<'disconnected' | 'connecting' | 'connected'>('disconnected');
+    status = $state<'disconnected' | 'connecting' | 'connected' | 'reconnecting'>('disconnected');
     error = $state<string | undefined>(undefined);
+    chainId = $state<number | undefined>(undefined);
     
-    client: WalletClient | undefined;
-    publicClient: PublicClient | undefined;
+    config: Config;
 
     constructor() {
-        // Auto-connect logic could go here
+        this.config = createConfig({
+            chains: [foundry],
+            transports: {
+                [foundry.id]: http(),
+            },
+            connectors: [injected()],
+        });
+
+        // Initialize state from current wagmi state
+        this.updateState(this.config.state.connections.size > 0 ? 'connected' : 'disconnected');
+
+        // Watch for account changes
+        watchAccount(this.config, {
+            onChange: (account) => {
+                this.address = account.address;
+                this.status = account.status;
+                this.chainId = account.chainId;
+            },
+        });
+
+        // Attempt auto-reconnect
+        reconnect(this.config);
+    }
+
+    private updateState(status: 'disconnected' | 'connecting' | 'connected' | 'reconnecting') {
+        this.status = status;
     }
 
     async connect() {
-         if (typeof window === 'undefined' || !window.ethereum) {
-             this.error = "No wallet found";
-             return;
-         }
-         this.status = 'connecting';
-         try {
-             this.client = createWalletClient({
-                 chain: foundry,
-                 transport: custom(window.ethereum)
-             });
-             this.publicClient = createPublicClient({
-                 chain: foundry,
-                 transport: custom(window.ethereum)
-             });
+        this.error = undefined;
+        try {
+            await connect(this.config, { connector: injected() });
+        } catch (e) {
+            console.error(e);
+            this.error = (e as Error).message;
+        }
+    }
 
-             const [address] = await this.client.requestAddresses();
-             this.address = address;
-             this.status = 'connected';
-         } catch (e) {
-             console.error(e);
-             this.status = 'disconnected';
-             this.error = (e as Error).message;
-         }
+    async disconnect() {
+        try {
+            await disconnect(this.config);
+        } catch (e) {
+            console.error(e);
+        }
     }
 }
 
