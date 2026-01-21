@@ -1,6 +1,6 @@
 import { createConfig, http, connect, reconnect, watchAccount, disconnect, getConnectors, watchConnectors, type Config, type Connector } from '@wagmi/core';
 import { foundry } from '@wagmi/core/chains';
-import { injected } from '@wagmi/connectors';
+import { metaMask, coinbaseWallet, injected } from '@wagmi/connectors';
 import type { Address } from 'viem';
 
 export class WalletStore {
@@ -8,7 +8,7 @@ export class WalletStore {
     status = $state<'disconnected' | 'connecting' | 'connected' | 'reconnecting'>('disconnected');
     error = $state<string | undefined>(undefined);
     chainId = $state<number | undefined>(undefined);
-    
+
     // Modal State
     isModalOpen = $state(false);
     connectors = $state<Connector[]>([]);
@@ -22,14 +22,16 @@ export class WalletStore {
                 [foundry.id]: http('http://127.0.0.1:8545'),
             },
             connectors: typeof window !== 'undefined' ? [
-                injected(), 
+                metaMask(),
+                coinbaseWallet({ appName: 'Olla UI' }),
+                injected(),
             ] : [],
-            ssr: true, 
+            ssr: true,
         });
 
         if (typeof window !== 'undefined') {
             this.updateState(this.config.state.connections.size > 0 ? 'connected' : 'disconnected');
-            
+
             // Watch for new connectors (EIP-6963 injection)
             watchConnectors(this.config, {
                 onChange: () => this.refreshConnectors(),
@@ -67,42 +69,42 @@ export class WalletStore {
 
     private refreshConnectors() {
         const allConnectors = getConnectors(this.config);
-        
-        // 1. Separate EIP-6963 connectors (distinct IDs) from the generic fallback
-        const eip6963Connectors = allConnectors.filter(c => c.id !== 'injected');
-        const genericInjected = allConnectors.find(c => c.id === 'injected');
+        const sortedConnectors: Connector[] = [];
+        const seenIds = new Set<string>();
 
-        let finalConnectors: Connector[] = [];
+        for (const connector of allConnectors) {
+            let shouldInclude = true;
 
-        if (eip6963Connectors.length > 0) {
-            // If we have specific EIP-6963 wallets, use them.
-            // We generally hide the generic 'injected' to avoid duplicates, 
-            // UNLESS the user has a wallet that doesn't support EIP-6963 yet.
-            // For simplicity, we'll prioritize the specific ones.
-            finalConnectors = [...eip6963Connectors];
-        } else if (genericInjected) {
-            // Fallback: No EIP-6963 detection. Use the generic injected provider.
-            // Try to infer its name from window.ethereum
-            if (typeof window !== 'undefined' && window.ethereum) {
-                const eth = window.ethereum as any;
-                if (eth.isPhantom) genericInjected.name = 'Phantom';
-                else if (eth.isMetaMask) genericInjected.name = 'MetaMask';
-                else if (eth.isTrust) genericInjected.name = 'Trust Wallet';
-                else if (eth.isCoinbaseWallet) genericInjected.name = 'Coinbase Wallet';
-                else if (eth.isBraveWallet) genericInjected.name = 'Brave Wallet';
-                else genericInjected.name = 'Browser Wallet';
+            // Handle Generic 'injected' Connector Logic
+            if (connector.id === 'injected') {
+                // Filtering Rule:
+                // Only hide 'injected' if we ALREADY have a specific connector for it.
+                // e.g. If we have a connector named 'MetaMask' (id: metaMask or EIP-6963 uuid),
+                // and this injected one is ALSO identifying as MetaMask, we might skip it.
+
+                // We can check window.ethereum.isMetaMask but we shouldn't mutate connector.name here.
+                // We'll trust the ID deduplication mostly, but handle the specific MetaMask overlap.
+
+                let isMetaMaskInjected = false;
+                if (typeof window !== 'undefined' && window.ethereum) {
+                    // @ts-ignore
+                    isMetaMaskInjected = !!window.ethereum.isMetaMask;
+                }
+
+                const hasExplicitMetaMask = allConnectors.some(c => c.id === 'metaMask' && c !== connector);
+
+                if (isMetaMaskInjected && hasExplicitMetaMask) {
+                    shouldInclude = false;
+                }
             }
-            finalConnectors = [genericInjected];
+
+            if (shouldInclude && !seenIds.has(connector.id)) {
+                sortedConnectors.push(connector);
+                seenIds.add(connector.id);
+            }
         }
 
-        // Deduplicate by UID or ID
-        const seen = new Set();
-        this.connectors = finalConnectors.filter(c => {
-            const key = c.uid || c.id; 
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-        });
+        this.connectors = sortedConnectors;
     }
 
     // --- Connection Actions ---
@@ -111,7 +113,17 @@ export class WalletStore {
         this.error = undefined;
         this.status = 'connecting';
         try {
-            await connect(this.config, args);
+            // Svelte 5 State Proxy Fix:
+            // The 'args.connector' passed from the UI is likely a Proxy object.
+            // Wagmi needs the raw internal Connector instance.
+            // We find it by ID from the config's live list.
+            const rawConnector = getConnectors(this.config).find(c => c.id === args.connector.id);
+
+            if (!rawConnector) {
+                throw new Error(`Connector ${args.connector.id} not found`);
+            }
+
+            await connect(this.config, { connector: rawConnector });
             this.closeModal();
         } catch (e) {
             console.error(e);
