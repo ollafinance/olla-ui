@@ -21,8 +21,9 @@ export class WalletStore {
             transports: {
                 [foundry.id]: http('http://127.0.0.1:8545'),
             },
+            // We only use injected() to leverage EIP-6963 discovery
+            // This will automatically find MetaMask, Phantom, Coinbase, etc.
             connectors: typeof window !== 'undefined' ? [
-                injected({ target: 'metaMask', shimDisconnect: true }), 
                 injected(), 
             ] : [],
             ssr: true, 
@@ -30,14 +31,8 @@ export class WalletStore {
 
         if (typeof window !== 'undefined') {
             this.updateState(this.config.state.connections.size > 0 ? 'connected' : 'disconnected');
-            // De-duplicate connectors
-            const allConnectors = getConnectors(this.config);
-            const seen = new Set();
-            this.connectors = allConnectors.filter(c => {
-                if (seen.has(c.id)) return false;
-                seen.add(c.id);
-                return true;
-            });
+            // Initial connector load
+            this.refreshConnectors();
 
             watchAccount(this.config, {
                 onChange: (account) => {
@@ -60,19 +55,26 @@ export class WalletStore {
     openModal() {
         this.isModalOpen = true;
         this.error = undefined;
-        // Refresh connectors in case new ones injected
-        const allConnectors = getConnectors(this.config);
-        const seen = new Set();
-        this.connectors = allConnectors.filter(c => {
-            if (seen.has(c.id)) return false;
-            seen.add(c.id);
-            return true;
-        });
+        this.refreshConnectors();
     }
 
     closeModal() {
         this.isModalOpen = false;
         this.error = undefined;
+    }
+
+    private refreshConnectors() {
+        const allConnectors = getConnectors(this.config);
+        
+        // Filter out duplicates and ensure valid names
+        // Wagmi + EIP-6963 sometimes returns multiple "Injected" if no RDNS provided
+        const seen = new Set();
+        this.connectors = allConnectors.filter(c => {
+            const key = c.uid || c.id; 
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        });
     }
 
     // --- Connection Actions ---
