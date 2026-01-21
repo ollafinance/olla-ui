@@ -1,23 +1,27 @@
-import { useWriteContract, useWaitForTransactionReceipt, useAccount } from "wagmi";
+import {
+  useWriteContract,
+  useWaitForTransactionReceipt,
+  useConnection,
+} from "wagmi";
 import { parseEther } from "viem";
 import { CONTRACTS } from "../constants/contracts";
 
 export function useOllaCore() {
-  const { address } = useAccount();
+  const { address } = useConnection();
 
-  const { 
-    writeContract: deposit, 
-    data: depositHash, 
+  const {
+    mutate,
+    data: depositHash,
     isPending: isDepositPending,
-    error: depositError
+    error: depositError,
   } = useWriteContract();
 
-  const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } = 
+  const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } =
     useWaitForTransactionReceipt({ hash: depositHash });
 
   const depositAsset = () => {
     if (!address) return;
-    deposit({
+    mutate({
       address: CONTRACTS.OLLA_CORE.address,
       abi: CONTRACTS.OLLA_CORE.abi,
       functionName: "deposit",
@@ -32,7 +36,7 @@ export function useOllaCore() {
       isConfirming: isDepositConfirming,
       isConfirmed: isDepositConfirmed,
       hash: depositHash,
-      error: depositError
-    }
+      error: depositError,
+    },
   };
 }

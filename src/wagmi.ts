@@ -1,6 +1,6 @@
-import { http, createConfig } from 'wagmi';
-import { foundry } from 'wagmi/chains';
-import { getDefaultConfig } from 'connectkit';
+import { http, createConfig } from "wagmi";
+import { foundry } from "wagmi/chains";
+import { getDefaultConfig } from "connectkit";
 
 export const config = createConfig(
   getDefaultConfig({
@@ -12,14 +12,14 @@ export const config = createConfig(
     },
 
     // Required API Keys
-    walletConnectProjectId: "YOUR_PROJECT_ID", // Replace with valid ID if needed, optional for local
+    walletConnectProjectId: import.meta.env.WALLET_CONNECT_PROJECT_ID,
 
     // Required App Info
-    appName: "LSP React Standard",
+    appName: "Olla Finance",
 
     // Optional App Info
-    appDescription: "Your App Description",
-    appUrl: "https://family.co", // your app's url
-    appIcon: "https://family.co/logo.png", // your app's icon, no bigger than 1024x1024px (max. 1MB)
+    appDescription: "Liquid Staking Protocole",
+    appUrl: "https://olla.finance",
+    appIcon: "https://olla.finance/logo.png",
   }),
 );
