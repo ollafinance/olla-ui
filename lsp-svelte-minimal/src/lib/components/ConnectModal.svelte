@@ -6,6 +6,7 @@
     // Fallback/Generic Icons
     const ICONS: Record<string, string> = {
         'metaMask': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M27.425 2.854l-5.467 5.619 2.508-8.473zM4.775 2.854l2.959-2.854 2.508 8.473zM14.775 24.437l1.092 3.693 1.092-3.693 7.85-4.482-1.425-9.675-7.517 3.596-7.517-3.596-1.425 9.675zM8.883 17.587l2.825 8.921-6.933-4.325zM20.292 26.508l2.825-8.921 4.108 4.596zM28.025 8.783l2.85 4.308-5.325 3.167 1.5-6.683zM4.175 8.783l0.975 0.792 1.5 6.683-5.325-3.167z" fill="#E17726"/></svg>',
+        'phantom': '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M27.065 4.933c-3.266-3.236-8.567-3.236-11.833 0l-1.166 1.155-1.166-1.155c-3.266-3.236-8.567-3.236-11.833 0-3.411 3.407-3.411 8.932 0 12.339l13 12.875 13-12.875c3.411-3.407 3.411-8.932 0-12.339zm-4.733 9.479c-1.633 0-2.966-1.321-2.966-2.943s1.333-2.943 2.966-2.943 2.966 1.321 2.966 2.943-1.333 2.943-2.966 2.943zm-12.666 0c-1.633 0-2.966-1.321-2.966-2.943s1.333-2.943 2.966-2.943 2.966 1.321 2.966 2.943-1.333 2.943-2.966 2.943z" fill="#AB9FF2"/></svg>',
         'injected': '<svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" /></svg>',
         'safe': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M4 8l8-4 8 4v8l-8 4-8-4V8z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
         'walletConnect': '<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5-3 5 3M7 10v4l5 3 5-3v-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
@@ -23,6 +24,7 @@
         // Fallbacks
         const name = connector.name.toLowerCase();
         if (name.includes('metamask')) return ICONS['metaMask'];
+        if (name.includes('phantom')) return ICONS['phantom'];
         if (name.includes('safe')) return ICONS['safe'];
         if (name.includes('coinbase')) return ICONS['coinbaseWallet'];
         if (connector.id === 'walletConnect') return ICONS['walletConnect'];

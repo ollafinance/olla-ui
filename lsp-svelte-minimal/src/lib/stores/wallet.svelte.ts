@@ -66,21 +66,38 @@ export class WalletStore {
     }
 
     private refreshConnectors() {
-        let allConnectors = getConnectors(this.config);
+        const allConnectors = getConnectors(this.config);
         
-        // 1. Separate generic "Injected" from others
-        const genericInjected = allConnectors.find(c => c.id === 'injected' && c.name === 'Injected');
-        const specificConnectors = allConnectors.filter(c => c.id !== 'injected' || c.name !== 'Injected');
+        // 1. Separate EIP-6963 connectors (distinct IDs) from the generic fallback
+        const eip6963Connectors = allConnectors.filter(c => c.id !== 'injected');
+        const genericInjected = allConnectors.find(c => c.id === 'injected');
 
-        // 2. If we have specific connectors (MetaMask, Phantom, etc.), hide the generic one
-        // EIP-6963 providers will have distinct IDs or Names
-        if (specificConnectors.length > 0 && genericInjected) {
-             allConnectors = specificConnectors;
+        let finalConnectors: Connector[] = [];
+
+        if (eip6963Connectors.length > 0) {
+            // If we have specific EIP-6963 wallets, use them.
+            // We generally hide the generic 'injected' to avoid duplicates, 
+            // UNLESS the user has a wallet that doesn't support EIP-6963 yet.
+            // For simplicity, we'll prioritize the specific ones.
+            finalConnectors = [...eip6963Connectors];
+        } else if (genericInjected) {
+            // Fallback: No EIP-6963 detection. Use the generic injected provider.
+            // Try to infer its name from window.ethereum
+            if (typeof window !== 'undefined' && window.ethereum) {
+                const eth = window.ethereum as any;
+                if (eth.isPhantom) genericInjected.name = 'Phantom';
+                else if (eth.isMetaMask) genericInjected.name = 'MetaMask';
+                else if (eth.isTrust) genericInjected.name = 'Trust Wallet';
+                else if (eth.isCoinbaseWallet) genericInjected.name = 'Coinbase Wallet';
+                else if (eth.isBraveWallet) genericInjected.name = 'Brave Wallet';
+                else genericInjected.name = 'Browser Wallet';
+            }
+            finalConnectors = [genericInjected];
         }
 
-        // 3. Deduplicate by ID
+        // Deduplicate by UID or ID
         const seen = new Set();
-        this.connectors = allConnectors.filter(c => {
+        this.connectors = finalConnectors.filter(c => {
             const key = c.uid || c.id; 
             if (seen.has(key)) return false;
             seen.add(key);
