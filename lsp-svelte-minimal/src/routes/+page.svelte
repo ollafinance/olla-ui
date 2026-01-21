@@ -4,6 +4,7 @@
     import Header from '$lib/components/Header.svelte';
     import StatusPanel from '$lib/components/StatusPanel.svelte';
     import ActionButtons from '$lib/components/ActionButtons.svelte';
+    import ConnectModal from '$lib/components/ConnectModal.svelte';
 
     $effect(() => {
         if (wallet.status === 'connected') {
@@ -13,6 +14,9 @@
 </script>
 
 <div class="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
+    <!-- Wallet Connection Modal -->
+    <ConnectModal />
+
 	<div class="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md border border-gray-200">
         
 		<Header />

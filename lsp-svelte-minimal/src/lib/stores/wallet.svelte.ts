@@ -1,20 +1,7 @@
-import { createAppKit } from '@reown/appkit';
-import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
+import { createConfig, http, connect, reconnect, watchAccount, disconnect, getConnectors, type Config, type Connector } from '@wagmi/core';
 import { foundry } from '@wagmi/core/chains';
-import { watchAccount, reconnect, http, type Config } from '@wagmi/core';
+import { injected } from '@wagmi/connectors';
 import type { Address } from 'viem';
-
-// 1. Get Project ID from Cloud (Use a placeholder for this demo)
-const projectId = '1f4405908295832c695a12154625514f'; // Reown Demo ID
-
-// 2. Configure Wagmi Adapter
-const wagmiAdapter = new WagmiAdapter({
-    networks: [foundry],
-    projectId,
-    transports: {
-        [foundry.id]: http('http://127.0.0.1:8545')
-    }
-});
 
 export class WalletStore {
     address = $state<Address | undefined>(undefined);
@@ -22,43 +9,93 @@ export class WalletStore {
     error = $state<string | undefined>(undefined);
     chainId = $state<number | undefined>(undefined);
     
-    // Expose config for Olla store
-    config: Config = wagmiAdapter.wagmiConfig;
-    
-    // AppKit Instance
-    modal: ReturnType<typeof createAppKit>;
+    // Modal State
+    isModalOpen = $state(false);
+    connectors = $state<Connector[]>([]);
+
+    config: Config;
 
     constructor() {
-        // 3. Create AppKit Modal
-        this.modal = createAppKit({
-            adapters: [wagmiAdapter],
-            networks: [foundry],
-            projectId,
-            features: {
-                analytics: true,
+        this.config = createConfig({
+            chains: [foundry],
+            transports: {
+                [foundry.id]: http('http://127.0.0.1:8545'),
             },
-            themeMode: 'light'
+            connectors: typeof window !== 'undefined' ? [
+                injected({ target: 'metaMask', shimDisconnect: true }), 
+                injected(), 
+            ] : [],
+            ssr: true, 
         });
 
-        // 4. Watch for account changes
-        watchAccount(this.config, {
-            onChange: (account) => {
-                this.address = account.address;
-                this.status = account.status;
-                this.chainId = account.chainId;
-            },
-        });
-        
-        // 5. Initialize Reconnect
-        reconnect(this.config);
+        if (typeof window !== 'undefined') {
+            this.updateState(this.config.state.connections.size > 0 ? 'connected' : 'disconnected');
+            // De-duplicate connectors
+            const allConnectors = getConnectors(this.config);
+            const seen = new Set();
+            this.connectors = allConnectors.filter(c => {
+                if (seen.has(c.id)) return false;
+                seen.add(c.id);
+                return true;
+            });
+
+            watchAccount(this.config, {
+                onChange: (account) => {
+                    this.address = account.address;
+                    this.status = account.status;
+                    this.chainId = account.chainId;
+                },
+            });
+
+            reconnect(this.config);
+        }
     }
 
-    async open() {
-        await this.modal.open();
+    private updateState(status: 'disconnected' | 'connecting' | 'connected' | 'reconnecting') {
+        this.status = status;
+    }
+
+    // --- Modal Actions ---
+
+    openModal() {
+        this.isModalOpen = true;
+        this.error = undefined;
+        // Refresh connectors in case new ones injected
+        const allConnectors = getConnectors(this.config);
+        const seen = new Set();
+        this.connectors = allConnectors.filter(c => {
+            if (seen.has(c.id)) return false;
+            seen.add(c.id);
+            return true;
+        });
+    }
+
+    closeModal() {
+        this.isModalOpen = false;
+        this.error = undefined;
+    }
+
+    // --- Connection Actions ---
+
+    async connect(args: { connector: Connector }) {
+        this.error = undefined;
+        this.status = 'connecting';
+        try {
+            await connect(this.config, args);
+            this.closeModal();
+        } catch (e) {
+            console.error(e);
+            this.status = 'disconnected';
+            this.error = (e as Error).message;
+        }
     }
 
     async disconnect() {
-        await this.modal.disconnect();
+        try {
+            await disconnect(this.config);
+        } catch (e) {
+            console.error(e);
+        }
     }
 }
 
