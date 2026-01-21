@@ -1,4 +1,4 @@
-import { createConfig, http, connect, reconnect, watchAccount, disconnect, getConnectors, type Config, type Connector } from '@wagmi/core';
+import { createConfig, http, connect, reconnect, watchAccount, disconnect, getConnectors, watchConnectors, type Config, type Connector } from '@wagmi/core';
 import { foundry } from '@wagmi/core/chains';
 import { injected } from '@wagmi/connectors';
 import type { Address } from 'viem';
@@ -21,8 +21,6 @@ export class WalletStore {
             transports: {
                 [foundry.id]: http('http://127.0.0.1:8545'),
             },
-            // We only use injected() to leverage EIP-6963 discovery
-            // This will automatically find MetaMask, Phantom, Coinbase, etc.
             connectors: typeof window !== 'undefined' ? [
                 injected(), 
             ] : [],
@@ -31,7 +29,11 @@ export class WalletStore {
 
         if (typeof window !== 'undefined') {
             this.updateState(this.config.state.connections.size > 0 ? 'connected' : 'disconnected');
-            // Initial connector load
+            
+            // Watch for new connectors (EIP-6963 injection)
+            watchConnectors(this.config, {
+                onChange: () => this.refreshConnectors(),
+            });
             this.refreshConnectors();
 
             watchAccount(this.config, {
@@ -64,10 +66,19 @@ export class WalletStore {
     }
 
     private refreshConnectors() {
-        const allConnectors = getConnectors(this.config);
+        let allConnectors = getConnectors(this.config);
         
-        // Filter out duplicates and ensure valid names
-        // Wagmi + EIP-6963 sometimes returns multiple "Injected" if no RDNS provided
+        // 1. Separate generic "Injected" from others
+        const genericInjected = allConnectors.find(c => c.id === 'injected' && c.name === 'Injected');
+        const specificConnectors = allConnectors.filter(c => c.id !== 'injected' || c.name !== 'Injected');
+
+        // 2. If we have specific connectors (MetaMask, Phantom, etc.), hide the generic one
+        // EIP-6963 providers will have distinct IDs or Names
+        if (specificConnectors.length > 0 && genericInjected) {
+             allConnectors = specificConnectors;
+        }
+
+        // 3. Deduplicate by ID
         const seen = new Set();
         this.connectors = allConnectors.filter(c => {
             const key = c.uid || c.id; 
