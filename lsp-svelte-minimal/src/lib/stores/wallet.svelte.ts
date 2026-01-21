@@ -1,7 +1,20 @@
-import { createConfig, http, connect, reconnect, watchAccount, disconnect, type Config, type GetAccountReturnType } from '@wagmi/core';
+import { createAppKit } from '@reown/appkit';
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi';
 import { foundry } from '@wagmi/core/chains';
-import { injected } from '@wagmi/connectors';
+import { watchAccount, reconnect, http, type Config } from '@wagmi/core';
 import type { Address } from 'viem';
+
+// 1. Get Project ID from Cloud (Use a placeholder for this demo)
+const projectId = '1f4405908295832c695a12154625514f'; // Reown Demo ID
+
+// 2. Configure Wagmi Adapter
+const wagmiAdapter = new WagmiAdapter({
+    networks: [foundry],
+    projectId,
+    transports: {
+        [foundry.id]: http('http://127.0.0.1:8545')
+    }
+});
 
 export class WalletStore {
     address = $state<Address | undefined>(undefined);
@@ -9,21 +22,25 @@ export class WalletStore {
     error = $state<string | undefined>(undefined);
     chainId = $state<number | undefined>(undefined);
     
-    config: Config;
+    // Expose config for Olla store
+    config: Config = wagmiAdapter.wagmiConfig;
+    
+    // AppKit Instance
+    modal: ReturnType<typeof createAppKit>;
 
     constructor() {
-        this.config = createConfig({
-            chains: [foundry],
-            transports: {
-                [foundry.id]: http(),
+        // 3. Create AppKit Modal
+        this.modal = createAppKit({
+            adapters: [wagmiAdapter],
+            networks: [foundry],
+            projectId,
+            features: {
+                analytics: true,
             },
-            connectors: [injected()],
+            themeMode: 'light'
         });
 
-        // Initialize state from current wagmi state
-        this.updateState(this.config.state.connections.size > 0 ? 'connected' : 'disconnected');
-
-        // Watch for account changes
+        // 4. Watch for account changes
         watchAccount(this.config, {
             onChange: (account) => {
                 this.address = account.address;
@@ -31,31 +48,17 @@ export class WalletStore {
                 this.chainId = account.chainId;
             },
         });
-
-        // Attempt auto-reconnect
+        
+        // 5. Initialize Reconnect
         reconnect(this.config);
     }
 
-    private updateState(status: 'disconnected' | 'connecting' | 'connected' | 'reconnecting') {
-        this.status = status;
-    }
-
-    async connect() {
-        this.error = undefined;
-        try {
-            await connect(this.config, { connector: injected() });
-        } catch (e) {
-            console.error(e);
-            this.error = (e as Error).message;
-        }
+    async open() {
+        await this.modal.open();
     }
 
     async disconnect() {
-        try {
-            await disconnect(this.config);
-        } catch (e) {
-            console.error(e);
-        }
+        await this.modal.disconnect();
     }
 }
 
