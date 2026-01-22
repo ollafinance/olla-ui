@@ -22,8 +22,8 @@ export function useOllaCore() {
   const depositAsset = () => {
     if (!address) return;
     mutate({
-      address: CONTRACTS.OLLA_CORE.address,
-      abi: CONTRACTS.OLLA_CORE.abi,
+      address: CONTRACTS.OllaCore.address,
+      abi: CONTRACTS.OllaCore.abi,
       functionName: "deposit",
       args: [parseEther("0.1"), address],
     });

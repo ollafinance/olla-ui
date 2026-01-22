@@ -1,14 +1,14 @@
-import OllaCoreABI from "../abis/OllaCore.json";
-import MockAztecABI from "../abis/MockAztec.json";
-import addresses from "../abis/addresses.json";
+import OllaCoreABI from "../generated/abis/OllaCore.json";
+import MockAztecABI from "../generated/abis/MockAztec.json";
+import addresses from "../generated/deployments/addresses.json";
 
 export const CONTRACTS = {
-  ASSET: {
+  Asset: {
     address: addresses.Asset as `0x${string}`,
     abi: MockAztecABI,
   },
-  OLLA_CORE: {
-    address: addresses.OllaCore as `0x${string}`,
+  OllaCore: {
+    address: addresses.OllaCoreProxy as `0x${string}`,
     abi: OllaCoreABI,
   },
 } as const;
