@@ -1,0 +1,9 @@
+{
+  "source": {
+    "corePath": "../core"
+  },
+  "output": {
+    "dir": "src/generated"
+  },
+  "contracts": ["OllaCore", "StAztec", "MockAztec", "MockStakingManager"]
+}

@@ -22,17 +22,27 @@ Frontend interface for the Olla liquid staking protocol on Aztec.
    yarn install
    ```
 
-2. Start the local Anvil chain (from the [core](https://github.com/ollafinance/core) repo):
+2. Start the local Anvil chain and deploy contracts (from the [core](https://github.com/ollafinance/core) repo):
    ```bash
-   yarn dev:chain
+   # Terminal 1: Start Anvil
+   yarn dev:anvil
+
+   # Terminal 2: Build and deploy contracts
+   yarn dev:build
+   yarn deploy:local
    ```
 
-3. Start the development server:
+3. Sync contract ABIs and addresses:
+   ```bash
+   yarn sync:contracts
+   ```
+
+4. Start the development server:
    ```bash
    yarn dev
    ```
 
-4. Open [http://localhost:5173](http://localhost:5173)
+5. Open [http://localhost:5173](http://localhost:5173)
 
 ## Scripts
 
@@ -42,12 +52,52 @@ Frontend interface for the Olla liquid staking protocol on Aztec.
 | `yarn build` | Build for production |
 | `yarn preview` | Preview production build |
 | `yarn lint` | Run ESLint |
+| `yarn sync:contracts` | Sync ABIs and addresses from core repo (local) |
+| `yarn sync:contracts:testnet` | Sync ABIs and addresses from core repo (testnet) |
+
+## Contract Sync
+
+The frontend syncs contract ABIs and deployment addresses from the `core` repo using the `sync:contracts` script.
+
+### Configuration
+
+The sync is configured via `contracts.config.json`:
+
+```json
+{
+  "source": {
+    "corePath": "../core"
+  },
+  "output": {
+    "dir": "src/generated"
+  },
+  "contracts": ["OllaCore", "StAztec", "MockAztec", "MockStakingManager"]
+}
+```
+
+### Output
+
+After running `yarn sync:contracts`, the following files are generated:
+
+```
+src/generated/
+├── abis/
+│   ├── OllaCore.json
+│   ├── StAztec.json
+│   ├── MockAztec.json
+│   └── MockStakingManager.json
+└── deployments/
+    ├── local.json        # Full deployment info
+    └── addresses.json    # Contract addresses
+```
+
+These files are gitignored and must be regenerated after cloning.
 
 ## Project Structure
 
 ```
 src/
-├── abis/           # Contract ABIs and addresses
+├── generated/      # Generated ABIs and addresses (gitignored)
 ├── components/     # React components
 ├── constants/      # Contract configurations
 ├── hooks/          # Custom React hooks (useAztecToken, useOllaCore)

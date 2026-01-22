@@ -31,7 +31,7 @@ dist-ssr
 !.yarn/sdks
 !.yarn/versions
 
-# Generated ABIs
-src/abis/
+# Generated contracts (ABIs and deployments)
+src/generated/
 
 .env
