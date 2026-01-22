@@ -1,4 +1,4 @@
-import { ConnectKitButton } from "connectkit";
+import { ConnectButton } from "@rainbow-me/rainbowkit";
 
 export function Header() {
   return (
@@ -6,7 +6,7 @@ export function Header() {
       <h1 className="text-2xl font-bold text-gray-800 tracking-tight">
         Olla Dashboard
       </h1>
-      <ConnectKitButton />
+      <ConnectButton />
     </header>
   );
 }
