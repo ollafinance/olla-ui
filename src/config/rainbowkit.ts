@@ -8,16 +8,17 @@ import {
   ledgerWallet,
   safeWallet,
 } from "@rainbow-me/rainbowkit/wallets";
+import { RPC_URL, WALLET_CONNECT_PROJECT_ID } from "./environment";
 
 export const config = getDefaultConfig({
   appName: "Olla Finance",
   appDescription: "Liquid Staking Protocole",
   appUrl: "https://olla.finance",
   appIcon: "https://olla.finance/logo.png",
-  projectId: import.meta.env.WALLET_CONNECT_PROJECT_ID,
+  projectId: WALLET_CONNECT_PROJECT_ID,
   chains: [foundry],
   transports: {
-    [foundry.id]: http(import.meta.env.VITE_RPC_URL),
+    [foundry.id]: http(RPC_URL),
   },
   wallets: [
     {

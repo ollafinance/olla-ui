@@ -12,18 +12,18 @@ export function useAztecToken() {
 
   // READS
   const { data: balance, refetch: refetchBalance } = useReadContract({
-    address: CONTRACTS.ASSET.address,
-    abi: CONTRACTS.ASSET.abi,
+    address: CONTRACTS.Asset.address,
+    abi: CONTRACTS.Asset.abi,
     functionName: "balanceOf",
     args: address ? [address] : undefined,
     query: { enabled: !!address },
   });
 
   const { data: allowance, refetch: refetchAllowance } = useReadContract({
-    address: CONTRACTS.ASSET.address,
-    abi: CONTRACTS.ASSET.abi,
+    address: CONTRACTS.Asset.address,
+    abi: CONTRACTS.Asset.abi,
     functionName: "allowance",
-    args: address ? [address, CONTRACTS.OLLA_CORE.address] : undefined,
+    args: address ? [address, CONTRACTS.OllaCore.address] : undefined,
     query: { enabled: !!address },
   });
 
@@ -46,29 +46,30 @@ export function useAztecToken() {
   const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
     useWaitForTransactionReceipt({ hash: approveHash });
 
-  // Actions
+  // Actions - refetch handled via onSuccess callbacks
   const mintTokens = () => {
     if (!address) return;
     mint(
       {
-        address: CONTRACTS.ASSET.address,
-        abi: CONTRACTS.ASSET.abi,
+        address: CONTRACTS.Asset.address,
+        abi: CONTRACTS.Asset.abi,
         functionName: "mint",
         args: [address, parseEther("100")],
       },
-      { onSuccess: () => refetchBalance() },
+      { onSuccess: () => refetchBalance() }
     );
   };
 
   const approveSpender = () => {
+    if (!address) return;
     approve(
       {
-        address: CONTRACTS.ASSET.address,
-        abi: CONTRACTS.ASSET.abi,
+        address: CONTRACTS.Asset.address,
+        abi: CONTRACTS.Asset.abi,
         functionName: "approve",
-        args: [CONTRACTS.OLLA_CORE.address, parseEther("0.1")],
+        args: [CONTRACTS.OllaCore.address, parseEther("0.1")],
       },
-      { onSuccess: () => refetchAllowance() },
+      { onSuccess: () => refetchAllowance() }
     );
   };
 
