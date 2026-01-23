@@ -46,7 +46,7 @@ export function useAztecToken() {
   const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
     useWaitForTransactionReceipt({ hash: approveHash });
 
-  // Actions
+  // Actions - refetch handled via onSuccess callbacks
   const mintTokens = () => {
     if (!address) return;
     mint(
@@ -56,11 +56,12 @@ export function useAztecToken() {
         functionName: "mint",
         args: [address, parseEther("100")],
       },
-      { onSuccess: () => refetchBalance() },
+      { onSuccess: () => refetchBalance() }
     );
   };
 
   const approveSpender = () => {
+    if (!address) return;
     approve(
       {
         address: CONTRACTS.Asset.address,
@@ -68,7 +69,7 @@ export function useAztecToken() {
         functionName: "approve",
         args: [CONTRACTS.OllaCore.address, parseEther("0.1")],
       },
-      { onSuccess: () => refetchAllowance() },
+      { onSuccess: () => refetchAllowance() }
     );
   };
 

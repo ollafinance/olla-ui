@@ -13,7 +13,7 @@ export const CONTRACTS = {
     abi: OllaCoreABI,
   },
   StAztec: {
-    addresses: addresses.StAztec as `0x${string}`,
+    address: addresses.StAztec as `0x${string}`,
     abi: StAztecABI,
   },
 } as const;

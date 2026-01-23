@@ -6,7 +6,11 @@ import {
 import { parseEther } from "viem";
 import { CONTRACTS } from "../constants/contracts";
 
-export function useOllaCore() {
+interface UseOllaCoreOptions {
+  onDepositSuccess?: () => void;
+}
+
+export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const { address } = useConnection();
 
   const {
@@ -21,12 +25,15 @@ export function useOllaCore() {
 
   const depositAsset = () => {
     if (!address) return;
-    mutate({
-      address: CONTRACTS.OllaCore.address,
-      abi: CONTRACTS.OllaCore.abi,
-      functionName: "deposit",
-      args: [parseEther("0.1"), address],
-    });
+    mutate(
+      {
+        address: CONTRACTS.OllaCore.address,
+        abi: CONTRACTS.OllaCore.abi,
+        functionName: "deposit",
+        args: [parseEther("0.1"), address],
+      },
+      { onSuccess: options.onDepositSuccess }
+    );
   };
 
   return {
