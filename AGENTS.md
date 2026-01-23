@@ -14,6 +14,7 @@ This is a **Web3 frontend** for the Olla liquid staking protocol on Aztec. Built
 | TypeScript | 5.9.3 | Strict mode enabled |
 | Vite | 7.2.4 | Build tool with HMR |
 | Tailwind CSS | 4.1.18 | v4 with `@tailwindcss/vite` plugin |
+| Zod | 4.3.6 | Schema validation & type inference |
 | wagmi | 3.3.4 | React hooks for Ethereum |
 | viem | 2.44.4 | TypeScript Ethereum library |
 | RainbowKit | 2.2.10 | Wallet connection UI |
@@ -168,6 +169,7 @@ const doAction = () => {
 
 ### Web3 Patterns
 
+- Use `useConnection` for wallet address and connection status
 - Use `useReadContract` for reading blockchain state
 - Use `useWriteContract` for transactions
 - Use `useWaitForTransactionReceipt` for confirmation
@@ -183,6 +185,34 @@ const { data, refetch } = useReadContract({
   query: { enabled: !!address },
 });
 ```
+
+### Zod Validation
+
+Use **Zod v4** for runtime validation and type inference. Key patterns:
+
+```typescript
+import { z } from "zod";
+
+// Define schema
+const userSchema = z.object({
+  address: z.string().startsWith("0x"),
+  amount: z.string().min(1),
+});
+
+// Infer TypeScript type from schema
+type User = z.infer<typeof userSchema>;
+
+// Validate with safeParse (recommended)
+const result = userSchema.safeParse(data);
+if (!result.success) {
+  // Access errors via result.error.issues (Zod v4)
+  result.error.issues.forEach((issue) => {
+    console.error(`${issue.path.join(".")}: ${issue.message}`);
+  });
+}
+```
+
+**Environment Variables:** Validated at startup via `src/config/environment.ts` using Zod schemas.
 
 ## Configuration Files
 
