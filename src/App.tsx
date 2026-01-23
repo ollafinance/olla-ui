@@ -4,6 +4,7 @@ import { StatusPanel } from "./components/StatusPanel";
 import { ActionButtons } from "./components/ActionButtons";
 import { useAztecToken } from "./hooks/useAztecToken";
 import { useOllaCore } from "./hooks/useOllaCore";
+import { useStAztec } from "./hooks/useStAztec";
 
 function App() {
   const { isConnected } = useConnection();
@@ -17,6 +18,8 @@ function App() {
     refetchBalance,
     refetchAllowance,
   } = useAztecToken();
+
+  const { balance: stAztecBalance } = useStAztec();
 
   // Pass refetch callback to handle post-deposit updates
   const { deposit } = useOllaCore({
@@ -32,7 +35,11 @@ function App() {
         <Header />
 
         <div className="space-y-6">
-          <StatusPanel balance={balance} allowance={allowance} />
+          <StatusPanel
+            stAztecBalance={stAztecBalance}
+            balance={balance}
+            allowance={allowance}
+          />
 
           <ActionButtons
             isConnected={isConnected}
@@ -51,7 +58,9 @@ function App() {
               </div>
             )}
 
-            {(mint.isConfirmed || approve.isConfirmed || deposit.isConfirmed) && (
+            {(mint.isConfirmed ||
+              approve.isConfirmed ||
+              deposit.isConfirmed) && (
               <div className="text-sm text-green-600 bg-green-50 p-2 rounded border border-green-200 text-center font-medium">
                 Transaction Successful!
               </div>
@@ -60,8 +69,8 @@ function App() {
             {deposit.error && (
               <div className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
                 Error:{" "}
-                {(deposit.error as Error & { shortMessage?: string }).shortMessage ||
-                  deposit.error.message}
+                {(deposit.error as Error & { shortMessage?: string })
+                  .shortMessage || deposit.error.message}
               </div>
             )}
           </div>
