@@ -1,20 +1,21 @@
 import { parseEther } from "viem";
+import { Button } from "@/components/ui/Button";
 
 interface ActionButtonsProps {
   isConnected: boolean;
   allowance: string;
   mint: {
-    write: () => void;
+    write: (amount: string) => void;
     isPending: boolean;
     isConfirming: boolean;
   };
   approve: {
-    write: () => void;
+    write: (amount: string) => void;
     isPending: boolean;
     isConfirming: boolean;
   };
   deposit: {
-    write: () => void;
+    write: (amount: string) => void;
     isPending: boolean;
     isConfirming: boolean;
   };
@@ -34,28 +35,26 @@ export function ActionButtons({
   return (
     <div className="flex flex-col gap-4">
       {/* Mint Step */}
-      <button
-        onClick={mint.write}
-        disabled={!isConnected || mint.isPending || mint.isConfirming}
-        className="w-full py-3 px-4 rounded-lg font-medium text-white bg-green-600 hover:bg-green-700 disabled:bg-gray-400 transition-all cursor-pointer"
+      <Button
+        onClick={() => mint.write("100")}
+        disabled={!isConnected}
+        isLoading={mint.isPending || mint.isConfirming}
+        variant="primary" // Replaced custom green with primary for now, or add specific variant
+        className="w-full bg-green-600 hover:bg-green-700 text-white" // Custom override if needed
       >
         {mint.isPending
           ? "Minting..."
           : mint.isConfirming
             ? "Confirming..."
             : "1. Mint 100 AZT"}
-      </button>
+      </Button>
 
       {/* Approve Step */}
-      <button
-        onClick={approve.write}
-        disabled={
-          !isConnected ||
-          approve.isPending ||
-          approve.isConfirming ||
-          isApproved
-        }
-        className="w-full py-3 px-4 rounded-lg font-medium text-white bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-400 transition-all cursor-pointer"
+      <Button
+        onClick={() => approve.write("0.1")}
+        disabled={!isConnected || isApproved}
+        isLoading={approve.isPending || approve.isConfirming}
+        className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
       >
         {approve.isPending
           ? "Approving..."
@@ -64,25 +63,21 @@ export function ActionButtons({
             : isApproved
               ? "Approved"
               : "2. Approve 0.1 AZT"}
-      </button>
+      </Button>
 
       {/* Deposit Step */}
-      <button
-        onClick={deposit.write}
-        disabled={
-          !isConnected ||
-          deposit.isPending ||
-          deposit.isConfirming ||
-          !isApproved
-        }
-        className="w-full py-3 px-4 rounded-lg font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 transition-all cursor-pointer"
+      <Button
+        onClick={() => deposit.write("0.1")}
+        disabled={!isConnected || !isApproved}
+        isLoading={deposit.isPending || deposit.isConfirming}
+        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
       >
         {deposit.isPending
           ? "Depositing..."
           : deposit.isConfirming
             ? "Confirming..."
             : "3. Deposit 0.1 AZT"}
-      </button>
+      </Button>
     </div>
   );
 }

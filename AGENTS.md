@@ -45,20 +45,63 @@ yarn preview          # Preview production build locally
 
 ## Project Structure
 
+This project follows a **Feature-First Architecture** with a **Shared Kernel** for protocol logic.
+
+### Directory Layout
+
 ```
 src/
-├── abis/              # Contract ABIs (JSON, gitignored - generated)
-├── assets/            # Static assets (SVGs, images)
-├── components/        # React components (PascalCase.tsx)
-├── config/            # Configuration files (rainbowkit.ts)
-├── constants/         # Constants and contract addresses
-├── hooks/             # Custom React hooks (useSomething.ts)
-├── App.tsx            # Main application component
-├── main.tsx           # Entry point with providers
-└── index.css          # Global styles (Tailwind imports)
+├── components/          # GLOBAL SHARED UI
+│   ├── ui/              # Generic "Atoms" (Button, Card, Input) - No business logic
+│   └── layout/          # Structural templates (LayoutShell, Header)
+│
+├── features/            # VERTICAL SLICES (Business Logic)
+│   ├── staking/         # "Staking" feature
+│   │   ├── components/  # Domain-specific UI (StatusPanel)
+│   │   └── StakingFeature.tsx # Feature container
+│   └── withdraw/        # Future "Withdraw" feature
+│
+├── hooks/               # SHARED KERNEL
+│   └── protocol/        # Global Protocol Hooks (wraps contracts)
+│       ├── useOllaCore.ts
+│       ├── useAztecToken.ts
+│       └── useStAztec.ts
+│
+├── routes/              # ROUTING (TanStack Router)
+│   ├── __root.tsx       # Global layout wrapper
+│   └── index.tsx        # Route definitions
+│
+├── lib/                 # UTILITIES
+│   └── utils.ts         # cn() helper
+│
+└── ... (config, constants, generated)
 ```
 
-## Code Style Guidelines
+### Architectural Principles
+
+1.  **Feature Isolation:**
+    *   Features (e.g., `src/features/staking`) should NOT import from other features.
+    *   Shared logic must move to `src/hooks/protocol/` or `src/components/ui/`.
+
+2.  **Protocol Layer (`src/hooks/protocol/`):**
+    *   Contains "canonical" hooks for smart contract interaction.
+    *   Hooks must be generic (e.g., accept `amount` as arg, not hardcoded).
+    *   Accessible by ALL features.
+
+3.  **UI Atoms (`src/components/ui/`):**
+    *   "Dumb" components styled with Tailwind.
+    *   Must NOT contain business logic or imports from `features/`.
+
+4.  **Feature Hooks (`src/features/*/hooks/`):**
+    *   Manage UI-specific state (forms, wizards, validation) for that feature.
+    *   Private to the feature (not shared).
+    *   Can compose Protocol Hooks to build complex interactions.
+
+5.  **Routing:**
+    *   Uses **TanStack Router**.
+    *   Routes are code-based in `src/routes/` to preserve the folder structure.
+
+### Code Style Guidelines
 
 ### TypeScript
 
