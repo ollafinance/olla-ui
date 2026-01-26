@@ -5,7 +5,7 @@ import {
   useConnection,
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
-import { CONTRACTS } from "../constants/contracts";
+import { CONTRACTS } from "@/constants/contracts";
 
 export function useAztecToken() {
   const { address } = useConnection();
@@ -47,27 +47,27 @@ export function useAztecToken() {
     useWaitForTransactionReceipt({ hash: approveHash });
 
   // Actions - refetch handled via onSuccess callbacks
-  const mintTokens = () => {
+  const mintTokens = (amount: string) => {
     if (!address) return;
     mint(
       {
         address: CONTRACTS.Asset.address,
         abi: CONTRACTS.Asset.abi,
         functionName: "mint",
-        args: [address, parseEther("100")],
+        args: [address, parseEther(amount)],
       },
       { onSuccess: () => refetchBalance() }
     );
   };
 
-  const approveSpender = () => {
+  const approveSpender = (amount: string) => {
     if (!address) return;
     approve(
       {
         address: CONTRACTS.Asset.address,
         abi: CONTRACTS.Asset.abi,
         functionName: "approve",
-        args: [CONTRACTS.OllaCore.address, parseEther("0.1")],
+        args: [CONTRACTS.OllaCore.address, parseEther(amount)],
       },
       { onSuccess: () => refetchAllowance() }
     );

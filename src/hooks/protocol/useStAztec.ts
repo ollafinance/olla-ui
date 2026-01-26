@@ -1,6 +1,6 @@
 import { useReadContract, useConnection } from "wagmi";
 import { formatEther } from "viem";
-import { CONTRACTS } from "../constants/contracts";
+import { CONTRACTS } from "@/constants/contracts";
 
 export function useStAztec() {
   const { address } = useConnection();

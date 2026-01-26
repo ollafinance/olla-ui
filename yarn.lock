@@ -1415,6 +1415,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/history@npm:1.154.14":
+  version: 1.154.14
+  resolution: "@tanstack/history@npm:1.154.14"
+  checksum: 10c0/e49613541f622ea8b845c8e051b9a28ce0e9deb2b47c26442caec98941ccaed5483dd09616829158b4ceb8326b9ded5a7b6dbe4b1b0a65b542213adeaaca64fc
+  languageName: node
+  linkType: hard
+
 "@tanstack/query-core@npm:5.90.19":
   version: 5.90.19
   resolution: "@tanstack/query-core@npm:5.90.19"
@@ -1430,6 +1437,58 @@ __metadata:
   peerDependencies:
     react: ^18 || ^19
   checksum: 10c0/5176a363855c9ce87e6b7fe034ee9538766b209fea561c1f8e9aadbca1891d0d03fe3b28ccf79fc2077ba9d77a89aab59ca8b66b00f12519e207b24f47868554
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-router@npm:^1.157.15":
+  version: 1.157.15
+  resolution: "@tanstack/react-router@npm:1.157.15"
+  dependencies:
+    "@tanstack/history": "npm:1.154.14"
+    "@tanstack/react-store": "npm:^0.8.0"
+    "@tanstack/router-core": "npm:1.157.15"
+    isbot: "npm:^5.1.22"
+    tiny-invariant: "npm:^1.3.3"
+    tiny-warning: "npm:^1.0.3"
+  peerDependencies:
+    react: ">=18.0.0 || >=19.0.0"
+    react-dom: ">=18.0.0 || >=19.0.0"
+  checksum: 10c0/903167cded60663653b49eb784b0f46acd64b3b8f721c0eec43bb2a34e72c89706ea5df56b29911477156ce74656b5a011901685f0efcfae6043047ae9ef2fa1
+  languageName: node
+  linkType: hard
+
+"@tanstack/react-store@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@tanstack/react-store@npm:0.8.0"
+  dependencies:
+    "@tanstack/store": "npm:0.8.0"
+    use-sync-external-store: "npm:^1.6.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+    react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/ecf7ad81d97810336d0a808a41442f235a444e98599c6e7e026efd3c4360548b84af9a23612f1d0da85e32a4d9e207632b2ee2cec6f635109a256209caa3bc59
+  languageName: node
+  linkType: hard
+
+"@tanstack/router-core@npm:1.157.15":
+  version: 1.157.15
+  resolution: "@tanstack/router-core@npm:1.157.15"
+  dependencies:
+    "@tanstack/history": "npm:1.154.14"
+    "@tanstack/store": "npm:^0.8.0"
+    cookie-es: "npm:^2.0.0"
+    seroval: "npm:^1.4.2"
+    seroval-plugins: "npm:^1.4.2"
+    tiny-invariant: "npm:^1.3.3"
+    tiny-warning: "npm:^1.0.3"
+  checksum: 10c0/c7e324de8b3384fad06a9124be24618954bfc14e444f6a67f3de999e7231fc0478a41c3260fc56b376feeae38572527450ea090070a02b035b4d81338df723ad
+  languageName: node
+  linkType: hard
+
+"@tanstack/store@npm:0.8.0, @tanstack/store@npm:^0.8.0":
+  version: 0.8.0
+  resolution: "@tanstack/store@npm:0.8.0"
+  checksum: 10c0/71841a7a7653f744bdea457d2c41768b8d5e5aed1d5ff22bd068e28ced9bf658208c730963809c2223b26b753e19da987c0d98acb7c543abd97de14e0d58991f
   languageName: node
   linkType: hard
 
@@ -1513,12 +1572,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^24.10.1":
-  version: 24.10.9
-  resolution: "@types/node@npm:24.10.9"
+"@types/node@npm:^25.0.10":
+  version: 25.0.10
+  resolution: "@types/node@npm:25.0.10"
   dependencies:
     undici-types: "npm:~7.16.0"
-  checksum: 10c0/e9e436fcd2136bddb1bbe3271a89f4653910bcf6ee8047c4117f544c7905a106c039e2720ee48f28505ef2560e22fb9ead719f28bf5e075fdde0c1120e38e3b2
+  checksum: 10c0/9edc3c812b487c32c76eebac7c87acae1f69515a0bc3f6b545806d513eb9e918c3217bf751dc93da39f60e06bf1b0caa92258ef3a6dd6457124b2e761e54f61f
   languageName: node
   linkType: hard
 
@@ -2250,7 +2309,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"clsx@npm:2.1.1":
+"clsx@npm:2.1.1, clsx@npm:^2.1.1":
   version: 2.1.1
   resolution: "clsx@npm:2.1.1"
   checksum: 10c0/c4c8eb865f8c82baab07e71bfa8897c73454881c4f99d6bc81585aecd7c441746c1399d08363dc096c550cceaf97bd4ce1e8854e1771e9998d9f94c4fe075839
@@ -2298,6 +2357,13 @@ __metadata:
   version: 2.0.0
   resolution: "convert-source-map@npm:2.0.0"
   checksum: 10c0/8f2f7a27a1a011cc6cc88cc4da2d7d0cfa5ee0369508baae3d98c260bb3ac520691464e5bbe4ae7cdf09860c1d69ecc6f70c63c6e7c7f7e3f18ec08484dc7d9b
+  languageName: node
+  linkType: hard
+
+"cookie-es@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "cookie-es@npm:2.0.0"
+  checksum: 10c0/3b2459030a5ad2bc715aeb27a32f274340670bfc5031ac29e1fba804212517411bb617880d3fe66ace2b64dfb28f3049e2d1ff40d4bec342154ccdd124deaeaa
   languageName: node
   linkType: hard
 
@@ -3563,6 +3629,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"isbot@npm:^5.1.22":
+  version: 5.1.33
+  resolution: "isbot@npm:5.1.33"
+  checksum: 10c0/b6834283cb544c42c64091cf7046a3052455543b4578ae85f49efca72e82108cbb763dea89ed36b885b238c76edb9bd0507423ca6c33d00bb2550cdcd8d8447d
+  languageName: node
+  linkType: hard
+
 "isexe@npm:^2.0.0":
   version: 2.0.0
   resolution: "isexe@npm:2.0.0"
@@ -4240,11 +4313,13 @@ __metadata:
     "@rainbow-me/rainbowkit": "npm:^2.2.10"
     "@tailwindcss/vite": "npm:^4.1.18"
     "@tanstack/react-query": "npm:^5.90.19"
-    "@types/node": "npm:^24.10.1"
+    "@tanstack/react-router": "npm:^1.157.15"
+    "@types/node": "npm:^25.0.10"
     "@types/react": "npm:^19.2.5"
     "@types/react-dom": "npm:^19.2.3"
     "@vitejs/plugin-react": "npm:^5.1.1"
     autoprefixer: "npm:^10.4.23"
+    clsx: "npm:^2.1.1"
     eslint: "npm:^9.39.1"
     eslint-plugin-react-hooks: "npm:^7.0.1"
     eslint-plugin-react-refresh: "npm:^0.4.24"
@@ -4252,6 +4327,7 @@ __metadata:
     postcss: "npm:^8.5.6"
     react: "npm:^19.2.0"
     react-dom: "npm:^19.2.0"
+    tailwind-merge: "npm:^3.4.0"
     tailwindcss: "npm:^4.1.18"
     typescript: "npm:~5.9.3"
     typescript-eslint: "npm:^8.46.4"
@@ -4921,6 +4997,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"seroval-plugins@npm:^1.4.2":
+  version: 1.5.0
+  resolution: "seroval-plugins@npm:1.5.0"
+  peerDependencies:
+    seroval: ^1.0
+  checksum: 10c0/a70636d35e0644e37efad37963e6d41ae9e4a02fbf1b57c89dbe4d62122908039e8a0fda1720b8a56aea93741735b2028ada6d3d50c1d40bbb67661f0de92042
+  languageName: node
+  linkType: hard
+
+"seroval@npm:^1.4.2":
+  version: 1.5.0
+  resolution: "seroval@npm:1.5.0"
+  checksum: 10c0/aff16b14a7145388555cefd4ebd41759024ee1c2c064080fd8d4fabea4b7c89d103155cd98f5109523b8878e577da73cc6cd8abf98965f2d1f0ba19dc38317ab
+  languageName: node
+  linkType: hard
+
 "set-function-length@npm:^1.2.2":
   version: 1.2.2
   resolution: "set-function-length@npm:1.2.2"
@@ -5148,6 +5240,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"tailwind-merge@npm:^3.4.0":
+  version: 3.4.0
+  resolution: "tailwind-merge@npm:3.4.0"
+  checksum: 10c0/eaf17bb695c51c7bb7a90366a9c62be295473ee97fcfd1da54287714d4a5788a88ff4ad1ab9e0128638257fda777d6c9ea88682e36195e31a7fa2cf43f45e310
+  languageName: node
+  linkType: hard
+
 "tailwindcss@npm:4.1.18, tailwindcss@npm:^4.1.18":
   version: 4.1.18
   resolution: "tailwindcss@npm:4.1.18"
@@ -5181,6 +5280,20 @@ __metadata:
   dependencies:
     setimmediate: "npm:^1.0.4"
   checksum: 10c0/98e84db1a685bc8827c117a8bc62aac811ad56a995d07938fc7ed8cdc5bf3777bfe2d4e5da868847194e771aac3749a20f6cdd22091300fe889a76fe214a4641
+  languageName: node
+  linkType: hard
+
+"tiny-invariant@npm:^1.3.3":
+  version: 1.3.3
+  resolution: "tiny-invariant@npm:1.3.3"
+  checksum: 10c0/65af4a07324b591a059b35269cd696aba21bef2107f29b9f5894d83cc143159a204b299553435b03874ebb5b94d019afa8b8eff241c8a4cfee95872c2e1c1c4a
+  languageName: node
+  linkType: hard
+
+"tiny-warning@npm:^1.0.3":
+  version: 1.0.3
+  resolution: "tiny-warning@npm:1.0.3"
+  checksum: 10c0/ef8531f581b30342f29670cb41ca248001c6fd7975ce22122bd59b8d62b4fc84ad4207ee7faa95cde982fa3357cd8f4be650142abc22805538c3b1392d7084fa
   languageName: node
   linkType: hard
 
@@ -5394,6 +5507,15 @@ __metadata:
   peerDependencies:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
   checksum: 10c0/ec011a5055962c0f6b509d6e78c0b143f8cd069890ae370528753053c55e3b360d3648e76cfaa854faa7a59eb08d6c5fb1015e60ffde9046d32f5b2a295acea5
+  languageName: node
+  linkType: hard
+
+"use-sync-external-store@npm:^1.6.0":
+  version: 1.6.0
+  resolution: "use-sync-external-store@npm:1.6.0"
+  peerDependencies:
+    react: ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+  checksum: 10c0/35e1179f872a53227bdf8a827f7911da4c37c0f4091c29b76b1e32473d1670ebe7bcd880b808b7549ba9a5605c233350f800ffab963ee4a4ee346ee983b6019b
   languageName: node
   linkType: hard
 

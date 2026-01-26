@@ -4,7 +4,7 @@ import {
   useConnection,
 } from "wagmi";
 import { parseEther } from "viem";
-import { CONTRACTS } from "../constants/contracts";
+import { CONTRACTS } from "@/constants/contracts";
 
 interface UseOllaCoreOptions {
   onDepositSuccess?: () => void;
@@ -23,14 +23,14 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } =
     useWaitForTransactionReceipt({ hash: depositHash });
 
-  const depositAsset = () => {
+  const deposit = (amount: string) => {
     if (!address) return;
     mutate(
       {
         address: CONTRACTS.OllaCore.address,
         abi: CONTRACTS.OllaCore.abi,
         functionName: "deposit",
-        args: [parseEther("0.1"), address],
+        args: [parseEther(amount), address],
       },
       { onSuccess: options.onDepositSuccess }
     );
@@ -38,7 +38,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
 
   return {
     deposit: {
-      write: depositAsset,
+      write: deposit,
       isPending: isDepositPending,
       isConfirming: isDepositConfirming,
       isConfirmed: isDepositConfirmed,
