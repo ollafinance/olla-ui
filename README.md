@@ -15,6 +15,28 @@ Frontend interface for the Olla liquid staking protocol on Aztec.
 - **Yarn** >= 4 (see [core](https://github.com/ollafinance/core) for setup)
 - **Foundry** (for local chain) - [Install Guide](https://book.getfoundry.sh/getting-started/installation)
 
+## Project Architecture
+
+This project utilizes a **Feature-First Architecture** inspired by Atomic Design and Domain-Driven Design.
+
+### Key Concepts
+
+*   **Features (`src/features/`)**: Self-contained vertical slices containing domain logic (hooks for UI state) and specific components.
+*   **Protocol Layer (`src/hooks/protocol/`)**: A shared kernel of hooks that wrap smart contract interactions, accessible globally.
+*   **UI System (`src/components/ui/`)**: Reusable, atomic UI components (Buttons, Cards, Inputs) styled with Tailwind CSS.
+*   **Routing**: Powered by **TanStack Router** for type-safe navigation.
+
+### Directory Structure
+
+```text
+src/
+├── components/       # Shared UI Atoms & Layouts
+├── features/         # Business Logic (Staking, etc.)
+├── hooks/protocol/   # Shared Contract Hooks
+├── routes/           # TanStack Router Definitions
+└── lib/              # Utilities
+```
+
 ## Setup
 
 1. Install dependencies:
