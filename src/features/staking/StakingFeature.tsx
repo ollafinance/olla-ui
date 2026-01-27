@@ -1,12 +1,14 @@
+import { useState } from "react";
 import { useConnection } from "wagmi";
 import { StatusPanel } from "./components/StatusPanel";
-import { ActionButtons } from "./components/ActionButtons";
+import { StakingForm } from "./components/StakingForm";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useOllaCore } from "@/hooks/protocol/useOllaCore";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
 
 export function StakingFeature() {
   const { isConnected } = useConnection();
+  const [amount, setAmount] = useState("");
 
   // Custom Hooks
   const {
@@ -24,6 +26,7 @@ export function StakingFeature() {
     onDepositSuccess: () => {
       refetchBalance();
       refetchAllowance();
+      setAmount(""); // Reset amount after successful deposit
     },
   });
 
@@ -35,9 +38,12 @@ export function StakingFeature() {
         allowance={allowance}
       />
 
-      <ActionButtons
+      <StakingForm
         isConnected={isConnected}
+        balance={balance}
         allowance={allowance}
+        amount={amount}
+        setAmount={setAmount}
         approve={approve}
         deposit={deposit}
       />
