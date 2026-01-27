@@ -32,7 +32,9 @@ This project utilizes a **Feature-First Architecture** inspired by Atomic Design
 src/
 ├── components/       # Shared UI Atoms & Layouts
 ├── features/         # Business Logic (Staking, etc.)
+├── hooks/            # Shared Hooks (useTheme, etc.)
 ├── hooks/protocol/   # Shared Contract Hooks
+├── providers/        # Global Providers (Wagmi, RainbowKit, Theme)
 ├── routes/           # TanStack Router Definitions
 └── lib/              # Utilities
 ```
@@ -121,8 +123,10 @@ These files are gitignored and must be regenerated after cloning.
 src/
 ├── generated/      # Generated ABIs and addresses (gitignored)
 ├── components/     # React components
+├── config/         # Environment configuration
 ├── constants/      # Contract configurations
 ├── hooks/          # Custom React hooks (useAztecToken, useOllaCore)
+├── providers/      # Global application providers
 ├── App.tsx         # Main application component
 ├── main.tsx        # Entry point
 └── wagmi.ts        # Wagmi configuration
