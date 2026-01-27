@@ -1,4 +1,4 @@
-import { WALLET_CONNECT_PROJECT_ID, RPC_URL } from "@/config/environment";
+import { WALLET_CONNECT_PROJECT_ID, RPC_URL } from "@/constants/environment";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
   ledgerWallet,
@@ -32,10 +32,6 @@ const config = getDefaultConfig({
   ],
 });
 
-export function WagmiProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function WagmiProvider({ children }: { children: React.ReactNode }) {
   return <WagmiProviderLib config={config}>{children}</WagmiProviderLib>;
 }
