@@ -4,11 +4,6 @@ import { Button } from "@/components/ui/Button";
 interface ActionButtonsProps {
   isConnected: boolean;
   allowance: string;
-  mint: {
-    write: (amount: string) => void;
-    isPending: boolean;
-    isConfirming: boolean;
-  };
   approve: {
     write: (amount: string) => void;
     isPending: boolean;
@@ -24,7 +19,6 @@ interface ActionButtonsProps {
 export function ActionButtons({
   isConnected,
   allowance,
-  mint,
   approve,
   deposit,
 }: ActionButtonsProps) {
@@ -34,21 +28,6 @@ export function ActionButtons({
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Mint Step */}
-      <Button
-        onClick={() => mint.write("100")}
-        disabled={!isConnected}
-        isLoading={mint.isPending || mint.isConfirming}
-        variant="primary"
-        className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-      >
-        {mint.isPending
-          ? "Minting..."
-          : mint.isConfirming
-            ? "Confirming..."
-            : "1. Mint 100 AZT"}
-      </Button>
-
       {/* Approve Step */}
       <Button
         onClick={() => approve.write("0.1")}
@@ -62,7 +41,7 @@ export function ActionButtons({
             ? "Confirming..."
             : isApproved
               ? "Approved"
-              : "2. Approve 0.1 AZT"}
+              : "1. Approve 0.1 AZT"}
       </Button>
 
       {/* Deposit Step */}
@@ -76,7 +55,7 @@ export function ActionButtons({
           ? "Depositing..."
           : deposit.isConfirming
             ? "Confirming..."
-            : "3. Deposit 0.1 AZT"}
+            : "2. Deposit 0.1 AZT"}
       </Button>
     </div>
   );

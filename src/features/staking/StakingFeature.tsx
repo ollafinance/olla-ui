@@ -12,7 +12,6 @@ export function StakingFeature() {
   const {
     balance,
     allowance,
-    mint,
     approve,
     refetchBalance,
     refetchAllowance,
@@ -39,22 +38,20 @@ export function StakingFeature() {
       <ActionButtons
         isConnected={isConnected}
         allowance={allowance}
-        mint={mint}
         approve={approve}
         deposit={deposit}
       />
 
       {/* Transaction Feedback */}
       <div className="space-y-2">
-        {(mint.hash || approve.hash || deposit.hash) && (
+        {(approve.hash || deposit.hash) && (
           <div className="text-xs text-muted-foreground break-all bg-muted p-2 rounded border border-border">
             <span className="font-semibold text-foreground">Tx Hash:</span>{" "}
-            {mint.hash || approve.hash || deposit.hash}
+            {approve.hash || deposit.hash}
           </div>
         )}
 
-        {(mint.isConfirmed ||
-          approve.isConfirmed ||
+        {(approve.isConfirmed ||
           deposit.isConfirmed) && (
           <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800 text-center font-medium">
             Transaction Successful!
