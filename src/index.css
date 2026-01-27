@@ -42,13 +42,77 @@
   font-style: normal;
 }
 
+:root {
+  /* Light Mode */
+  --background: #F8F6EF;
+  --foreground: #1F1F1F;
+  --card: #FFFFFF;
+  --card-foreground: #1F1F1F;
+  --primary: #FFB0F1;
+  --primary-foreground: #1F1F1F;
+  --secondary: #6EDFE9;
+  --secondary-foreground: #1F1F1F;
+  --muted: #f4f4f5;
+  --muted-foreground: #71717a;
+  --accent: #FF4900;
+  --accent-foreground: #FFFFFF;
+  --destructive: #ef4444;
+  --destructive-foreground: #fafafa;
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: #18181b;
+  --radius: 0.5rem;
+  --background-alt: #FFE7D5;
+}
+
+.dark {
+  /* Dark Mode - Zinc Based */
+  --background: #09090b;
+  --foreground: #F8F6EF;
+  --card: #18181b;
+  --card-foreground: #F8F6EF;
+  --primary: #FFB0F1;
+  --primary-foreground: #1F1F1F;
+  --secondary: #6EDFE9;
+  --secondary-foreground: #1F1F1F;
+  --muted: #27272a;
+  --muted-foreground: #a1a1aa;
+  --accent: #FF4900;
+  --accent-foreground: #FFFFFF;
+  --destructive: #7f1d1d;
+  --destructive-foreground: #fef2f2;
+  --border: #27272a;
+  --input: #27272a;
+  --ring: #d4d4d8;
+  --background-alt: #27272a;
+}
+
 @theme {
-  --color-primary: #3b82f6;
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-background-alt: var(--background-alt);
+  
   --font-sans: "Season Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 body {
-  background-color: #f3f4f6;
+  background-color: var(--background);
+  color: var(--foreground);
   font-family: var(--font-sans);
   min-height: 100vh;
 }

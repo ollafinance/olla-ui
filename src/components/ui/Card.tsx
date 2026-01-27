@@ -1,7 +1,7 @@
 import { type HTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {}
+export type CardProps = HTMLAttributes<HTMLDivElement>;
 
 export const Card = forwardRef<HTMLDivElement, CardProps>(
   ({ className, children, ...props }, ref) => {
@@ -9,7 +9,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          "bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden",
+          "bg-card text-card-foreground rounded-2xl shadow-xl border border-border overflow-hidden",
           className
         )}
         {...props}
@@ -26,7 +26,7 @@ export const CardHeader = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivEleme
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("px-6 py-4 border-b border-gray-100", className)}
+      className={cn("px-6 py-4 border-b border-border", className)}
       {...props}
     />
   )
@@ -37,7 +37,7 @@ export const CardTitle = forwardRef<HTMLParagraphElement, HTMLAttributes<HTMLHea
   ({ className, ...props }, ref) => (
     <h3
       ref={ref}
-      className={cn("text-lg font-semibold leading-none tracking-tight text-gray-900", className)}
+      className={cn("text-lg font-semibold leading-none tracking-tight text-foreground", className)}
       {...props}
     />
   )
