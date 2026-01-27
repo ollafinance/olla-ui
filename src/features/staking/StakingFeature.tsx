@@ -15,17 +15,18 @@ export function StakingFeature() {
     balance,
     allowance,
     approve,
-    refetchBalance,
+    refetchBalance: refetchAztecBalance,
     refetchAllowance,
   } = useAztecToken();
 
-  const { balance: stAztecBalance } = useStAztec();
+  const { balance: stAztecBalance, refetchBalance: refetchStAztecBalance } = useStAztec();
 
   // Pass refetch callback to handle post-deposit updates
   const { deposit } = useOllaCore({
     onDepositSuccess: () => {
-      refetchBalance();
+      refetchAztecBalance();
       refetchAllowance();
+      refetchStAztecBalance();
       setAmount(""); // Reset amount after successful deposit
     },
   });
