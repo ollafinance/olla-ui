@@ -62,10 +62,13 @@ src/
 │   └── withdraw/        # Future "Withdraw" feature
 │
 ├── hooks/               # SHARED KERNEL
-│   └── protocol/        # Global Protocol Hooks (wraps contracts)
-│       ├── useOllaCore.ts
-│       ├── useAztecToken.ts
-│       └── useStAztec.ts
+│   ├── protocol/        # Global Protocol Hooks (wraps contracts)
+│   └── useTheme.ts      # Theme management hook
+│
+├── providers/           # GLOBAL PROVIDERS
+│   ├── theme-provider.tsx     # Theme context provider
+│   ├── wagmi-provider.tsx     # Wagmi context provider
+│   └── rainbowkit-provider.tsx # RainbowKit provider & config
 │
 ├── routes/              # ROUTING (TanStack Router)
 │   ├── __root.tsx       # Global layout wrapper

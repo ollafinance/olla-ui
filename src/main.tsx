@@ -2,17 +2,17 @@ import "@rainbow-me/rainbowkit/styles.css";
 
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { RainbowKitProvider } from "@rainbow-me/rainbowkit";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
+import { ThemeProvider } from "@/providers/theme-provider";
+import { RainbowKitProvider } from "@/providers/rainbowkit-provider";
 
-import { config } from "./config/rainbowkit";
 import "./index.css";
 
 // Import Routes
 import { Route as rootRoute } from "./routes/__root";
 import { Route as indexRoute } from "./routes/index";
+import { WagmiProvider } from "./providers/wagmi-provider";
 
 // Create Router
 const routeTree = rootRoute.addChildren([indexRoute]);
@@ -29,12 +29,14 @@ const queryClient = new QueryClient();
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <WagmiProvider config={config}>
-      <QueryClientProvider client={queryClient}>
-        <RainbowKitProvider>
-          <RouterProvider router={router} />
-        </RainbowKitProvider>
-      </QueryClientProvider>
-    </WagmiProvider>
-  </StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+        <WagmiProvider>
+          <RainbowKitProvider>
+            <RouterProvider router={router} />
+          </RainbowKitProvider>
+        </WagmiProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  </StrictMode>,
 );

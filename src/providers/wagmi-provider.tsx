@@ -1,16 +1,16 @@
-import { http } from "wagmi";
-import { foundry } from "wagmi/chains";
+import { WALLET_CONNECT_PROJECT_ID, RPC_URL } from "@/constants/environment";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
-  metaMaskWallet,
-  walletConnectWallet,
-  trustWallet,
   ledgerWallet,
+  metaMaskWallet,
   safeWallet,
+  trustWallet,
+  walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
-import { RPC_URL, WALLET_CONNECT_PROJECT_ID } from "./environment";
+import { foundry } from "viem/chains";
+import { http, WagmiProvider as WagmiProviderLib } from "wagmi";
 
-export const config = getDefaultConfig({
+const config = getDefaultConfig({
   appName: "Olla Finance",
   appDescription: "Liquid Staking Protocole",
   appUrl: "https://olla.finance",
@@ -31,3 +31,7 @@ export const config = getDefaultConfig({
     },
   ],
 });
+
+export function WagmiProvider({ children }: { children: React.ReactNode }) {
+  return <WagmiProviderLib config={config}>{children}</WagmiProviderLib>;
+}

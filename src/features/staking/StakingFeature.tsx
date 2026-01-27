@@ -47,8 +47,8 @@ export function StakingFeature() {
       {/* Transaction Feedback */}
       <div className="space-y-2">
         {(mint.hash || approve.hash || deposit.hash) && (
-          <div className="text-xs text-gray-500 break-all bg-gray-50 p-2 rounded border border-gray-200">
-            <span className="font-semibold">Tx Hash:</span>{" "}
+          <div className="text-xs text-muted-foreground break-all bg-muted p-2 rounded border border-border">
+            <span className="font-semibold text-foreground">Tx Hash:</span>{" "}
             {mint.hash || approve.hash || deposit.hash}
           </div>
         )}
@@ -56,13 +56,13 @@ export function StakingFeature() {
         {(mint.isConfirmed ||
           approve.isConfirmed ||
           deposit.isConfirmed) && (
-          <div className="text-sm text-green-600 bg-green-50 p-2 rounded border border-green-200 text-center font-medium">
+          <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800 text-center font-medium">
             Transaction Successful!
           </div>
         )}
 
         {deposit.error && (
-          <div className="text-sm text-red-600 bg-red-50 p-2 rounded border border-red-200">
+          <div className="text-sm text-destructive bg-destructive/10 p-2 rounded border border-destructive/20">
             Error:{" "}
             {(deposit.error as Error & { shortMessage?: string })
               .shortMessage || deposit.error.message}

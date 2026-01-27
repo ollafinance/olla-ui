@@ -39,8 +39,8 @@ export function ActionButtons({
         onClick={() => mint.write("100")}
         disabled={!isConnected}
         isLoading={mint.isPending || mint.isConfirming}
-        variant="primary" // Replaced custom green with primary for now, or add specific variant
-        className="w-full bg-green-600 hover:bg-green-700 text-white" // Custom override if needed
+        variant="primary"
+        className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground"
       >
         {mint.isPending
           ? "Minting..."
@@ -54,7 +54,7 @@ export function ActionButtons({
         onClick={() => approve.write("0.1")}
         disabled={!isConnected || isApproved}
         isLoading={approve.isPending || approve.isConfirming}
-        className="w-full bg-yellow-600 hover:bg-yellow-700 text-white"
+        className="w-full bg-accent hover:bg-accent/80 text-accent-foreground"
       >
         {approve.isPending
           ? "Approving..."
@@ -70,7 +70,7 @@ export function ActionButtons({
         onClick={() => deposit.write("0.1")}
         disabled={!isConnected || !isApproved}
         isLoading={deposit.isPending || deposit.isConfirming}
-        className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+        className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
       >
         {deposit.isPending
           ? "Depositing..."
