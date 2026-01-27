@@ -12,24 +12,24 @@ export function StatusPanel({
   allowance,
 }: StatusPanelProps) {
   return (
-    <Card className="bg-blue-50 border-blue-100">
-      <CardHeader className="pb-2 border-blue-100">
-        <CardTitle className="text-sm font-semibold text-blue-800 uppercase tracking-wide">
+    <Card className="bg-background-alt border-border/50">
+      <CardHeader className="pb-2 border-border/10">
+        <CardTitle className="text-sm font-semibold text-primary uppercase tracking-wide">
           Your Status
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
-        <div className="text-sm text-gray-700 flex justify-between">
+        <div className="text-sm text-muted-foreground flex justify-between">
           <span>Asset Balance:</span>
-          <span className="font-mono">{balance} AZT</span>
+          <span className="font-mono text-foreground">{balance} AZT</span>
         </div>
-        <div className="text-sm text-gray-700 flex justify-between">
+        <div className="text-sm text-muted-foreground flex justify-between">
           <span>stAztec Balance:</span>
-          <span className="font-mono">{stAztecBalance} stAZT</span>
+          <span className="font-mono text-foreground">{stAztecBalance} stAZT</span>
         </div>
-        <div className="text-sm text-gray-700 flex justify-between">
+        <div className="text-sm text-muted-foreground flex justify-between">
           <span>Allowance:</span>
-          <span className="font-mono">{allowance} AZT</span>
+          <span className="font-mono text-foreground">{allowance} AZT</span>
         </div>
       </CardContent>
     </Card>
