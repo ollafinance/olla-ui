@@ -21,10 +21,10 @@ This project utilizes a **Feature-First Architecture** inspired by Atomic Design
 
 ### Key Concepts
 
-*   **Features (`src/features/`)**: Self-contained vertical slices containing domain logic (hooks for UI state) and specific components.
-*   **Protocol Layer (`src/hooks/protocol/`)**: A shared kernel of hooks that wrap smart contract interactions, accessible globally.
-*   **UI System (`src/components/ui/`)**: Reusable, atomic UI components (Buttons, Cards, Inputs) styled with Tailwind CSS.
-*   **Routing**: Powered by **TanStack Router** for type-safe navigation.
+- **Features (`src/features/`)**: Self-contained vertical slices containing domain logic (hooks for UI state) and specific components.
+- **Protocol Layer (`src/hooks/protocol/`)**: A shared kernel of hooks that wrap smart contract interactions, accessible globally.
+- **UI System (`src/components/ui/`)**: Reusable, atomic UI components (Buttons, Cards, Inputs) styled with Tailwind CSS.
+- **Routing**: Powered by **TanStack Router** for type-safe navigation.
 
 ### Directory Structure
 
@@ -42,11 +42,13 @@ src/
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    yarn install
    ```
 
 2. Start the local Anvil chain and deploy contracts (from the [core](https://github.com/ollafinance/core) repo):
+
    ```bash
    # Terminal 1: Start Anvil
    yarn dev:anvil
@@ -57,11 +59,13 @@ src/
    ```
 
 3. Sync contract ABIs and addresses:
+
    ```bash
    yarn sync:contracts
    ```
 
 4. Start the development server:
+
    ```bash
    yarn dev
    ```
@@ -70,13 +74,13 @@ src/
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `yarn dev` | Start development server |
-| `yarn build` | Build for production |
-| `yarn preview` | Preview production build |
-| `yarn lint` | Run ESLint |
-| `yarn sync:contracts` | Sync ABIs and addresses from core repo (local) |
+| Command                       | Description                                      |
+| ----------------------------- | ------------------------------------------------ |
+| `yarn dev`                    | Start development server                         |
+| `yarn build`                  | Build for production                             |
+| `yarn preview`                | Preview production build                         |
+| `yarn lint`                   | Run ESLint                                       |
+| `yarn sync:contracts`         | Sync ABIs and addresses from core repo (local)   |
 | `yarn sync:contracts:testnet` | Sync ABIs and addresses from core repo (testnet) |
 
 ## Contract Sync
@@ -123,13 +127,11 @@ These files are gitignored and must be regenerated after cloning.
 src/
 ├── generated/      # Generated ABIs and addresses (gitignored)
 ├── components/     # React components
-├── config/         # Environment configuration
 ├── constants/      # Contract configurations
 ├── hooks/          # Custom React hooks (useAztecToken, useOllaCore)
 ├── providers/      # Global application providers
 ├── App.tsx         # Main application component
 ├── main.tsx        # Entry point
-└── wagmi.ts        # Wagmi configuration
 ```
 
 ## Related
