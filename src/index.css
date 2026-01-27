@@ -1,11 +1,54 @@
 @import "tailwindcss";
 
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Heavy.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
 @theme {
   --color-primary: #3b82f6;
+  --font-sans: "Season Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 body {
   background-color: #f3f4f6;
-  font-family: sans-serif;
+  font-family: var(--font-sans);
   min-height: 100vh;
 }
