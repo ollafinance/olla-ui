@@ -43,9 +43,9 @@ export function ActionButtons({
         className="w-full bg-secondary hover:bg-secondary/80 text-secondary-foreground"
       >
         {mint.isPending
-          ? "Minting..."
+          ? "Minting…"
           : mint.isConfirming
-            ? "Confirming..."
+            ? "Confirming…"
             : "1. Mint 100 AZT"}
       </Button>
 
@@ -57,9 +57,9 @@ export function ActionButtons({
         className="w-full bg-accent hover:bg-accent/80 text-accent-foreground"
       >
         {approve.isPending
-          ? "Approving..."
+          ? "Approving…"
           : approve.isConfirming
-            ? "Confirming..."
+            ? "Confirming…"
             : isApproved
               ? "Approved"
               : "2. Approve 0.1 AZT"}
@@ -73,9 +73,9 @@ export function ActionButtons({
         className="w-full bg-primary hover:bg-primary/80 text-primary-foreground"
       >
         {deposit.isPending
-          ? "Depositing..."
+          ? "Depositing…"
           : deposit.isConfirming
-            ? "Confirming..."
+            ? "Confirming…"
             : "3. Deposit 0.1 AZT"}
       </Button>
     </div>
