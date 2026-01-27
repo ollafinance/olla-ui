@@ -5,7 +5,7 @@ import { ThemeToggle } from "@/components/ui/ThemeToggle";
 export function Header() {
   return (
     <header className="flex justify-between items-center mb-8 border-b border-gray-100 dark:border-zinc-800 pb-4">
-      <img src={ollaLogo} alt="Olla" className="h-8 dark:invert" />
+      <img src={ollaLogo} alt="Olla" width="82" height="32" className="h-8 w-auto dark:invert" />
       <div className="flex items-center gap-4">
         <ThemeToggle />
         <ConnectButton />

@@ -43,6 +43,7 @@
 }
 
 :root {
+  color-scheme: light;
   /* Light Mode */
   --background: #F8F6EF;
   --foreground: #1F1F1F;
@@ -66,6 +67,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   /* Dark Mode - Zinc Based */
   --background: #09090b;
   --foreground: #F8F6EF;
