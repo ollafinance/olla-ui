@@ -3,13 +3,11 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
 interface StatusPanelProps {
   stAztecBalance: string;
   balance: string;
-  allowance: string;
 }
 
 export function StatusPanel({
   stAztecBalance,
   balance,
-  allowance,
 }: StatusPanelProps) {
   return (
     <Card className="bg-muted border-border/50">
@@ -28,10 +26,6 @@ export function StatusPanel({
           <span className="font-mono text-foreground">
             {stAztecBalance} stAZT
           </span>
-        </div>
-        <div className="text-m text-muted-foreground flex justify-between">
-          <span>Allowance:</span>
-          <span className="font-mono text-foreground">{allowance} AZT</span>
         </div>
       </CardContent>
     </Card>

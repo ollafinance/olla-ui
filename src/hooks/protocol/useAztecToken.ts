@@ -32,6 +32,7 @@ export function useAztecToken() {
     mutate: approve,
     data: approveHash,
     isPending: isApprovePending,
+    reset: resetApprove,
   } = useWriteContract();
 
   const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
@@ -60,6 +61,7 @@ export function useAztecToken() {
       isConfirming: isApproveConfirming,
       isConfirmed: isApproveConfirmed,
       hash: approveHash,
+      reset: resetApprove,
     },
     refetchBalance,
     refetchAllowance,

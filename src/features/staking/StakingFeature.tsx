@@ -27,6 +27,7 @@ export function StakingFeature() {
       refetchAztecBalance();
       refetchAllowance();
       refetchStAztecBalance();
+      approve.reset(); // Reset approval state to unlock input
       setAmount(""); // Reset amount after successful deposit
     },
   });
@@ -36,7 +37,6 @@ export function StakingFeature() {
       <StatusPanel
         stAztecBalance={stAztecBalance}
         balance={balance}
-        allowance={allowance}
       />
 
       <StakingForm
