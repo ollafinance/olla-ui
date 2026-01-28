@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import { parseEther } from "viem";
 import { Button } from "@/components/ui/Button";
 import { StakingInput } from "./StakingInput";
+import { getButtonState } from "../utils";
 
 interface StakingFormProps {
   isConnected: boolean;
@@ -64,9 +65,7 @@ export function StakingForm({
     approve.isConfirmed,
     isInputValid,
     amount,
-    deposit, // deposit object is stable enough or we ignore linter here? 
-    // Actually the previous dependency array had deposit.write, etc.
-    // Let's keep it safe.
+    deposit.write,
     deposit.isPending,
     deposit.isConfirming,
   ]);
@@ -125,53 +124,4 @@ export function StakingForm({
       )}
     </div>
   );
-}
-
-// Helper to determine button UI state
-function getButtonState({
-  isConnected,
-  isInputValid,
-  needsApproval,
-  amount,
-  approve,
-  deposit,
-}: {
-  isConnected: boolean;
-  isInputValid: boolean;
-  needsApproval: boolean;
-  amount: string;
-  approve: { isPending: boolean; isConfirming: boolean };
-  deposit: { isPending: boolean; isConfirming: boolean };
-}) {
-  let buttonText = "Enter Amount";
-  let isLoading = false;
-  let isDisabled = !isConnected || !isInputValid;
-
-  if (needsApproval) {
-    if (approve.isPending) {
-      buttonText = "Approving...";
-      isLoading = true;
-    } else if (approve.isConfirming) {
-      buttonText = "Confirming Approval...";
-      isLoading = true;
-    } else {
-      buttonText = `Approve ${amount} AZT`;
-    }
-  } else {
-    // Ready to deposit
-    if (deposit.isPending) {
-      buttonText = "Depositing...";
-      isLoading = true;
-    } else if (deposit.isConfirming) {
-      buttonText = "Confirming Deposit...";
-      isLoading = true;
-    } else {
-      buttonText = isInputValid ? `Stake ${amount} AZT` : "Enter Amount";
-    }
-  }
-
-  // Override disabled state during loading
-  if (isLoading) isDisabled = true;
-
-  return { buttonText, isLoading, isDisabled };
 }
