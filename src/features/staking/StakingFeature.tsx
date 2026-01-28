@@ -1,14 +1,17 @@
 import { useState } from "react";
 import { useConnection } from "wagmi";
 import { StatusPanel } from "./components/StatusPanel";
+import { ExchangeRateOverview } from "./components/ExchangeRateOverview";
 import { StakingForm } from "./components/StakingForm";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useOllaCore } from "@/hooks/protocol/useOllaCore";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
+import { useDebounce } from "@/hooks/useDebounce";
 
 export function StakingFeature() {
   const { isConnected } = useConnection();
   const [amount, setAmount] = useState("");
+  const debouncedAmount = useDebounce(amount, 500);
 
   // Custom Hooks
   const {
@@ -22,7 +25,7 @@ export function StakingFeature() {
   const { balance: stAztecBalance, refetchBalance: refetchStAztecBalance } = useStAztec();
 
   // Pass refetch callback to handle post-deposit updates
-  const { deposit } = useOllaCore({
+  const { deposit, exchangeRate, potentialShares } = useOllaCore({
     onDepositSuccess: () => {
       refetchAztecBalance();
       refetchAllowance();
@@ -30,6 +33,7 @@ export function StakingFeature() {
       approve.reset(); // Reset approval state to unlock input
       setAmount(""); // Reset amount after successful deposit
     },
+    amountToConvert: debouncedAmount,
   });
 
   return (
@@ -37,6 +41,11 @@ export function StakingFeature() {
       <StatusPanel
         stAztecBalance={stAztecBalance}
         balance={balance}
+      />
+
+      <ExchangeRateOverview
+        exchangeRate={exchangeRate}
+        potentialShares={potentialShares}
       />
 
       <StakingForm
