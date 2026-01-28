@@ -15,6 +15,8 @@ export function ThemeToggle() {
         src={theme === "dark" ? moonIcon : sunIcon} 
         alt={theme === "dark" ? "Dark Mode" : "Light Mode"}
         className="w-[1.2rem] h-[1.2rem]"
+        width="20"
+        height="20"
       />
     </button>
   );
