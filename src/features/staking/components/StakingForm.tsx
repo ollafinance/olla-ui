@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { parseEther } from "viem";
 import { Button } from "@/components/ui/Button";
-import { Input } from "@/components/ui/Input";
+import { StakingInput } from "./StakingInput";
 
 interface StakingFormProps {
   isConnected: boolean;
@@ -33,7 +33,7 @@ export function StakingForm({
   deposit,
 }: StakingFormProps) {
   // Logic to determine button state
-  const isInputValid = amount && !isNaN(Number(amount)) && Number(amount) > 0;
+  const isInputValid = !!amount && !isNaN(Number(amount)) && Number(amount) > 0;
 
   const allowanceBn = parseEther(allowance || "0");
   const amountBn = isInputValid ? parseEther(amount) : 0n;
@@ -64,7 +64,9 @@ export function StakingForm({
     approve.isConfirmed,
     isInputValid,
     amount,
-    deposit.write,
+    deposit, // deposit object is stable enough or we ignore linter here? 
+    // Actually the previous dependency array had deposit.write, etc.
+    // Let's keep it safe.
     deposit.isPending,
     deposit.isConfirming,
   ]);
@@ -83,7 +85,64 @@ export function StakingForm({
     }
   };
 
-  // Determine button text and loading state
+  const { buttonText, isLoading, isDisabled } = getButtonState({
+    isConnected,
+    isInputValid,
+    needsApproval,
+    amount,
+    approve,
+    deposit,
+  });
+
+  // Additional check: disable input if approval is pending, confirming, or confirmed (waiting for deposit)
+  const isApproving =
+    approve.isPending || approve.isConfirming || approve.isConfirmed;
+  const isInputDisabled = !isConnected || isLoading || isApproving;
+
+  return (
+    <div className="flex flex-col gap-4">
+      <StakingInput
+        amount={amount}
+        onAmountChange={setAmount}
+        onMaxClick={handleMaxClick}
+        disabled={isInputDisabled}
+      />
+
+      <Button
+        onClick={handleMainAction}
+        disabled={isDisabled}
+        isLoading={isLoading}
+        className="w-full"
+        variant={needsApproval ? "secondary" : "primary"}
+      >
+        {buttonText}
+      </Button>
+
+      {needsApproval && isInputValid && (
+        <p className="text-xs text-center text-muted-foreground">
+          You must approve the contract before you can stake.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// Helper to determine button UI state
+function getButtonState({
+  isConnected,
+  isInputValid,
+  needsApproval,
+  amount,
+  approve,
+  deposit,
+}: {
+  isConnected: boolean;
+  isInputValid: boolean;
+  needsApproval: boolean;
+  amount: string;
+  approve: { isPending: boolean; isConfirming: boolean };
+  deposit: { isPending: boolean; isConfirming: boolean };
+}) {
   let buttonText = "Enter Amount";
   let isLoading = false;
   let isDisabled = !isConnected || !isInputValid;
@@ -114,51 +173,5 @@ export function StakingForm({
   // Override disabled state during loading
   if (isLoading) isDisabled = true;
 
-  // Additional check: disable input if approval is pending, confirming, or confirmed (waiting for deposit)
-  const isApproving =
-    approve.isPending || approve.isConfirming || approve.isConfirmed;
-  const isInputDisabled = !isConnected || isLoading || isApproving;
-
-  return (
-    <div className="flex flex-col gap-4">
-      <div className="relative">
-        <Input
-          type="number"
-          placeholder="0.0"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          disabled={isInputDisabled}
-          className="pr-16" // Space for MAX button
-        />
-        <div className="absolute inset-y-0 right-0 flex items-center pr-1">
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleMaxClick}
-            disabled={isInputDisabled}
-            className="h-8 text-xs font-semibold text-primary hover:text-primary/80"
-          >
-            MAX
-          </Button>
-        </div>
-      </div>
-
-      <Button
-        onClick={handleMainAction}
-        disabled={isDisabled}
-        isLoading={isLoading}
-        className="w-full"
-        variant={needsApproval ? "secondary" : "primary"}
-      >
-        {buttonText}
-      </Button>
-
-      {needsApproval && isInputValid && (
-        <p className="text-xs text-center text-muted-foreground">
-          You must approve the contract before you can stake.
-        </p>
-      )}
-    </div>
-  );
+  return { buttonText, isLoading, isDisabled };
 }
