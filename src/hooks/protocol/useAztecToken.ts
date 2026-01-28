@@ -29,37 +29,16 @@ export function useAztecToken() {
 
   // WRITES
   const {
-    mutate: mint,
-    data: mintHash,
-    isPending: isMintPending,
-  } = useWriteContract();
-
-  const { isLoading: isMintConfirming, isSuccess: isMintConfirmed } =
-    useWaitForTransactionReceipt({ hash: mintHash });
-
-  const {
     mutate: approve,
     data: approveHash,
     isPending: isApprovePending,
+    reset: resetApprove,
   } = useWriteContract();
 
   const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
     useWaitForTransactionReceipt({ hash: approveHash });
 
   // Actions - refetch handled via onSuccess callbacks
-  const mintTokens = (amount: string) => {
-    if (!address) return;
-    mint(
-      {
-        address: CONTRACTS.Asset.address,
-        abi: CONTRACTS.Asset.abi,
-        functionName: "mint",
-        args: [address, parseEther(amount)],
-      },
-      { onSuccess: () => refetchBalance() }
-    );
-  };
-
   const approveSpender = (amount: string) => {
     if (!address) return;
     approve(
@@ -76,19 +55,13 @@ export function useAztecToken() {
   return {
     balance: balance ? formatEther(balance as bigint) : "0",
     allowance: allowance ? formatEther(allowance as bigint) : "0",
-    mint: {
-      write: mintTokens,
-      isPending: isMintPending,
-      isConfirming: isMintConfirming,
-      isConfirmed: isMintConfirmed,
-      hash: mintHash,
-    },
     approve: {
       write: approveSpender,
       isPending: isApprovePending,
       isConfirming: isApproveConfirming,
       isConfirmed: isApproveConfirmed,
       hash: approveHash,
+      reset: resetApprove,
     },
     refetchBalance,
     refetchAllowance,

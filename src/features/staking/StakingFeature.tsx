@@ -1,30 +1,34 @@
+import { useState } from "react";
 import { useConnection } from "wagmi";
 import { StatusPanel } from "./components/StatusPanel";
-import { ActionButtons } from "./components/ActionButtons";
+import { StakingForm } from "./components/StakingForm";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useOllaCore } from "@/hooks/protocol/useOllaCore";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
 
 export function StakingFeature() {
   const { isConnected } = useConnection();
+  const [amount, setAmount] = useState("");
 
   // Custom Hooks
   const {
     balance,
     allowance,
-    mint,
     approve,
-    refetchBalance,
+    refetchBalance: refetchAztecBalance,
     refetchAllowance,
   } = useAztecToken();
 
-  const { balance: stAztecBalance } = useStAztec();
+  const { balance: stAztecBalance, refetchBalance: refetchStAztecBalance } = useStAztec();
 
   // Pass refetch callback to handle post-deposit updates
   const { deposit } = useOllaCore({
     onDepositSuccess: () => {
-      refetchBalance();
+      refetchAztecBalance();
       refetchAllowance();
+      refetchStAztecBalance();
+      approve.reset(); // Reset approval state to unlock input
+      setAmount(""); // Reset amount after successful deposit
     },
   });
 
@@ -33,28 +37,28 @@ export function StakingFeature() {
       <StatusPanel
         stAztecBalance={stAztecBalance}
         balance={balance}
-        allowance={allowance}
       />
 
-      <ActionButtons
+      <StakingForm
         isConnected={isConnected}
+        balance={balance}
         allowance={allowance}
-        mint={mint}
+        amount={amount}
+        setAmount={setAmount}
         approve={approve}
         deposit={deposit}
       />
 
       {/* Transaction Feedback */}
       <div className="space-y-2">
-        {(mint.hash || approve.hash || deposit.hash) && (
+        {(approve.hash || deposit.hash) && (
           <div className="text-xs text-muted-foreground break-all bg-muted p-2 rounded border border-border">
             <span className="font-semibold text-foreground">Tx Hash:</span>{" "}
-            {mint.hash || approve.hash || deposit.hash}
+            {approve.hash || deposit.hash}
           </div>
         )}
 
-        {(mint.isConfirmed ||
-          approve.isConfirmed ||
+        {(approve.isConfirmed ||
           deposit.isConfirmed) && (
           <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800 text-center font-medium">
             Transaction Successful!
