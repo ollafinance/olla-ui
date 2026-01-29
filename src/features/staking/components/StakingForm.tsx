@@ -9,6 +9,7 @@ interface StakingFormProps {
   setAmount: (val: string) => void;
   deposit: {
     write: (amount: string) => void;
+    isSigning: boolean;
     isPending: boolean;
     isConfirming: boolean;
   };

@@ -147,7 +147,8 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
   return {
     deposit: {
       write: deposit,
-      isPending: isDepositPending || isSigning,
+      isSigning,
+      isPending: isDepositPending,
       isConfirming: isDepositConfirming,
       isConfirmed: isDepositConfirmed,
       hash: depositHash,

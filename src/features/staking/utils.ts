@@ -2,7 +2,7 @@ export interface ButtonStateParams {
   isConnected: boolean;
   isInputValid: boolean;
   amount: string;
-  deposit: { isPending: boolean; isConfirming: boolean };
+  deposit: { isSigning: boolean; isPending: boolean; isConfirming: boolean };
 }
 
 export function getButtonState({
@@ -15,9 +15,12 @@ export function getButtonState({
   let isLoading = false;
   let isDisabled = !isConnected || !isInputValid;
 
-  // Ready to deposit
-  if (deposit.isPending) {
-    buttonText = "Permit & Deposit...";
+  // Determine button state based on deposit flow stage
+  if (deposit.isSigning) {
+    buttonText = "Signing Permit...";
+    isLoading = true;
+  } else if (deposit.isPending) {
+    buttonText = "Sending Transaction...";
     isLoading = true;
   } else if (deposit.isConfirming) {
     buttonText = "Confirming Deposit...";
