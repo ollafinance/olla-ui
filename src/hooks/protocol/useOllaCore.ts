@@ -4,7 +4,6 @@ import {
   useConnection,
   useReadContract,
   useSignTypedData,
-  useChainId,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
@@ -18,14 +17,13 @@ interface UseOllaCoreOptions {
 
 export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const { address } = useConnection();
-  const chainId = useChainId();
   const [isSigning, setIsSigning] = useState(false);
 
-  // Read: Asset Name (for Permit)
-  const { data: assetName } = useReadContract({
+  // Read: Asset EIP-712 Domain
+  const { data: assetDomain } = useReadContract({
     address: CONTRACTS.Asset.address,
     abi: CONTRACTS.Asset.abi,
-    functionName: "name",
+    functionName: "eip712Domain",
   });
 
   // Read: User Nonce (for Permit)
@@ -52,7 +50,22 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     useWaitForTransactionReceipt({ hash: depositHash });
 
   const deposit = async (amount: string) => {
-    if (!address || !assetName || nonce === undefined) return;
+    if (!address || !assetDomain || nonce === undefined) return;
+
+    // eip712Domain returns [fields, name, version, chainId, verifyingContract, salt, extensions]
+    // We cast to any because TS inference might be loose on the tuple
+    const [
+      ,
+      /* fields */
+      name,
+      version,
+      chainIdFromContract,
+      verifyingContract,
+      ,
+      /* salt */
+      ,
+      /* extensions */
+    ] = assetDomain as any;
 
     try {
       setIsSigning(true);
@@ -67,10 +80,10 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       // 1. Sign Permit
       const signature = await mutateAsync({
         domain: {
-          name: assetName as string,
-          version: "1",
-          chainId,
-          verifyingContract: CONTRACTS.Asset.address,
+          name,
+          version,
+          chainId: Number(chainIdFromContract),
+          verifyingContract,
         },
         types: {
           Permit: [
@@ -133,11 +146,11 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const { isLoading: isRedeemConfirming, isSuccess: isRedeemConfirmed } =
     useWaitForTransactionReceipt({ hash: redeemHash });
 
-  // Read: stAztec Name (for Permit)
-  const { data: stAztecName } = useReadContract({
+  // Read: stAztec EIP-712 Domain
+  const { data: stAztecDomain } = useReadContract({
     address: CONTRACTS.StAztec.address,
     abi: CONTRACTS.StAztec.abi,
-    functionName: "name",
+    functionName: "eip712Domain",
   });
 
   // Read: stAztec Nonce (for Permit)
@@ -150,7 +163,20 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
   });
 
   const requestRedeem = async (amount: string) => {
-    if (!address || !stAztecName || stAztecNonce === undefined) return;
+    if (!address || !stAztecDomain || stAztecNonce === undefined) return;
+
+    const [
+      ,
+      /* fields */
+      name,
+      version,
+      chainIdFromContract,
+      verifyingContract,
+      ,
+      /* salt */
+      ,
+      /* extensions */
+    ] = stAztecDomain as any;
 
     try {
       setIsSigning(true);
@@ -165,10 +191,10 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       // 1. Sign Permit
       const signature = await mutateAsync({
         domain: {
-          name: stAztecName as string,
-          version: "1",
-          chainId,
-          verifyingContract: CONTRACTS.StAztec.address,
+          name,
+          version,
+          chainId: Number(chainIdFromContract),
+          verifyingContract,
         },
         types: {
           Permit: [
