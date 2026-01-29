@@ -94,7 +94,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       const { v, r, s } = parseSignature(signature);
 
       // 2. Deposit with Permit
-      mutate(
+      depositMutate(
         {
           address: CONTRACTS.OllaCore.address,
           abi: CONTRACTS.OllaCore.abi,
@@ -133,17 +133,91 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const { isLoading: isRedeemConfirming, isSuccess: isRedeemConfirmed } =
     useWaitForTransactionReceipt({ hash: redeemHash });
 
-  const requestRedeem = (amount: string) => {
-    if (!address) return;
-    redeemMutate(
-      {
-        address: CONTRACTS.OllaCore.address,
-        abi: CONTRACTS.OllaCore.abi,
-        functionName: "requestRedeem",
-        args: [parseEther(amount), address],
-      },
-      { onSuccess: options.onRedeemSuccess }
-    );
+  // Read: stAztec Name (for Permit)
+  const { data: stAztecName } = useReadContract({
+    address: CONTRACTS.StAztec.address,
+    abi: CONTRACTS.StAztec.abi,
+    functionName: "name",
+  });
+
+  // Read: stAztec Nonce (for Permit)
+  const { data: stAztecNonce, refetch: refetchStAztecNonce } = useReadContract({
+    address: CONTRACTS.StAztec.address,
+    abi: CONTRACTS.StAztec.abi,
+    functionName: "nonces",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const requestRedeem = async (amount: string) => {
+    if (!address || !stAztecName || stAztecNonce === undefined) return;
+
+    try {
+      setIsSigning(true);
+      // Ensure we have the latest nonce
+      const { data: currentNonce } = await refetchStAztecNonce();
+      if (currentNonce === undefined || currentNonce === null)
+        throw new Error("Could not fetch nonce");
+
+      const value = parseEther(amount);
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour
+
+      // 1. Sign Permit
+      const signature = await mutateAsync({
+        domain: {
+          name: stAztecName as string,
+          version: "1",
+          chainId,
+          verifyingContract: CONTRACTS.StAztec.address,
+        },
+        types: {
+          Permit: [
+            { name: "owner", type: "address" },
+            { name: "spender", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "nonce", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+        },
+        primaryType: "Permit",
+        message: {
+          owner: address,
+          spender: CONTRACTS.OllaCore.address,
+          value,
+          nonce: currentNonce as bigint,
+          deadline,
+        },
+      });
+
+      const { v, r, s } = parseSignature(signature);
+
+      // 2. Request Redeem with Permit
+      redeemMutate(
+        {
+          address: CONTRACTS.OllaCore.address,
+          abi: CONTRACTS.OllaCore.abi,
+          functionName: "requestRedeemWithPermit",
+          args: [
+            value,
+            address,
+            deadline,
+            Number(v), // Wagmi/Viem type compatibility
+            r,
+            s,
+          ],
+        },
+        {
+          onSuccess: () => {
+            setIsSigning(false);
+            options.onRedeemSuccess?.();
+          },
+          onError: () => setIsSigning(false),
+        }
+      );
+    } catch (error) {
+      console.error("Permit signing failed:", error);
+      setIsSigning(false);
+    }
   };
 
   // Read: Exchange Rate (Invalidate every 5 seconds)
@@ -216,6 +290,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     },
     requestRedeem: {
       write: requestRedeem,
+      isSigning,
       isPending: isRedeemPending,
       isConfirming: isRedeemConfirming,
       isConfirmed: isRedeemConfirmed,

@@ -20,7 +20,6 @@ export function RedeemFeature() {
   const {
     balance: stAztecBalance,
     allowance,
-    approve,
     refetchBalance: refetchStAztecBalance,
     refetchAllowance,
   } = useStAztec();
@@ -37,7 +36,6 @@ export function RedeemFeature() {
       refetchStAztecBalance();
       refetchAllowance();
       refetchAztecBalance();
-      approve.reset(); // Reset approval state to unlock input
       setAmount(""); // Reset amount after successful request
     },
     amountToConvert: debouncedAmount,
@@ -63,20 +61,19 @@ export function RedeemFeature() {
         allowance={allowance}
         amount={amount}
         setAmount={setAmount}
-        approve={approve}
         requestRedeem={requestRedeem}
       />
 
       {/* Transaction Feedback */}
       <div className="space-y-2">
-        {(approve.hash || requestRedeem.hash) && (
+        {requestRedeem.hash && (
           <div className="text-xs text-muted-foreground break-all bg-muted p-2 rounded border border-border">
             <span className="font-semibold text-foreground">Tx Hash:</span>{" "}
-            {approve.hash || requestRedeem.hash}
+            {requestRedeem.hash}
           </div>
         )}
 
-        {(approve.isConfirmed || requestRedeem.isConfirmed) && (
+        {requestRedeem.isConfirmed && (
           <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800 text-center font-medium">
             Transaction Successful!
           </div>
