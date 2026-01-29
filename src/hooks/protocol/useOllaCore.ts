@@ -36,18 +36,6 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     query: { enabled: !!address },
   });
 
-  // Debugging logs
-  console.log("Contract Addresses:", {
-    Asset: CONTRACTS.Asset.address,
-    OllaCore: CONTRACTS.OllaCore.address,
-  });
-  console.log("Asset Name:", assetName);
-  console.log("Address:", address);
-  console.log("Chain ID (Wallet):", chainId);
-  console.log("Nonce:", nonce);
-
-  // Write: Sign Permit
-
   // Write: Sign Permit
   const { mutateAsync } = useSignTypedData();
 
