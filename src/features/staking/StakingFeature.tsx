@@ -16,10 +16,7 @@ export function StakingFeature() {
   // Custom Hooks
   const {
     balance,
-    allowance,
-    approve,
     refetchBalance: refetchAztecBalance,
-    refetchAllowance,
   } = useAztecToken();
 
   const { balance: stAztecBalance, refetchBalance: refetchStAztecBalance } = useStAztec();
@@ -28,9 +25,7 @@ export function StakingFeature() {
   const { deposit, exchangeRate, potentialShares } = useOllaCore({
     onDepositSuccess: () => {
       refetchAztecBalance();
-      refetchAllowance();
       refetchStAztecBalance();
-      approve.reset(); // Reset approval state to unlock input
       setAmount(""); // Reset amount after successful deposit
     },
     amountToConvert: debouncedAmount,
@@ -51,24 +46,21 @@ export function StakingFeature() {
       <StakingForm
         isConnected={isConnected}
         balance={balance}
-        allowance={allowance}
         amount={amount}
         setAmount={setAmount}
-        approve={approve}
         deposit={deposit}
       />
 
       {/* Transaction Feedback */}
       <div className="space-y-2">
-        {(approve.hash || deposit.hash) && (
+        {deposit.hash && (
           <div className="text-xs text-muted-foreground break-all bg-muted p-2 rounded border border-border">
             <span className="font-semibold text-foreground">Tx Hash:</span>{" "}
-            {approve.hash || deposit.hash}
+            {deposit.hash}
           </div>
         )}
 
-        {(approve.isConfirmed ||
-          deposit.isConfirmed) && (
+        {deposit.isConfirmed && (
           <div className="text-sm text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 p-2 rounded border border-green-200 dark:border-green-800 text-center font-medium">
             Transaction Successful!
           </div>
