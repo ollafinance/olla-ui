@@ -54,7 +54,7 @@ function loadConfig(): Config {
   if (!fs.existsSync(configPath)) {
     console.error(colors.red("Error: contracts.config.json not found."));
     console.error(
-      colors.gray("Create a contracts.config.json file in the project root.")
+      colors.gray("Create a contracts.config.json file in the project root."),
     );
     process.exit(1);
   }
@@ -67,7 +67,7 @@ function validateCorePath(corePath: string): string {
 
   if (!fs.existsSync(resolvedPath)) {
     console.error(
-      colors.red(`Error: Core repo not found at "${resolvedPath}".`)
+      colors.red(`Error: Core repo not found at "${resolvedPath}".`),
     );
     console.error(colors.gray("Check the corePath in contracts.config.json."));
     process.exit(1);
@@ -81,9 +81,7 @@ function validateContractsBuilt(corePath: string): void {
 
   if (!fs.existsSync(outDir)) {
     console.error(colors.red("Error: Contracts not built."));
-    console.error(
-      colors.gray('Run "yarn dev:build" in the core repo first.')
-    );
+    console.error(colors.gray('Run "yarn dev:build" in the core repo first.'));
     process.exit(1);
   }
 }
@@ -93,15 +91,13 @@ function validateDeployment(corePath: string, env: string): string {
     corePath,
     "contracts",
     "deployments",
-    `${env}.json`
+    `${env}.json`,
   );
 
   if (!fs.existsSync(deploymentPath)) {
+    console.error(colors.red(`Error: Deployment for "${env}" not found.`));
     console.error(
-      colors.red(`Error: Deployment for "${env}" not found.`)
-    );
-    console.error(
-      colors.gray(`Run "yarn deploy:${env}" in the core repo first.`)
+      colors.gray(`Run "yarn deploy:${env}" in the core repo first.`),
     );
     process.exit(1);
   }
@@ -112,7 +108,7 @@ function validateDeployment(corePath: string, env: string): string {
 function extractAbis(
   corePath: string,
   contracts: string[],
-  outputDir: string
+  outputDir: string,
 ): void {
   const abisDir = path.join(outputDir, "abis");
   fs.mkdirSync(abisDir, { recursive: true });
@@ -125,25 +121,23 @@ function extractAbis(
       "contracts",
       "out",
       `${contractName}.sol`,
-      `${contractName}.json`
+      `${contractName}.json`,
     );
 
     if (!fs.existsSync(artifactPath)) {
       console.log(
-        colors.yellow(`  [SKIP] ${contractName} - artifact not found`)
+        colors.yellow(`  [SKIP] ${contractName} - artifact not found`),
       );
       continue;
     }
 
     try {
       const artifact: ForgeArtifact = JSON.parse(
-        fs.readFileSync(artifactPath, "utf8")
+        fs.readFileSync(artifactPath, "utf8"),
       );
 
       if (!artifact.abi) {
-        console.log(
-          colors.yellow(`  [SKIP] ${contractName} - no ABI found`)
-        );
+        console.log(colors.yellow(`  [SKIP] ${contractName} - no ABI found`));
         continue;
       }
 
@@ -160,7 +154,7 @@ function extractAbis(
 function copyDeployment(
   deploymentPath: string,
   outputDir: string,
-  env: string
+  env: string,
 ): void {
   const deploymentsDir = path.join(outputDir, "deployments");
   fs.mkdirSync(deploymentsDir, { recursive: true });
@@ -169,21 +163,13 @@ function copyDeployment(
 
   // Read deployment JSON
   const deployment: DeploymentJson = JSON.parse(
-    fs.readFileSync(deploymentPath, "utf8")
+    fs.readFileSync(deploymentPath, "utf8"),
   );
 
   // Copy full deployment file
   const fullDeploymentPath = path.join(deploymentsDir, `${env}.json`);
   fs.writeFileSync(fullDeploymentPath, JSON.stringify(deployment, null, 2));
   console.log(colors.green(`  [OK] ${env}.json`));
-
-  // Create simplified addresses.json
-  const addressesPath = path.join(deploymentsDir, "addresses.json");
-  fs.writeFileSync(
-    addressesPath,
-    JSON.stringify(deployment.addresses, null, 2)
-  );
-  console.log(colors.green(`  [OK] addresses.json`));
 }
 
 function main(): void {
