@@ -9,6 +9,7 @@ import { CONTRACTS } from "@/constants/contracts";
 
 interface UseOllaCoreOptions {
   onDepositSuccess?: () => void;
+  onRedeemSuccess?: () => void;
   amountToConvert?: string;
 }
 
@@ -17,7 +18,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
 
   // Write: Deposit
   const {
-    mutate,
+    mutate: depositMutate,
     data: depositHash,
     isPending: isDepositPending,
     error: depositError,
@@ -28,7 +29,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
 
   const deposit = (amount: string) => {
     if (!address) return;
-    mutate(
+    depositMutate(
       {
         address: CONTRACTS.OllaCore.address,
         abi: CONTRACTS.OllaCore.abi,
@@ -36,6 +37,30 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
         args: [parseEther(amount), address],
       },
       { onSuccess: options.onDepositSuccess }
+    );
+  };
+
+  // Write: Request Redeem
+  const {
+    mutate: redeemMutate,
+    data: redeemHash,
+    isPending: isRedeemPending,
+    error: redeemError,
+  } = useWriteContract();
+
+  const { isLoading: isRedeemConfirming, isSuccess: isRedeemConfirmed } =
+    useWaitForTransactionReceipt({ hash: redeemHash });
+
+  const requestRedeem = (amount: string) => {
+    if (!address) return;
+    redeemMutate(
+      {
+        address: CONTRACTS.OllaCore.address,
+        abi: CONTRACTS.OllaCore.abi,
+        functionName: "requestRedeem",
+        args: [parseEther(amount), address],
+      },
+      { onSuccess: options.onRedeemSuccess }
     );
   };
 
@@ -62,6 +87,41 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     },
   });
 
+  // Read: Convert to Assets (for Redeem)
+  const { data: potentialAssets } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "convertToAssets",
+    args: options.amountToConvert
+      ? [parseEther(options.amountToConvert)]
+      : undefined,
+    query: {
+      enabled: !!options.amountToConvert && Number(options.amountToConvert) > 0,
+    },
+  });
+
+  // Read: Active Request ID
+  const { data: activeRequestId } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "activeRequestId",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  // Read: Active Withdrawal Request Details
+  const { data: activeWithdrawalRequest } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "getActiveWithdrawalRequest",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
   return {
     deposit: {
       write: deposit,
@@ -71,7 +131,27 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       hash: depositHash,
       error: depositError,
     },
+    requestRedeem: {
+      write: requestRedeem,
+      isPending: isRedeemPending,
+      isConfirming: isRedeemConfirming,
+      isConfirmed: isRedeemConfirmed,
+      hash: redeemHash,
+      error: redeemError,
+    },
     exchangeRate: exchangeRate as bigint | undefined,
     potentialShares: potentialShares as bigint | undefined,
+    potentialAssets: potentialAssets as bigint | undefined,
+    activeRequestId: activeRequestId as bigint | undefined,
+    activeWithdrawalRequest: activeWithdrawalRequest as
+      | {
+          recipient: `0x${string}`;
+          finalized: boolean;
+          claimed: boolean;
+          shares: bigint;
+          assetsExpected: bigint;
+          rate: bigint;
+        }
+      | undefined,
   };
 }
