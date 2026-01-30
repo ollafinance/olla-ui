@@ -1,0 +1,39 @@
+# Build stage
+FROM node:22-alpine AS builder
+
+ARG VITE_RPC_URL
+ENV VITE_RPC_URL=$VITE_RPC_URL
+
+ARG VITE_WALLET_CONNECT_PROJECT_ID
+ENV VITE_WALLET_CONNECT_PROJECT_ID=$VITE_WALLET_CONNECT_PROJECT_ID
+
+# Enable Corepack for Yarn 4 support
+RUN corepack enable
+
+WORKDIR /app
+
+# Copy package files
+COPY package.json yarn.lock .yarnrc.yml ./
+
+# Install dependencies
+RUN yarn install --immutable
+
+# Copy source code
+COPY . .
+
+# Build the application
+RUN yarn build
+
+# Production stage - serve with nginx
+FROM nginx:alpine AS production
+
+# Copy built assets from builder
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration for SPA routing
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Expose port 80
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]
