@@ -4,7 +4,6 @@ import {
   useConnection,
   useReadContract,
   useSignTypedData,
-  useChainId,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
@@ -12,19 +11,19 @@ import { useState } from "react";
 
 interface UseOllaCoreOptions {
   onDepositSuccess?: () => void;
+  onRedeemSuccess?: () => void;
   amountToConvert?: string;
 }
 
 export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const { address } = useConnection();
-  const chainId = useChainId();
   const [isSigning, setIsSigning] = useState(false);
 
-  // Read: Asset Name (for Permit)
-  const { data: assetName } = useReadContract({
+  // Read: Asset EIP-712 Domain
+  const { data: assetDomain } = useReadContract({
     address: CONTRACTS.Asset.address,
     abi: CONTRACTS.Asset.abi,
-    functionName: "name",
+    functionName: "eip712Domain",
   });
 
   // Read: User Nonce (for Permit)
@@ -41,7 +40,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
 
   // Write: Deposit
   const {
-    mutate,
+    mutate: depositMutate,
     data: depositHash,
     isPending: isDepositPending,
     error: depositError,
@@ -51,7 +50,22 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     useWaitForTransactionReceipt({ hash: depositHash });
 
   const deposit = async (amount: string) => {
-    if (!address || !assetName || nonce === undefined) return;
+    if (!address || !assetDomain || nonce === undefined) return;
+
+    // eip712Domain returns [fields, name, version, chainId, verifyingContract, salt, extensions]
+    // We cast to any because TS inference might be loose on the tuple
+    const [
+      ,
+      /* fields */
+      name,
+      version,
+      chainIdFromContract,
+      verifyingContract,
+      ,
+      /* salt */
+      ,
+      /* extensions */
+    ] = assetDomain as any;
 
     try {
       setIsSigning(true);
@@ -66,10 +80,10 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       // 1. Sign Permit
       const signature = await mutateAsync({
         domain: {
-          name: assetName as string,
-          version: "1",
-          chainId,
-          verifyingContract: CONTRACTS.Asset.address,
+          name,
+          version,
+          chainId: Number(chainIdFromContract),
+          verifyingContract,
         },
         types: {
           Permit: [
@@ -93,7 +107,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       const { v, r, s } = parseSignature(signature);
 
       // 2. Deposit with Permit
-      mutate(
+      depositMutate(
         {
           address: CONTRACTS.OllaCore.address,
           abi: CONTRACTS.OllaCore.abi,
@@ -114,6 +128,117 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
           },
           onError: () => setIsSigning(false),
         },
+      );
+    } catch (error) {
+      console.error("Permit signing failed:", error);
+      setIsSigning(false);
+    }
+  };
+
+  // Write: Request Redeem
+  const {
+    mutate: redeemMutate,
+    data: redeemHash,
+    isPending: isRedeemPending,
+    error: redeemError,
+  } = useWriteContract();
+
+  const { isLoading: isRedeemConfirming, isSuccess: isRedeemConfirmed } =
+    useWaitForTransactionReceipt({ hash: redeemHash });
+
+  // Read: stAztec EIP-712 Domain
+  const { data: stAztecDomain } = useReadContract({
+    address: CONTRACTS.StAztec.address,
+    abi: CONTRACTS.StAztec.abi,
+    functionName: "eip712Domain",
+  });
+
+  // Read: stAztec Nonce (for Permit)
+  const { data: stAztecNonce, refetch: refetchStAztecNonce } = useReadContract({
+    address: CONTRACTS.StAztec.address,
+    abi: CONTRACTS.StAztec.abi,
+    functionName: "nonces",
+    args: address ? [address] : undefined,
+    query: { enabled: !!address },
+  });
+
+  const requestRedeem = async (amount: string) => {
+    if (!address || !stAztecDomain || stAztecNonce === undefined) return;
+
+    const [
+      ,
+      /* fields */
+      name,
+      version,
+      chainIdFromContract,
+      verifyingContract,
+      ,
+      /* salt */
+      ,
+      /* extensions */
+    ] = stAztecDomain as any;
+
+    try {
+      setIsSigning(true);
+      // Ensure we have the latest nonce
+      const { data: currentNonce } = await refetchStAztecNonce();
+      if (currentNonce === undefined || currentNonce === null)
+        throw new Error("Could not fetch nonce");
+
+      const value = parseEther(amount);
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + 3600); // 1 hour
+
+      // 1. Sign Permit
+      const signature = await mutateAsync({
+        domain: {
+          name,
+          version,
+          chainId: Number(chainIdFromContract),
+          verifyingContract,
+        },
+        types: {
+          Permit: [
+            { name: "owner", type: "address" },
+            { name: "spender", type: "address" },
+            { name: "value", type: "uint256" },
+            { name: "nonce", type: "uint256" },
+            { name: "deadline", type: "uint256" },
+          ],
+        },
+        primaryType: "Permit",
+        message: {
+          owner: address,
+          spender: CONTRACTS.OllaCore.address,
+          value,
+          nonce: currentNonce as bigint,
+          deadline,
+        },
+      });
+
+      const { v, r, s } = parseSignature(signature);
+
+      // 2. Request Redeem with Permit
+      redeemMutate(
+        {
+          address: CONTRACTS.OllaCore.address,
+          abi: CONTRACTS.OllaCore.abi,
+          functionName: "requestRedeemWithPermit",
+          args: [
+            value,
+            address,
+            deadline,
+            Number(v), // Wagmi/Viem type compatibility
+            r,
+            s,
+          ],
+        },
+        {
+          onSuccess: () => {
+            setIsSigning(false);
+            options.onRedeemSuccess?.();
+          },
+          onError: () => setIsSigning(false),
+        }
       );
     } catch (error) {
       console.error("Permit signing failed:", error);
@@ -144,6 +269,41 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     },
   });
 
+  // Read: Convert to Assets (for Redeem)
+  const { data: potentialAssets } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "convertToAssets",
+    args: options.amountToConvert
+      ? [parseEther(options.amountToConvert)]
+      : undefined,
+    query: {
+      enabled: !!options.amountToConvert && Number(options.amountToConvert) > 0,
+    },
+  });
+
+  // Read: Active Request ID
+  const { data: activeRequestId } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "activeRequestId",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
+  // Read: Active Withdrawal Request Details
+  const { data: activeWithdrawalRequest } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "getActiveWithdrawalRequest",
+    args: address ? [address] : undefined,
+    query: {
+      enabled: !!address,
+    },
+  });
+
   return {
     deposit: {
       write: deposit,
@@ -154,7 +314,28 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       hash: depositHash,
       error: depositError,
     },
+    requestRedeem: {
+      write: requestRedeem,
+      isSigning,
+      isPending: isRedeemPending,
+      isConfirming: isRedeemConfirming,
+      isConfirmed: isRedeemConfirmed,
+      hash: redeemHash,
+      error: redeemError,
+    },
     exchangeRate: exchangeRate as bigint | undefined,
     potentialShares: potentialShares as bigint | undefined,
+    potentialAssets: potentialAssets as bigint | undefined,
+    activeRequestId: activeRequestId as bigint | undefined,
+    activeWithdrawalRequest: activeWithdrawalRequest as
+      | {
+          recipient: `0x${string}`;
+          finalized: boolean;
+          claimed: boolean;
+          shares: bigint;
+          assetsExpected: bigint;
+          rate: bigint;
+        }
+      | undefined,
   };
 }
