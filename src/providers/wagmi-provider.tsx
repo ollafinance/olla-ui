@@ -14,7 +14,7 @@ import { injected } from "wagmi/connectors";
 const config = WALLET_CONNECT_PROJECT_ID
   ? getDefaultConfig({
       appName: "Olla Finance",
-      appDescription: "Liquid Staking Protocole",
+      appDescription: "Liquid Staking Protocol",
       appUrl: "https://olla.finance",
       appIcon: "https://olla.finance/logo.png",
       projectId: WALLET_CONNECT_PROJECT_ID,
