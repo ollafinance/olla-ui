@@ -9,6 +9,16 @@ import { parseEther, parseSignature } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
 import { useState } from "react";
 
+type Eip712DomainTuple = readonly [
+  unknown,
+  string,
+  string,
+  bigint,
+  `0x${string}`,
+  unknown,
+  unknown,
+];
+
 interface UseOllaCoreOptions {
   onDepositSuccess?: () => void;
   onRedeemSuccess?: () => void;
@@ -54,19 +64,13 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     if (!address || !assetDomain || nonce === undefined) return;
 
     // eip712Domain returns [fields, name, version, chainId, verifyingContract, salt, extensions]
-    // We cast to any because TS inference might be loose on the tuple
     const [
       ,
-      /* fields */
       name,
       version,
       chainIdFromContract,
       verifyingContract,
-      ,
-      /* salt */
-      ,
-      /* extensions */
-    ] = assetDomain as any;
+    ] = assetDomain as Eip712DomainTuple;
 
     try {
       setIsSigning(true);
@@ -168,16 +172,11 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
 
     const [
       ,
-      /* fields */
       name,
       version,
       chainIdFromContract,
       verifyingContract,
-      ,
-      /* salt */
-      ,
-      /* extensions */
-    ] = stAztecDomain as any;
+    ] = stAztecDomain as Eip712DomainTuple;
 
     try {
       setIsSigning(true);
