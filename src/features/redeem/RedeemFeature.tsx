@@ -29,8 +29,7 @@ export function RedeemFeature() {
     requestRedeem,
     exchangeRate,
     potentialAssets,
-    activeRequestId,
-    activeWithdrawalRequest,
+    activeRequestIds,
   } = useOllaCore({
     onRedeemSuccess: () => {
       refetchStAztecBalance();
@@ -46,8 +45,7 @@ export function RedeemFeature() {
       <RedeemStatusPanel
         stAztecBalance={stAztecBalance}
         balance={aztecBalance}
-        activeRequestId={activeRequestId}
-        activeWithdrawalRequest={activeWithdrawalRequest}
+        hasActiveRequests={activeRequestIds.length > 0}
       />
 
       <RedeemOverview
