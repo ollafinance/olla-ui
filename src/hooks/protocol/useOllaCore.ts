@@ -12,6 +12,7 @@ import { useState } from "react";
 interface UseOllaCoreOptions {
   onDepositSuccess?: () => void;
   onRedeemSuccess?: () => void;
+  onClaimSuccess?: () => void;
   amountToConvert?: string;
 }
 
@@ -246,6 +247,33 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     }
   };
 
+  // Write: Claim Request by ID
+  const {
+    mutate: claimMutate,
+    data: claimHash,
+    isPending: isClaimPending,
+    error: claimError,
+  } = useWriteContract();
+
+  const { isLoading: isClaimConfirming, isSuccess: isClaimConfirmed } =
+    useWaitForTransactionReceipt({ hash: claimHash });
+
+  const claimRequestById = (requestId: bigint) => {
+    claimMutate(
+      {
+        address: CONTRACTS.OllaCore.address,
+        abi: CONTRACTS.OllaCore.abi,
+        functionName: "claimRequestById",
+        args: [requestId],
+      },
+      {
+        onSuccess: () => {
+          options.onClaimSuccess?.();
+        },
+      }
+    );
+  };
+
   // Read: Exchange Rate (Invalidate every 5 seconds)
   const { data: exchangeRate } = useReadContract({
     address: CONTRACTS.OllaCore.address,
@@ -282,25 +310,15 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     },
   });
 
-  // Read: Active Request ID
-  const { data: activeRequestId } = useReadContract({
+  // Read: Active Request IDs (List of user's request IDs)
+  const { data: activeRequestIds } = useReadContract({
     address: CONTRACTS.OllaCore.address,
     abi: CONTRACTS.OllaCore.abi,
-    functionName: "activeRequestId",
+    functionName: "activeRequestIds",
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-    },
-  });
-
-  // Read: Active Withdrawal Request Details
-  const { data: activeWithdrawalRequest } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
-    functionName: "getActiveWithdrawalRequest",
-    args: address ? [address] : undefined,
-    query: {
-      enabled: !!address,
+      refetchInterval: 5000,
     },
   });
 
@@ -323,19 +341,17 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       hash: redeemHash,
       error: redeemError,
     },
+    claimRequest: {
+      write: claimRequestById,
+      isPending: isClaimPending,
+      isConfirming: isClaimConfirming,
+      isConfirmed: isClaimConfirmed,
+      hash: claimHash,
+      error: claimError,
+    },
     exchangeRate: exchangeRate as bigint | undefined,
     potentialShares: potentialShares as bigint | undefined,
     potentialAssets: potentialAssets as bigint | undefined,
-    activeRequestId: activeRequestId as bigint | undefined,
-    activeWithdrawalRequest: activeWithdrawalRequest as
-      | {
-          recipient: `0x${string}`;
-          finalized: boolean;
-          claimed: boolean;
-          shares: bigint;
-          assetsExpected: bigint;
-          rate: bigint;
-        }
-      | undefined,
+    activeRequestIds: (activeRequestIds as bigint[]) || [],
   };
 }
