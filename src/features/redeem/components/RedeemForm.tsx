@@ -5,7 +5,6 @@ import { getRedeemButtonState } from "../utils";
 interface RedeemFormProps {
   isConnected: boolean;
   stAztecBalance: string;
-  allowance: string;
   amount: string;
   setAmount: (val: string) => void;
   requestRedeem: {

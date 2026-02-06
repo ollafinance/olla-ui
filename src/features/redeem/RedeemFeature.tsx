@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "@tanstack/react-router";
 import { useConnection } from "wagmi";
 import { useDebounce } from "@/hooks/useDebounce";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
@@ -19,7 +20,6 @@ export function RedeemFeature() {
 
   const {
     balance: stAztecBalance,
-    allowance,
     refetchBalance: refetchStAztecBalance,
     refetchAllowance,
   } = useStAztec();
@@ -29,8 +29,7 @@ export function RedeemFeature() {
     requestRedeem,
     exchangeRate,
     potentialAssets,
-    activeRequestId,
-    activeWithdrawalRequest,
+    activeRequestIds,
   } = useOllaCore({
     onRedeemSuccess: () => {
       refetchStAztecBalance();
@@ -46,8 +45,15 @@ export function RedeemFeature() {
       <RedeemStatusPanel
         stAztecBalance={stAztecBalance}
         balance={aztecBalance}
-        activeRequestId={activeRequestId}
-        activeWithdrawalRequest={activeWithdrawalRequest}
+        hasActiveRequests={activeRequestIds.length > 0}
+        cta={
+          <Link
+            to="/claim"
+            className="block w-full text-center py-2 px-4 rounded-md bg-background border border-border hover:bg-accent text-sm font-medium transition-colors"
+          >
+            View Requests & Claim
+          </Link>
+        }
       />
 
       <RedeemOverview
@@ -58,7 +64,6 @@ export function RedeemFeature() {
       <RedeemForm
         isConnected={isConnected}
         stAztecBalance={stAztecBalance}
-        allowance={allowance}
         amount={amount}
         setAmount={setAmount}
         requestRedeem={requestRedeem}

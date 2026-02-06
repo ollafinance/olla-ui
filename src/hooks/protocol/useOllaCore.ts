@@ -9,9 +9,20 @@ import { parseEther, parseSignature } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
 import { useState } from "react";
 
+type Eip712DomainTuple = readonly [
+  unknown,
+  string,
+  string,
+  bigint,
+  `0x${string}`,
+  unknown,
+  unknown,
+];
+
 interface UseOllaCoreOptions {
   onDepositSuccess?: () => void;
   onRedeemSuccess?: () => void;
+  onClaimSuccess?: () => void;
   amountToConvert?: string;
 }
 
@@ -53,19 +64,13 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     if (!address || !assetDomain || nonce === undefined) return;
 
     // eip712Domain returns [fields, name, version, chainId, verifyingContract, salt, extensions]
-    // We cast to any because TS inference might be loose on the tuple
     const [
       ,
-      /* fields */
       name,
       version,
       chainIdFromContract,
       verifyingContract,
-      ,
-      /* salt */
-      ,
-      /* extensions */
-    ] = assetDomain as any;
+    ] = assetDomain as Eip712DomainTuple;
 
     try {
       setIsSigning(true);
@@ -167,16 +172,11 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
 
     const [
       ,
-      /* fields */
       name,
       version,
       chainIdFromContract,
       verifyingContract,
-      ,
-      /* salt */
-      ,
-      /* extensions */
-    ] = stAztecDomain as any;
+    ] = stAztecDomain as Eip712DomainTuple;
 
     try {
       setIsSigning(true);
@@ -246,6 +246,33 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     }
   };
 
+  // Write: Claim Request by ID
+  const {
+    mutate: claimMutate,
+    data: claimHash,
+    isPending: isClaimPending,
+    error: claimError,
+  } = useWriteContract();
+
+  const { isLoading: isClaimConfirming, isSuccess: isClaimConfirmed } =
+    useWaitForTransactionReceipt({ hash: claimHash });
+
+  const claimRequestById = (requestId: bigint) => {
+    claimMutate(
+      {
+        address: CONTRACTS.OllaCore.address,
+        abi: CONTRACTS.OllaCore.abi,
+        functionName: "claimRequestById",
+        args: [requestId],
+      },
+      {
+        onSuccess: () => {
+          options.onClaimSuccess?.();
+        },
+      }
+    );
+  };
+
   // Read: Exchange Rate (Invalidate every 5 seconds)
   const { data: exchangeRate } = useReadContract({
     address: CONTRACTS.OllaCore.address,
@@ -282,25 +309,15 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     },
   });
 
-  // Read: Active Request ID
-  const { data: activeRequestId } = useReadContract({
+  // Read: Active Request IDs (List of user's request IDs)
+  const { data: activeRequestIds } = useReadContract({
     address: CONTRACTS.OllaCore.address,
     abi: CONTRACTS.OllaCore.abi,
-    functionName: "activeRequestId",
+    functionName: "activeRequestIds",
     args: address ? [address] : undefined,
     query: {
       enabled: !!address,
-    },
-  });
-
-  // Read: Active Withdrawal Request Details
-  const { data: activeWithdrawalRequest } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
-    functionName: "getActiveWithdrawalRequest",
-    args: address ? [address] : undefined,
-    query: {
-      enabled: !!address,
+      refetchInterval: 5000,
     },
   });
 
@@ -323,19 +340,17 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
       hash: redeemHash,
       error: redeemError,
     },
+    claimRequest: {
+      write: claimRequestById,
+      isPending: isClaimPending,
+      isConfirming: isClaimConfirming,
+      isConfirmed: isClaimConfirmed,
+      hash: claimHash,
+      error: claimError,
+    },
     exchangeRate: exchangeRate as bigint | undefined,
     potentialShares: potentialShares as bigint | undefined,
     potentialAssets: potentialAssets as bigint | undefined,
-    activeRequestId: activeRequestId as bigint | undefined,
-    activeWithdrawalRequest: activeWithdrawalRequest as
-      | {
-          recipient: `0x${string}`;
-          finalized: boolean;
-          claimed: boolean;
-          shares: bigint;
-          assetsExpected: bigint;
-          rate: bigint;
-        }
-      | undefined,
+    activeRequestIds: (activeRequestIds as bigint[]) || [],
   };
 }
