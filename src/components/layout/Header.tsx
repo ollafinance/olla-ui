@@ -29,6 +29,12 @@ export function Header() {
         >
           Redeem
         </Link>
+        <Link
+          to="/claim"
+          className="px-8 py-2 text-sm font-medium rounded-full text-muted-foreground transition-all hover:text-foreground [&.active]:bg-background [&.active]:text-foreground [&.active]:shadow-sm [&.active]:font-semibold [&.active]:text-primary"
+        >
+          Claim
+        </Link>
       </nav>
 
       <div className="flex items-center justify-end gap-3 min-w-[150px]">
