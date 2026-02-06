@@ -1,30 +1,25 @@
-import { useWithdrawalRequest } from "@/hooks/protocol/useWithdrawalQueue";
-import { useOllaCore } from "@/hooks/protocol/useOllaCore";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { formatEther } from "viem";
 
 interface ClaimRequestRowProps {
-  requestId: bigint;
+  request: {
+    id: bigint;
+    assetsExpected: bigint;
+    shares: bigint;
+    rate: bigint;
+    finalized: boolean;
+    claimed: boolean;
+  };
+  claimRequest: {
+    write: (requestId: bigint) => void;
+    isPending: boolean;
+    isConfirming: boolean;
+  };
 }
 
-export function ClaimRequestRow({ requestId }: ClaimRequestRowProps) {
-  const { request } = useWithdrawalRequest(requestId);
-  const { claimRequest } = useOllaCore();
-
-  if (!request) {
-    return (
-      <Card className="p-4 animate-pulse">
-        <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-2"></div>
-        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-      </Card>
-    );
-  }
-
-  // Handle potential array or object return from Wagmi (safe access)
-  // Although ABI is const, runtime behavior depends on config.
-  // Given standard config, it's likely an object with keys matching ABI component names.
-  const { assetsExpected, shares, rate, finalized, claimed } = request as any;
+export function ClaimRequestRow({ request, claimRequest }: ClaimRequestRowProps) {
+  const { id, assetsExpected, shares, rate, finalized, claimed } = request;
 
   const isClaimable = finalized && !claimed;
   const status = claimed ? "Claimed" : finalized ? "Ready to Claim" : "Pending";
@@ -33,7 +28,7 @@ export function ClaimRequestRow({ requestId }: ClaimRequestRowProps) {
     <Card className="p-4 flex flex-col md:flex-row justify-between items-center gap-4">
       <div className="flex flex-col gap-1">
         <span className="text-sm text-gray-500 dark:text-gray-400">
-          Request #{requestId.toString()}
+          Request #{id.toString()}
         </span>
         <div className="text-xl font-medium">
           {formatEther(assetsExpected || 0n)}{" "}
@@ -63,7 +58,7 @@ export function ClaimRequestRow({ requestId }: ClaimRequestRowProps) {
         {isClaimable && (
           <Button
             className="bg-secondary text-black-400 font-bold"
-            onClick={() => claimRequest.write(requestId)}
+            onClick={() => claimRequest.write(id)}
             disabled={claimRequest.isPending || claimRequest.isConfirming}
           >
             {claimRequest.isPending || claimRequest.isConfirming

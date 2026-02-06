@@ -1,27 +1,30 @@
-import { useOllaCore } from "@/hooks/protocol/useOllaCore";
 import { ClaimRequestRow } from "./ClaimRequestRow";
 
-export function ClaimOverview() {
-  const { activeRequestIds } = useOllaCore();
+interface ClaimOverviewProps {
+  requests: Array<{
+    id: bigint;
+    assetsExpected: bigint;
+    shares: bigint;
+    rate: bigint;
+    finalized: boolean;
+    claimed: boolean;
+  }>;
+  claimRequest: {
+    write: (requestId: bigint) => void;
+    isPending: boolean;
+    isConfirming: boolean;
+  };
+}
 
-  if (!activeRequestIds || activeRequestIds.length === 0) {
-    return (
-      <div className="text-center py-12 text-gray-500">
-        No withdrawal requests found.
-      </div>
-    );
-  }
-
-  // Reverse to show newest first? Or just list them.
-  // Usually users want to see the latest one or maybe all of them.
-  // The contract returns them in order of creation/pushing to the array.
-  // Let's copy and reverse for display.
-  const sortedIds = [...activeRequestIds].reverse();
-
+export function ClaimOverview({ requests, claimRequest }: ClaimOverviewProps) {
   return (
     <div className="flex flex-col gap-4">
-      {sortedIds.map((id) => (
-        <ClaimRequestRow key={id.toString()} requestId={id} />
+      {requests.map((request) => (
+        <ClaimRequestRow
+          key={request.id.toString()}
+          request={request}
+          claimRequest={claimRequest}
+        />
       ))}
     </div>
   );
