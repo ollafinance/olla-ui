@@ -7,7 +7,7 @@ import {
   trustWallet,
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
-import { foundry } from "viem/chains";
+import { anvil, foundry } from "viem/chains";
 import { createConfig, http, WagmiProvider as WagmiProviderLib } from "wagmi";
 import { injected } from "wagmi/connectors";
 
@@ -18,7 +18,7 @@ const config = WALLET_CONNECT_PROJECT_ID
       appUrl: "https://olla.finance",
       appIcon: "https://olla.finance/logo.png",
       projectId: WALLET_CONNECT_PROJECT_ID,
-      chains: [foundry],
+      chains: [anvil],
       transports: {
         [foundry.id]: http(RPC_URL),
       },
