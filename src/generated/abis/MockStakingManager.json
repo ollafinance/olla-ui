@@ -1,87 +1,6 @@
 [
   {
     "type": "function",
-    "name": "addKeysToProvider",
-    "inputs": [
-      {
-        "name": "",
-        "type": "tuple[]",
-        "internalType": "struct IStakingManager.KeyStore[]",
-        "components": [
-          {
-            "name": "attester",
-            "type": "address",
-            "internalType": "address"
-          },
-          {
-            "name": "publicKeyG1",
-            "type": "tuple",
-            "internalType": "struct G1Point",
-            "components": [
-              {
-                "name": "x",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "y",
-                "type": "uint256",
-                "internalType": "uint256"
-              }
-            ]
-          },
-          {
-            "name": "publicKeyG2",
-            "type": "tuple",
-            "internalType": "struct G2Point",
-            "components": [
-              {
-                "name": "x0",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "x1",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "y0",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "y1",
-                "type": "uint256",
-                "internalType": "uint256"
-              }
-            ]
-          },
-          {
-            "name": "proofOfPossession",
-            "type": "tuple",
-            "internalType": "struct G1Point",
-            "components": [
-              {
-                "name": "x",
-                "type": "uint256",
-                "internalType": "uint256"
-              },
-              {
-                "name": "y",
-                "type": "uint256",
-                "internalType": "uint256"
-              }
-            ]
-          }
-        ]
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "pure"
-  },
-  {
-    "type": "function",
     "name": "cleanActivatedAttesters",
     "inputs": [],
     "outputs": [],
@@ -89,16 +8,16 @@
   },
   {
     "type": "function",
-    "name": "dripQueue",
-    "inputs": [
+    "name": "core",
+    "inputs": [],
+    "outputs": [
       {
         "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
+        "type": "address",
+        "internalType": "address"
       }
     ],
-    "outputs": [],
-    "stateMutability": "pure"
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -162,20 +81,7 @@
         ]
       }
     ],
-    "stateMutability": "pure"
-  },
-  {
-    "type": "function",
-    "name": "getQueueLength",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "stateMutability": "pure"
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -266,17 +172,12 @@
         "internalType": "address"
       },
       {
-        "name": "core",
+        "name": "core_",
         "type": "address",
         "internalType": "address"
       },
       {
-        "name": "providerAdmin",
-        "type": "address",
-        "internalType": "address"
-      },
-      {
-        "name": "providerRewardsRecipient",
+        "name": "stakingProviderRegistry_",
         "type": "address",
         "internalType": "address"
       },
@@ -287,7 +188,7 @@
       }
     ],
     "outputs": [],
-    "stateMutability": "pure"
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -336,15 +237,15 @@
   },
   {
     "type": "function",
-    "name": "setProviderRewardsRecipient",
-    "inputs": [
+    "name": "pendingUnstakes",
+    "inputs": [],
+    "outputs": [
       {
         "name": "",
-        "type": "address",
-        "internalType": "address"
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
-    "outputs": [],
     "stateMutability": "pure"
   },
   {
@@ -357,7 +258,13 @@
         "internalType": "uint256"
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "stakedAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable"
   },
   {
@@ -369,6 +276,19 @@
         "name": "",
         "type": "uint256",
         "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "stakingProviderRegistry",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "contract IStakingProviderRegistry"
       }
     ],
     "stateMutability": "view"
@@ -427,51 +347,6 @@
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "KeysAddedToProvider",
-    "inputs": [
-      {
-        "name": "attesters",
-        "type": "address[]",
-        "indexed": false,
-        "internalType": "address[]"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "ProviderSet",
-    "inputs": [
-      {
-        "name": "admin",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "rewardsRecipient",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "QueueDripped",
-    "inputs": [
-      {
-        "name": "attester",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
       }
     ],
     "anonymous": false
@@ -600,8 +475,14 @@
   },
   {
     "type": "error",
-    "name": "StakingManager__QueueEmpty",
-    "inputs": []
+    "name": "StakingManager__UnauthorizedCore",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
     "type": "error",
