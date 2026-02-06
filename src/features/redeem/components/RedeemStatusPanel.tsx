@@ -1,16 +1,18 @@
+import { type ReactNode } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/Card";
-import { Link } from "@tanstack/react-router";
 
 interface RedeemStatusPanelProps {
   stAztecBalance: string;
   balance: string;
   hasActiveRequests: boolean;
+  cta?: ReactNode;
 }
 
 export function RedeemStatusPanel({
   stAztecBalance,
   balance,
   hasActiveRequests,
+  cta,
 }: RedeemStatusPanelProps) {
   return (
     <Card className="bg-muted border-border/50">
@@ -40,12 +42,7 @@ export function RedeemStatusPanel({
             <div className="text-sm text-muted-foreground">
               You have active withdrawal requests.
             </div>
-            <Link
-              to="/claim"
-              className="block w-full text-center py-2 px-4 rounded-md bg-background border border-border hover:bg-accent text-sm font-medium transition-colors"
-            >
-              View Requests & Claim
-            </Link>
+            {cta}
           </div>
         )}
       </CardContent>
