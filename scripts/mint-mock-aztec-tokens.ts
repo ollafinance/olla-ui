@@ -35,7 +35,7 @@ async function main() {
   }
 
   // 2. Setup Client
-  const rpcUrl = process.env.VITE_RPC_URL || "http://127.0.0.1:8545";
+  const rpcUrl = process.env.VITE_RPC_URL_FOUNDRY || "http://127.0.0.1:8545";
   // Default anvil key #0 if not provided.
   const privateKey = (process.env.PRIVATE_KEY ||
     "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80") as `0x${string}`;

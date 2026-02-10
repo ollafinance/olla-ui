@@ -275,8 +275,8 @@ if (!result.success) {
 Required in `.env` (see `env.example`):
 
 ```
-VITE_RPC_URL=http://localhost:8545
-WALLET_CONNECT_PROJECT_ID=your_project_id
+VITE_RPC_URL_FOUNDRY=http://localhost:8545
+VITE_WALLET_CONNECT_PROJECT_ID=your_project_id
 ```
 
 ## Related Repositories
