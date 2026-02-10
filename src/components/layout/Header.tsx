@@ -39,7 +39,7 @@ export function Header() {
 
       <div className="flex items-center justify-end gap-3 min-w-[150px]">
         <ThemeToggle />
-        <ConnectButton />
+        <ConnectButton chainStatus="full" showBalance={false} />
       </div>
     </header>
   );
