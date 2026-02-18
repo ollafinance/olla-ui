@@ -26,7 +26,7 @@ export function TransactionErrorCard({
 
       <Button
         onClick={onReturn}
-        className="bg-destructive-accent w-auto px-5 py-3 text-base text-black leading-[1.16] tracking-[-0.32px] font-medium rounded-full"
+        className="bg-destructive-accent w-30 px-5 py-3 text-base text-black leading-[1.16] tracking-[-0.32px] font-medium rounded-full"
       >
         Return
         <img
