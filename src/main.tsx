@@ -14,11 +14,10 @@ import { Route as rootRoute } from "./routes/__root";
 import { Route as indexRoute } from "./routes/index";
 import { Route as stakeRoute } from "./routes/stake";
 import { Route as redeemRoute } from "./routes/redeem";
-import { Route as claimRoute } from "./routes/claim";
 import { WagmiProvider } from "./providers/wagmi-provider";
 
 // Create Router
-const routeTree = rootRoute.addChildren([indexRoute, stakeRoute, redeemRoute, claimRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, stakeRoute, redeemRoute]);
 const router = createRouter({ routeTree });
 
 // Register Router for Type Safety
