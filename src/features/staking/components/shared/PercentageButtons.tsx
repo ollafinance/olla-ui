@@ -29,7 +29,7 @@ export function PercentageButtons({
               isSelected
                 ? "bg-primary text-primary-accent"
                 : "bg-primary-muted text-primary-accent hover:bg-primary/30",
-              disabled && "opacity-50 pointer-events-none"
+              disabled && "opacity-50 pointer-events-none",
             )}
           >
             {option.label}
@@ -39,3 +39,4 @@ export function PercentageButtons({
     </div>
   );
 }
+

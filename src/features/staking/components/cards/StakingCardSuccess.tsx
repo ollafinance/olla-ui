@@ -34,11 +34,7 @@ export function StakingCardSuccess({
       </div>
 
       <div className="mt-[22px]">
-        <img
-          src={ollaLoading}
-          alt="Success"
-          className="h-[59px] w-[128px]"
-        />
+        <img src={ollaLoading} alt="Success" className="h-[59px] w-[128px]" />
       </div>
 
       <div className="mt-[31px] h-px w-full max-w-[487px] bg-primary-line" />
@@ -53,7 +49,11 @@ export function StakingCardSuccess({
           className="bg-primary px-5 py-3 text-base text-black leading-[1.16] tracking-[-0.32px] font-medium rounded-full"
         >
           Stake More
-          <img src={arrowRightIcon} alt="" className="h-3 w-3 ml-2.5 inline-block" />
+          <img
+            src={arrowRightIcon}
+            alt=""
+            className="h-3 w-3 ml-2.5 inline-block"
+          />
         </Button>
         <Button
           variant="pink"
@@ -67,3 +67,4 @@ export function StakingCardSuccess({
     </div>
   );
 }
+

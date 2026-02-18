@@ -15,7 +15,12 @@ export function StakeInfo({
   className,
 }: StakeInfoProps) {
   return (
-    <div className={cn("flex items-center gap-7 text-xs leading-[1.4] text-muted tracking-[0.36px]", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-7 text-xs leading-[1.4] text-muted tracking-[0.36px]",
+        className,
+      )}
+    >
       <div className="flex flex-col">
         <span className="font-normal">Exchange Rate</span>
         <span className="tracking-[0.48px] font-medium">{exchangeRate}</span>
@@ -31,3 +36,4 @@ export function StakeInfo({
     </div>
   );
 }
+
