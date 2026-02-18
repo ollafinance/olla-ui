@@ -1,5 +1,7 @@
 import { type ReactNode } from "react";
 import { Header } from "./Header";
+import { NavBar } from "./nav-bar";
+import { Footer } from "./Footer";
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -11,11 +13,13 @@ export function LayoutShell({ children }: LayoutShellProps) {
       <div className="w-full max-w-4xl mb-6 mt-4">
         <Header />
       </div>
-      <div className="w-full max-w-xl ">
-        <div className="bg-card text-card-foreground rounded-3xl shadow-xl w-full border border-border overflow-hidden min-h-[500px] flex flex-col transition-colors duration-300">
-          <main className="flex-1 p-6 sm:p-8">{children}</main>
-        </div>
+      <div className="w-full max-w-fit mb-6 mt-4">
+        <NavBar />
       </div>
+      <div className="w-full max-w-4xl flex-1 justify-center items-center">
+        <main>{children}</main>
+      </div>
+      <Footer />
     </div>
   );
 }

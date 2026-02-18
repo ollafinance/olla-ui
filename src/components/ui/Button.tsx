@@ -1,27 +1,34 @@
 import { type ButtonHTMLAttributes, forwardRef } from "react";
 import { cn } from "@/lib/utils";
 import spinnerIcon from "@/assets/icons/spinner.svg";
+import arrowRightIcon from "@/assets/icons/arrow-right.svg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger";
-  size?: "sm" | "md" | "lg";
+  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "pink" | "cyan" | "muted" | "surface";
+  size?: "sm" | "md" | "lg" | "xl";
   isLoading?: boolean;
+  showArrow?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", isLoading, children, disabled, ...props }, ref) => {
+  ({ className, variant = "primary", size = "md", isLoading, showArrow = false, children, disabled, ...props }, ref) => {
     const variants = {
-      primary: "bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500",
-      secondary: "bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500",
-      outline: "border border-gray-300 bg-transparent hover:bg-gray-50 text-gray-700",
-      ghost: "bg-transparent hover:bg-gray-100 text-gray-700",
-      danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",
+      primary: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full",
+      secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full",
+      outline: "border border-border bg-transparent hover:bg-muted/10 text-foreground rounded-full",
+      ghost: "bg-transparent hover:bg-muted/20 text-foreground rounded-full",
+      danger: "bg-destructive text-destructive-foreground hover:bg-destructive/90 rounded-full",
+      pink: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full",
+      cyan: "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full",
+      muted: "bg-muted text-muted-foreground hover:bg-muted/80 rounded-full",
+      surface: "bg-surface text-surface-foreground hover:bg-surface/90 rounded-surface",
     };
 
     const sizes = {
-      sm: "h-8 px-3 text-sm",
-      md: "h-10 px-4 py-2",
-      lg: "h-12 px-6 text-lg",
+      sm: "h-8 px-4 py-2 text-xs",
+      md: "h-10 px-4 py-2 text-sm",
+      lg: "h-12 px-6 py-3 text-base",
+      xl: "h-[51px] px-6 py-[15px] text-lg",
     };
 
     return (
@@ -29,7 +36,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          "inline-flex items-center justify-center rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+          "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
           variants[variant],
           sizes[size],
           className
@@ -38,18 +45,24 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && (
           <span
-            className="animate-spin motion-reduce:animate-none -ml-1 mr-2 h-4 w-4 bg-current inline-block"
+            className="animate-spin motion-reduce:animate-none -ml-1 mr-1 h-4 w-4 inline-block"
             style={{
+              backgroundColor: "currentColor",
               maskImage: `url(${spinnerIcon})`,
               maskSize: "contain",
               maskRepeat: "no-repeat",
+              maskPosition: "center",
               WebkitMaskImage: `url(${spinnerIcon})`,
               WebkitMaskSize: "contain",
               WebkitMaskRepeat: "no-repeat",
+              WebkitMaskPosition: "center",
             }}
           />
         )}
         {children}
+        {showArrow && !isLoading && (
+          <img src={arrowRightIcon} alt="" className="h-[13px] w-[11px]" />
+        )}
       </button>
     );
   }

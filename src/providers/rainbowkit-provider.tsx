@@ -4,54 +4,61 @@ import {
   darkTheme,
 } from "@rainbow-me/rainbowkit";
 import { merge } from "lodash";
-import type { Theme } from "@rainbow-me/rainbowkit";
 import { useTheme } from "@/hooks/useTheme";
 
-// Define Olla Custom Theme Colors
 const ollaColors = {
-  accentColor: "#FFB0F1", // Primary Pink
-  accentColorForeground: "#1F1F1F", // Dark Text
+  accentColor: "#FFB0F1",
+  accentColorForeground: "#1F1F1F",
   borderRadius: "medium",
 };
 
-// Create Custom Themes
-const ollaLightTheme: Theme = merge(lightTheme(), {
+const ollaLightTheme = merge(lightTheme(), {
   colors: {
     accentColor: ollaColors.accentColor,
     accentColorForeground: ollaColors.accentColorForeground,
-    connectButtonBackground: "#FFFFFF", // White background
-    connectButtonText: "#1F1F1F", // Dark text
-    connectButtonInnerBackground: "#F8F6EF", // Light background
+    connectButtonBackground: "#FFB0F1",
+    connectButtonText: "#1F1F1F",
+    connectButtonInnerBackground: "#FFB0F1",
+    modalBackground: "#F8F7F1",
+    modalText: "#1F1F1F",
+    modalTextDim: "#6C6C6C",
+    modalTextSecondary: "#6C6C6C",
+    generalBorder: "#313131",
   },
   radii: {
-    actionButton: "8px",
-    connectButton: "8px",
-    modal: "16px",
-    modalMobile: "16px",
+    actionButton: "100px",
+    connectButton: "100px",
+    modal: "30px",
+    modalMobile: "30px",
   },
   fonts: {
     body: "Season Sans, sans-serif",
   },
-} as Theme);
+});
 
-const ollaDarkTheme: Theme = merge(darkTheme(), {
+const ollaDarkTheme = merge(darkTheme(), {
   colors: {
     accentColor: ollaColors.accentColor,
     accentColorForeground: ollaColors.accentColorForeground,
-    connectButtonBackground: "#18181b", // Zinc 900
-    connectButtonText: "#F8F6EF", // Light text
-    connectButtonInnerBackground: "#27272a", // Zinc 800
+    connectButtonBackground: "#FFB0F1",
+    connectButtonText: "#1F1F1F",
+    connectButtonInnerBackground: "#FFB0F1",
+    modalBackground: "#111111",
+    modalText: "#F8F7F1",
+    modalTextDim: "#6C6C6C",
+    modalTextSecondary: "#6C6C6C",
+    generalBorder: "#313131",
   },
   radii: {
-    actionButton: "8px",
-    connectButton: "8px",
-    modal: "16px",
-    modalMobile: "16px",
+    actionButton: "100px",
+    connectButton: "100px",
+    modal: "30px",
+    modalMobile: "30px",
   },
   fonts: {
     body: "Season Sans, sans-serif",
   },
-} as Theme);
+});
 
 export function RainbowKitProvider({
   children,
@@ -60,7 +67,6 @@ export function RainbowKitProvider({
 }) {
   const { theme } = useTheme();
 
-  // Resolve "system" theme
   const activeTheme =
     theme === "system"
       ? window.matchMedia("(prefers-color-scheme: dark)").matches

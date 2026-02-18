@@ -43,11 +43,15 @@ export function ClaimFeature() {
       activeRequestIds
         .map((id, index) => {
           const entry = requestsData?.[index];
-          const result = entry?.result as Omit<WithdrawalRequestSummary, "id"> | undefined;
+          const result = entry?.result as
+            | Omit<WithdrawalRequestSummary, "id">
+            | undefined;
           if (!result) return undefined;
           return { ...result, id };
         })
-        .filter((request): request is WithdrawalRequestSummary => Boolean(request)),
+        .filter((request): request is WithdrawalRequestSummary =>
+          Boolean(request),
+        ),
     [activeRequestIds, requestsData],
   );
 
@@ -92,12 +96,11 @@ export function ClaimFeature() {
       />
 
       {isLoading && !hasRequests ? (
-        <div className="text-sm text-muted-foreground">Loading withdrawal requests…</div>
+        <div className="text-sm text-muted-foreground">
+          Loading withdrawal requests…
+        </div>
       ) : hasRequests ? (
-        <ClaimOverview
-          requests={sortedRequests}
-          claimRequest={claimRequest}
-        />
+        <ClaimOverview requests={sortedRequests} claimRequest={claimRequest} />
       ) : (
         <div className="space-y-3 text-sm text-muted-foreground">
           <p>You don&apos;t have any withdrawal requests yet.</p>
