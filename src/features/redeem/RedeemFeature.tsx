@@ -1,23 +1,39 @@
+import { useRedeemState } from "./hooks";
+import { WithdrawalCard, ClaimsCard } from "./components";
+import { PortfolioCard } from "@/components/cards";
+import { PageLayout } from "@/components/layout/page-layout";
+
 export function RedeemFeature() {
+  const {
+    state,
+    amount,
+    setAmount,
+    withdraw,
+    withdrawWithError,
+    reset,
+    error,
+    claims,
+    claimItem,
+    _internal,
+  } = useRedeemState({ demoMode: true });
+
   return (
-    <div className="flex flex-row gap-card justify-center items-start">
-      {/* Left Column: Main Pending Withdrawal Card */}
-      <div className="bg-card text-card-foreground rounded-card size-card-primary p-8 flex flex-col transition-colors duration-300">
-        {/* PendingWithdrawalCard content will go here */}
-      </div>
-
-      {/* Right Column: Claims + Portfolio */}
-      <div className="flex flex-col gap-card">
-        {/* Claims Card */}
-        <div className="bg-card-claims text-card-claims-foreground rounded-card w-card-secondary h-card-claims p-4 flex flex-col transition-colors duration-300">
-          {/* ClaimsCard content will go here */}
-        </div>
-
-        {/* Portfolio Card */}
-        <div className="bg-card-tertiary text-card-tertiary-foreground rounded-card w-card-secondary h-card-tertiary p-8 flex flex-col transition-colors duration-300">
-          {/* PortfolioCard content will go here */}
-        </div>
-      </div>
-    </div>
+    <PageLayout
+      leftCard={
+        <WithdrawalCard
+          state={state}
+          amount={amount}
+          onAmountChange={setAmount}
+          onWithdraw={withdraw}
+          onWithdrawWithError={withdrawWithError}
+          onTransitionToSuccess={_internal.transitionToSuccess}
+          onTransitionToError={_internal.transitionToError}
+          onReset={reset}
+          error={error}
+        />
+      }
+      topCards={<ClaimsCard claims={claims} onClaim={claimItem} />}
+      bottomCard={<PortfolioCard tokenSymbol="stAZTEC" className="lg:h-card-portfolio-redeem" />}
+    />
   );
 }

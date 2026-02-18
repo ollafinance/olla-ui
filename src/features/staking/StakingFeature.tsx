@@ -1,5 +1,7 @@
 import { useStakingState } from "./hooks";
-import { StakingCard, ReceiveCard, ReturnsCard, PortfolioCard } from "./components";
+import { StakingCard, ReceiveCard, ReturnsCard } from "./components";
+import { PortfolioCard } from "@/components/cards";
+import { PageLayout } from "@/components/layout/page-layout";
 
 export function StakingFeature() {
   const {
@@ -15,8 +17,8 @@ export function StakingFeature() {
   } = useStakingState({ demoMode: true });
 
   return (
-    <div className="flex flex-col lg:flex-row gap-4 lg:gap-card justify-center items-center lg:items-end w-full px-4 lg:px-0 mx-auto">
-      <div className="w-full max-w-[551px] lg:w-card-primary lg:max-w-none">
+    <PageLayout
+      leftCard={
         <StakingCard
           state={state}
           amount={amount}
@@ -29,13 +31,14 @@ export function StakingFeature() {
           onReset={reset}
           error={error}
         />
-      </div>
-
-      <div className="flex flex-col gap-4 lg:gap-card w-full max-w-[551px] lg:w-card-secondary lg:max-w-none lg:h-card-primary">
-        <ReceiveCard shares={simulatedShares} />
-        <ReturnsCard shares={simulatedShares} />
-        <PortfolioCard />
-      </div>
-    </div>
+      }
+      topCards={
+        <>
+          <ReceiveCard shares={simulatedShares} />
+          <ReturnsCard shares={simulatedShares} />
+        </>
+      }
+      bottomCard={<PortfolioCard className="lg:h-card-third" />}
+    />
   );
 }

@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import ollaLoading from "@/assets/icons/olla-loading.svg";
 
-interface StakingCardPendingProps {
+interface WithdrawalCardPendingProps {
   onTransition: () => void;
 }
 
-export function StakingCardPending({ onTransition }: StakingCardPendingProps) {
+export function WithdrawalCardPending({ onTransition }: WithdrawalCardPendingProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onTransition();
@@ -29,10 +29,9 @@ export function StakingCardPending({ onTransition }: StakingCardPendingProps) {
         />
       </div>
 
-      <div className="mt-[31px] h-px w-full max-w-[487px] bg-primary-line" />
+      <div className="mt-[31px] h-px w-full max-w-[487px] bg-secondary-accent" />
 
       <div className="flex-1" />
     </div>
   );
 }
-

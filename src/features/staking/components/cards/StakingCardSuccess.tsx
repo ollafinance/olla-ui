@@ -16,7 +16,7 @@ export function StakingCardSuccess({
   onViewExplorer,
 }: StakingCardSuccessProps) {
   return (
-    <div className="bg-card rounded-card p-8 w-full lg:size-card-primary min-h-[551px] lg:min-h-0 flex flex-col">
+    <div className="bg-card rounded-card p-8 w-full h-full min-h-[551px] flex flex-col">
       <div className="text-[67px] leading-none tracking-[-1.35px] text-black font-medium whitespace-nowrap">
         <p className="mb-0">Transaction</p>
         <p>Successful!</p>

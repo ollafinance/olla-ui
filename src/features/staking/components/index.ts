@@ -1,2 +1,2 @@
-export { StakingCard, StakingCardIdle, StakingCardPending, StakingCardSuccess, StakingCardError, ReceiveCard, ReturnsCard, PortfolioCard } from "./cards";
+export { StakingCard, ReceiveCard, ReturnsCard } from "./cards";
 export { PercentageButtons, BalanceBadge, StakeInfo } from "./shared";

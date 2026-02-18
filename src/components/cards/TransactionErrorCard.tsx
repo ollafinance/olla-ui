@@ -1,18 +1,17 @@
 import { Button } from "@/components/ui/Button";
-import { ERROR_MESSAGES } from "../../constants";
 import arrowRightIcon from "@/assets/icons/arrow-right.svg";
 
-interface StakingCardErrorProps {
+interface TransactionErrorCardProps {
   errorMessage?: string;
   onReturn: () => void;
 }
 
-export function StakingCardError({
-  errorMessage = ERROR_MESSAGES.INSUFFICIENT_GAS,
+export function TransactionErrorCard({
+  errorMessage = "Transaction failed",
   onReturn,
-}: StakingCardErrorProps) {
+}: TransactionErrorCardProps) {
   return (
-    <div className="bg-destructive-muted rounded-card p-8 w-full lg:size-card-primary min-h-[551px] lg:min-h-0 flex flex-col gap-2">
+    <div className="bg-destructive-muted rounded-card p-8 w-full h-full min-h-[551px] flex flex-col gap-2">
       <div className="text-[67px] leading-none tracking-[-1.35px] text-destructive-dark font-medium whitespace-nowrap">
         <p className="mb-0">Transaction</p>
         <p>Failed</p>
@@ -39,4 +38,3 @@ export function StakingCardError({
     </div>
   );
 }
-

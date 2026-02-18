@@ -37,7 +37,7 @@ export function StakingCardIdle({
   const isInputValid = !!amount && !isNaN(Number(amount)) && Number(amount) > 0;
 
   return (
-    <div className="bg-card rounded-card p-6 flex flex-col items-center justify-between w-full lg:size-card-primary min-h-[551px] lg:min-h-0">
+    <div className="bg-card rounded-card p-6 flex flex-col items-center justify-between w-full h-full min-h-[551px]">
       <div className="flex items-center justify-between w-full">
         <h2 className="text-lg text-black leading-[1.16] font-medium">
           You Stake

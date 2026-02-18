@@ -14,7 +14,7 @@ function calculateReturn(shares: string, days: number): string {
 
 export function ReturnsCard({ shares = "95.00" }: ReturnsCardProps) {
   return (
-    <div className="bg-card-secondary rounded-card p-6 w-full min-h-[175px] lg:h-card-third flex flex-col items-start justify-between">
+    <div className="bg-card-secondary rounded-card p-6 w-full min-h-[175px] flex-1 lg:flex-1 lg:min-h-0 flex flex-col items-start justify-between">
       <p className="text-lg text-card-secondary-foreground font-medium leading-[1.16]">
         Estimated stAztec Return
       </p>

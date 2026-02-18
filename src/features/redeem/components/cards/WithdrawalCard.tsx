@@ -1,34 +1,32 @@
-import { type StakingState } from "../../hooks/useStakingState";
-import { StakingCardIdle } from "./StakingCardIdle";
-import { StakingCardPending } from "./StakingCardPending";
-import { StakingCardSuccess } from "./StakingCardSuccess";
+import type { RedeemState } from "../../hooks/useRedeemState";
+import { WithdrawalCardIdle } from "./WithdrawalCardIdle";
+import { WithdrawalCardPending } from "./WithdrawalCardPending";
+import { WithdrawalCardSuccess } from "./WithdrawalCardSuccess";
 import { TransactionErrorCard } from "@/components/cards";
 
-interface StakingCardProps {
-  state: StakingState;
+interface WithdrawalCardProps {
+  state: RedeemState;
   amount: string;
-  simulatedShares: string;
   onAmountChange: (val: string) => void;
-  onStake: () => void;
-  onStakeWithError: () => void;
+  onWithdraw: () => void;
+  onWithdrawWithError: () => void;
   onTransitionToSuccess: () => void;
   onTransitionToError: (msg: string) => void;
   onReset: () => void;
   error: string | null;
 }
 
-export function StakingCard({
+export function WithdrawalCard({
   state,
   amount,
-  simulatedShares,
   onAmountChange,
-  onStake,
-  onStakeWithError,
+  onWithdraw,
+  onWithdrawWithError,
   onTransitionToSuccess,
   onTransitionToError,
   onReset,
   error,
-}: StakingCardProps) {
+}: WithdrawalCardProps) {
   const handleTransition = () => {
     if (Math.random() > 0.3) {
       onTransitionToSuccess();
@@ -40,26 +38,30 @@ export function StakingCard({
   switch (state) {
     case "idle":
       return (
-        <StakingCardIdle
+        <WithdrawalCardIdle
           amount={amount}
           onAmountChange={onAmountChange}
-          onStake={onStake}
-          onStakeWithError={onStakeWithError}
+          onWithdraw={onWithdraw}
+          onWithdrawWithError={onWithdrawWithError}
         />
       );
     case "pending":
-      return <StakingCardPending onTransition={handleTransition} />;
+      return <WithdrawalCardPending onTransition={handleTransition} />;
     case "success":
       return (
-        <StakingCardSuccess
+        <WithdrawalCardSuccess
           amount={amount}
-          shares={simulatedShares}
-          onStakeMore={onReset}
+          onWithdrawMore={onReset}
           onViewExplorer={() => console.log("View on Explorer clicked")}
         />
       );
     case "error":
-      return <TransactionErrorCard errorMessage={error || undefined} onReturn={onReset} />;
+      return (
+        <TransactionErrorCard
+          errorMessage={error || undefined}
+          onReturn={onReset}
+        />
+      );
     default:
       return null;
   }

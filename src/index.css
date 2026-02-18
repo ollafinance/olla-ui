@@ -103,7 +103,7 @@
   --size-card-primary-height: 551px;
   --size-card-secondary: 344px;
   --size-card-tertiary-height: 192px;
-  --size-card-claims-height: 348px;
+  --size-card-claims-height: 356px;
   --size-header-height: 58px;
   --size-nav-height: 56px;
   --size-logo-width: 86px;
@@ -378,6 +378,10 @@ body {
 
 .h-card-claims {
   height: var(--size-card-claims-height);
+}
+
+.h-card-portfolio-redeem {
+  height: 191px;
 }
 
 .h-card-third {
