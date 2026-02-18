@@ -37,3 +37,4 @@ export function ReturnsCard({ shares = "95.00" }: ReturnsCardProps) {
     </div>
   );
 }
+

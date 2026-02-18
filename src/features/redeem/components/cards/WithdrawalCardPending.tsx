@@ -5,7 +5,9 @@ interface WithdrawalCardPendingProps {
   onTransition: () => void;
 }
 
-export function WithdrawalCardPending({ onTransition }: WithdrawalCardPendingProps) {
+export function WithdrawalCardPending({
+  onTransition,
+}: WithdrawalCardPendingProps) {
   useEffect(() => {
     const timer = setTimeout(() => {
       onTransition();
@@ -35,3 +37,4 @@ export function WithdrawalCardPending({ onTransition }: WithdrawalCardPendingPro
     </div>
   );
 }
+

@@ -6,7 +6,11 @@ interface PageLayoutProps {
   bottomCard: ReactNode;
 }
 
-export function PageLayout({ leftCard, topCards, bottomCard }: PageLayoutProps) {
+export function PageLayout({
+  leftCard,
+  topCards,
+  bottomCard,
+}: PageLayoutProps) {
   return (
     <div className="flex flex-col lg:flex-row gap-4 lg:gap-[12px] justify-center items-center lg:items-end w-full px-4 lg:px-0 mx-auto">
       <div className="w-full lg:w-[551px] lg:h-[551px]">{leftCard}</div>
@@ -19,3 +23,4 @@ export function PageLayout({ leftCard, topCards, bottomCard }: PageLayoutProps) 
     </div>
   );
 }
+
