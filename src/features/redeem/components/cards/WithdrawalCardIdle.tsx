@@ -66,7 +66,7 @@ export function WithdrawalCardIdle({
         </div>
 
         <div className="flex flex-col mb-4 gap-[11px] w-full">
-          <div className="flex items-center justify-between w-full">
+          <div className="flex flex-col gap-2 lg:flex-row items-center justify-between w-full">
             <PercentageButtons
               selectedPercentage={selectedPercentage}
               onSelect={handlePercentageSelect}
@@ -105,17 +105,17 @@ export function WithdrawalCardIdle({
           </div>
 
           <div className="flex items-center justify-between w-full min-h-[20px]">
-              {isInstantWithdraw && instantWithdrawFee > 0 ? (
-                <>
-                  <span className="text-sm text-muted font-medium leading-[1.16]">
-                    Instant withdrawal fee (0.5%)
-                  </span>
-                  <span className="text-sm text-black font-medium leading-[1.16]">
-                    - {instantWithdrawFee.toFixed(2)} stAztec
-                  </span>
-                </>
-              ) : null}
-            </div>
+            {isInstantWithdraw && instantWithdrawFee > 0 ? (
+              <>
+                <span className="text-sm text-muted font-medium leading-[1.16]">
+                  Instant withdrawal fee (0.5%)
+                </span>
+                <span className="text-sm text-black font-medium leading-[1.16]">
+                  - {instantWithdrawFee.toFixed(2)} stAztec
+                </span>
+              </>
+            ) : null}
+          </div>
 
           <div className="h-px w-full bg-border" />
         </div>
