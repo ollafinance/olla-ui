@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/Button";
+import { Toggle } from "@/components/ui/Toggle";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { PercentageButtons } from "@/features/staking/components/shared/PercentageButtons";
 import { StakeInfo } from "@/features/staking/components/shared/StakeInfo";
 import { MOCK_BALANCES, REDEEM_CONSTANTS } from "../../constants";
 import arrowUpDownIcon from "@/assets/icons/arrow-up-down.svg";
+import infoIcon from "@/assets/icons/info-icon.svg";
 
 interface WithdrawalCardIdleProps {
   amount: string;
@@ -21,6 +24,8 @@ export function WithdrawalCardIdle({
     number | undefined
   >(0.25);
 
+  const [isInstantWithdraw, setIsInstantWithdraw] = useState(false);
+
   const handlePercentageSelect = (percentage: number) => {
     setSelectedPercentage(percentage);
     const balance = parseFloat(MOCK_BALANCES.STAZTEC_BALANCE);
@@ -34,6 +39,11 @@ export function WithdrawalCardIdle({
       : "0.00";
 
   const isInputValid = !!amount && !isNaN(Number(amount)) && Number(amount) > 0;
+
+  const instantWithdrawFee =
+    isInstantWithdraw && amount && !isNaN(Number(amount))
+      ? Number(amount) * REDEEM_CONSTANTS.INSTANT_WITHDRAW_FEE_PERCENT
+      : 0;
 
   return (
     <div className="bg-card rounded-card flex flex-col w-full h-full min-h-[551px]">
@@ -55,11 +65,27 @@ export function WithdrawalCardIdle({
           </div>
         </div>
 
-        <div className="flex flex-col gap-[11px] w-full">
-          <PercentageButtons
-            selectedPercentage={selectedPercentage}
-            onSelect={handlePercentageSelect}
-          />
+        <div className="flex flex-col mb-4 gap-[11px] w-full">
+          <div className="flex items-center justify-between w-full">
+            <PercentageButtons
+              selectedPercentage={selectedPercentage}
+              onSelect={handlePercentageSelect}
+            />
+            <div className="flex items-center gap-2">
+              <Toggle
+                checked={isInstantWithdraw}
+                onChange={setIsInstantWithdraw}
+                label="Instant Withdraw"
+              />
+              <Tooltip content="Enabling this will make your Aztec tokens instantly available and you would not have to wait the regular process time. This feature has a cost attached to it.">
+                <img
+                  src={infoIcon}
+                  alt=""
+                  className="h-4 w-4 opacity-50 hover:opacity-100 transition-opacity"
+                />
+              </Tooltip>
+            </div>
+          </div>
 
           <div className="flex items-end justify-between w-full">
             <input
@@ -78,14 +104,20 @@ export function WithdrawalCardIdle({
             </span>
           </div>
 
-          <div className="h-px w-full bg-border" />
+          <div className="flex items-center justify-between w-full min-h-[20px]">
+              {isInstantWithdraw && instantWithdrawFee > 0 ? (
+                <>
+                  <span className="text-sm text-muted font-medium leading-[1.16]">
+                    Instant withdrawal fee (0.5%)
+                  </span>
+                  <span className="text-sm text-black font-medium leading-[1.16]">
+                    - {instantWithdrawFee.toFixed(2)} stAztec
+                  </span>
+                </>
+              ) : null}
+            </div>
 
-          <div className="flex items-center justify-between w-full">
-            <span className="text-base text-primary-accent font-medium leading-[1.16]">
-              $ {usdValue}
-            </span>
-            <img src={arrowUpDownIcon} alt="" className="h-[11px] w-[14px]" />
-          </div>
+          <div className="h-px w-full bg-border" />
         </div>
       </div>
 

@@ -20,6 +20,8 @@ export const REDEEM_CONSTANTS = {
   EXCHANGE_RATE: "0.95",
   TRANSACTION_FEE: "~0.0001 AZTEC",
   APY: "5.2%",
+  INSTANT_WITHDRAW_FEE_PERCENT: 0.005,
+  WITHDRAWAL_TIME_ESTIMATE: "~7 days",
 };
 
 export const MOCK_CLAIMS: ClaimItem[] = [
