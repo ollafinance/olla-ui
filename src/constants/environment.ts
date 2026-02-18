@@ -1,19 +1,21 @@
 import { z } from "zod";
 
-const walletConnectProjectIdSchema = z.preprocess(
-  (value) => {
-    if (typeof value !== "string") return value;
-    const trimmed = value.trim();
-    return trimmed.length === 0 ? undefined : trimmed;
-  },
-  z.string().min(1).optional(),
-);
+const walletConnectProjectIdSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? undefined : trimmed;
+}, z.string().min(1).optional());
 
 const envSchema = z.object({
-  VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
-  VITE_RPC_URL_FOUNDRY: z.string().url("VITE_RPC_URL_FOUNDRY must be a valid URL").default("http://127.0.0.1:8545"),
-  VITE_RPC_URL_MAINNET: z.string().url("VITE_RPC_URL_MAINNET must be a valid URL").optional(),
-  VITE_RPC_URL_SEPOLIA: z.string().url("VITE_RPC_URL_SEPOLIA must be a valid URL").optional(),
+  VITE_APP_ENV: z
+    .enum(["development", "production", "test"])
+    .default("development"),
+  VITE_RPC_URL_FOUNDRY: z
+    .string()
+    .url("VITE_RPC_URL_FOUNDRY must be a valid URL")
+    .default("http://127.0.0.1:8545"),
+  VITE_RPC_URL_MAINNET: z.string().optional(),
+  VITE_RPC_URL_SEPOLIA: z.string().optional(),
   VITE_WALLET_CONNECT_PROJECT_ID: walletConnectProjectIdSchema,
 });
 
@@ -24,7 +26,8 @@ function validateEnv() {
     VITE_RPC_URL_FOUNDRY: import.meta.env.VITE_RPC_URL_FOUNDRY,
     VITE_RPC_URL_MAINNET: import.meta.env.VITE_RPC_URL_MAINNET,
     VITE_RPC_URL_SEPOLIA: import.meta.env.VITE_RPC_URL_SEPOLIA,
-    VITE_WALLET_CONNECT_PROJECT_ID: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
+    VITE_WALLET_CONNECT_PROJECT_ID: import.meta.env
+      .VITE_WALLET_CONNECT_PROJECT_ID,
   });
 
   if (!result.success) {
