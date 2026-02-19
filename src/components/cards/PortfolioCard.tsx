@@ -3,14 +3,12 @@ import { cn } from "@/lib/utils";
 interface PortfolioCardProps {
   totalStaked?: string;
   rewardsEarned?: string;
-  tokenSymbol?: string;
   className?: string;
 }
 
 export function PortfolioCard({
   totalStaked = "3095.00",
   rewardsEarned = "295.00",
-  tokenSymbol = "stAZTEC",
   className,
 }: PortfolioCardProps) {
   return (
@@ -35,8 +33,8 @@ export function PortfolioCard({
           <span className="text-[21.3px] text-black font-medium leading-[1.16]">
             {totalStaked}
           </span>
-          <span className="text-[9px] text-card-tertiary-foreground tracking-[0.18px] leading-[1.16]">
-            {tokenSymbol}
+          <span className="text-xs text-card-tertiary-foreground tracking-[0.18px] leading-[1.16]">
+            Aztec
           </span>
         </div>
 
@@ -48,12 +46,11 @@ export function PortfolioCard({
           <span className="text-[21.3px] text-black font-medium leading-[1.16]">
             {rewardsEarned}
           </span>
-          <span className="text-[9px] text-card-tertiary-foreground tracking-[0.18px] leading-[1.16]">
-            {tokenSymbol}
+          <span className="text-xs text-card-tertiary-foreground tracking-[0.18px] leading-[1.16]">
+            Aztec
           </span>
         </div>
       </div>
     </div>
   );
 }
-

@@ -16,7 +16,7 @@ export function ReturnsCard({ shares = "95.00" }: ReturnsCardProps) {
   return (
     <div className="bg-card-secondary rounded-card p-6 w-full min-h-[175px] flex-1 lg:flex-1 lg:min-h-0 flex flex-col items-start justify-between">
       <p className="text-lg text-card-secondary-foreground font-medium leading-[1.16]">
-        Estimated stAztec Return
+        Estimated Aztec Return
       </p>
 
       <div className="flex-1" />
@@ -37,4 +37,3 @@ export function ReturnsCard({ shares = "95.00" }: ReturnsCardProps) {
     </div>
   );
 }
-
