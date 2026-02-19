@@ -33,13 +33,7 @@ export function RedeemFeature() {
         />
       }
       topCards={<ClaimsCard claims={claims} onClaim={claimItem} />}
-      bottomCard={
-        <PortfolioCard
-          tokenSymbol="stAZTEC"
-          className="lg:h-card-portfolio-redeem"
-        />
-      }
+      bottomCard={<PortfolioCard className="lg:h-card-portfolio-redeem" />}
     />
   );
 }
-
