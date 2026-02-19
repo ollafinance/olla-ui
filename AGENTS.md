@@ -20,6 +20,7 @@ This is a **Web3 frontend** for the Olla liquid staking protocol on Aztec. Built
 | RainbowKit | 2.2.10 | Wallet connection UI |
 | TanStack Query | 5.90.19 | Server state management |
 | ESLint | 9.39.1 | Flat config format |
+| Prettier | 3.8.1 | Code formatter |
 | Node.js | 18+ | Required runtime |
 | Yarn | 4.12.0 | Package manager (Berry) |
 
@@ -34,6 +35,9 @@ yarn build            # TypeScript check + production build
 
 # Linting
 yarn lint             # Run ESLint on all files
+
+# Formatting
+yarn pretty           # Format code with Prettier
 
 # Preview
 yarn preview          # Preview production build locally
@@ -267,6 +271,7 @@ if (!result.success) {
 | `tsconfig.json` | TypeScript root config (references app/node configs) |
 | `tsconfig.app.json` | App TypeScript settings (ES2022, strict, react-jsx) |
 | `eslint.config.js` | ESLint flat config with TS + React rules |
+| `.prettierrc` | Prettier config |
 | `vite.config.ts` | Vite config with React, Tailwind, Node polyfills |
 | `.yarnrc.yml` | Yarn 4 config (node-modules linker) |
 
@@ -290,4 +295,3 @@ VITE_WALLET_CONNECT_PROJECT_ID=your_project_id
 2. **Use Yarn 4** - Run `yarn` not `npm install`
 3. **Tailwind v4 syntax** - Uses `@import "tailwindcss"` not `@tailwind` directives
 4. **React 19** - Be aware of new features and potential breaking changes
-5. **No Prettier** - Formatting relies on ESLint and editor settings
