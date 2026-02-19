@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { PercentageButtons } from "@/features/staking/components/shared/PercentageButtons";
-import { StakeInfo } from "@/features/staking/components/shared/StakeInfo";
+import { ProtocolInfo } from "@/components/ProtocolInfo";
 import { MOCK_BALANCES, REDEEM_CONSTANTS } from "../../constants";
 import arrowUpDownIcon from "@/assets/icons/arrow-up-down.svg";
 import infoIcon from "@/assets/icons/info-icon.svg";
@@ -149,8 +149,8 @@ export function WithdrawalCardIdle({
           </div>
 
           <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-[43px]">
-            <StakeInfo
-              exchangeRate={`1 Aztec = ${REDEEM_CONSTANTS.EXCHANGE_RATE} stAZTEC`}
+            <ProtocolInfo
+              exchangeRate={REDEEM_CONSTANTS.EXCHANGE_RATE}
               transactionFee={REDEEM_CONSTANTS.TRANSACTION_FEE}
               apy={REDEEM_CONSTANTS.APY}
             />

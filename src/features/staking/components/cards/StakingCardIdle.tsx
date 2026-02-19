@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { BalanceBadge } from "../shared/BalanceBadge";
 import { PercentageButtons } from "../shared/PercentageButtons";
-import { StakeInfo } from "../shared/StakeInfo";
+import { ProtocolInfo } from "@/components/ProtocolInfo";
 import { MOCK_BALANCES, STAKING_CONSTANTS } from "../../constants";
 import arrowUpDownIcon from "@/assets/icons/arrow-up-down.svg";
 
@@ -79,7 +79,11 @@ export function StakingCardIdle({
       </div>
 
       <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-43px ">
-        <StakeInfo />
+        <ProtocolInfo
+          exchangeRate={STAKING_CONSTANTS.EXCHANGE_RATE}
+          transactionFee={STAKING_CONSTANTS.TRANSACTION_FEE}
+          apy={STAKING_CONSTANTS.APY}
+        />
         <div className="flex gap-2 items-center">
           <Button
             variant="muted"
