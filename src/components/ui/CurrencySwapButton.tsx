@@ -13,7 +13,7 @@ export function CurrencySwapButton({ className }: CurrencySwapButtonProps) {
     <button
       type="button"
       onClick={toggle}
-      className={cn("cursor-pointer hover:opacity-70 transition-opacity", className)}
+      className={cn("cursor-pointer transition-opacity hover:opacity-70", className)}
     >
       <img src={arrowUpDownIcon} alt="Swap currency" className="h-[11px] w-[14px]" />
     </button>

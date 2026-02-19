@@ -64,13 +64,8 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     if (!address || !assetDomain || nonce === undefined) return;
 
     // eip712Domain returns [fields, name, version, chainId, verifyingContract, salt, extensions]
-    const [
-      ,
-      name,
-      version,
-      chainIdFromContract,
-      verifyingContract,
-    ] = assetDomain as Eip712DomainTuple;
+    const [, name, version, chainIdFromContract, verifyingContract] =
+      assetDomain as Eip712DomainTuple;
 
     try {
       setIsSigning(true);
@@ -132,7 +127,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
             options.onDepositSuccess?.();
           },
           onError: () => setIsSigning(false),
-        },
+        }
       );
     } catch (error) {
       console.error("Permit signing failed:", error);
@@ -170,13 +165,8 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
   const requestRedeem = async (amount: string) => {
     if (!address || !stAztecDomain || stAztecNonce === undefined) return;
 
-    const [
-      ,
-      name,
-      version,
-      chainIdFromContract,
-      verifyingContract,
-    ] = stAztecDomain as Eip712DomainTuple;
+    const [, name, version, chainIdFromContract, verifyingContract] =
+      stAztecDomain as Eip712DomainTuple;
 
     try {
       setIsSigning(true);
@@ -288,9 +278,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     address: CONTRACTS.OllaCore.address,
     abi: CONTRACTS.OllaCore.abi,
     functionName: "convertToShares",
-    args: options.amountToConvert
-      ? [parseEther(options.amountToConvert)]
-      : undefined,
+    args: options.amountToConvert ? [parseEther(options.amountToConvert)] : undefined,
     query: {
       enabled: !!options.amountToConvert && Number(options.amountToConvert) > 0,
     },
@@ -301,9 +289,7 @@ export function useOllaCore(options: UseOllaCoreOptions = {}) {
     address: CONTRACTS.OllaCore.address,
     abi: CONTRACTS.OllaCore.abi,
     functionName: "convertToAssets",
-    args: options.amountToConvert
-      ? [parseEther(options.amountToConvert)]
-      : undefined,
+    args: options.amountToConvert ? [parseEther(options.amountToConvert)] : undefined,
     query: {
       enabled: !!options.amountToConvert && Number(options.amountToConvert) > 0,
     },

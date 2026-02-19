@@ -10,16 +10,13 @@ export function BalanceBadge({
   tokenSymbol = "Aztec",
 }: BalanceBadgeProps) {
   return (
-    <div className="flex items-center justify-center gap-2 bg-black/10 rounded-full pl-[17px] pr-1 py-1">
-      <span className="text-xs text-black leading-[1.16] font-medium">
-        Balance
-      </span>
-      <div className="bg-card flex items-center justify-center px-[15px] py-2 rounded-[45px]">
-        <span className="text-xs text-black leading-[1.16] font-medium text-center">
+    <div className="flex items-center justify-center gap-2 rounded-full bg-black/10 py-1 pr-1 pl-[17px]">
+      <span className="text-xs leading-[1.16] font-medium text-black">Balance</span>
+      <div className="bg-card flex items-center justify-center rounded-[45px] px-[15px] py-2">
+        <span className="text-center text-xs leading-[1.16] font-medium text-black">
           {balance} {tokenSymbol}
         </span>
       </div>
     </div>
   );
 }
-

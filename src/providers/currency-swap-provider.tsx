@@ -1,16 +1,11 @@
 import { useState, useCallback, type ReactNode } from "react";
-import {
-  CurrencySwapContext,
-  type CurrencySwapState,
-} from "@/hooks/useCurrencySwap";
+import { CurrencySwapContext, type CurrencySwapState } from "@/hooks/useCurrencySwap";
 
 interface CurrencySwapProviderProps {
   children: ReactNode;
 }
 
-export function CurrencySwapProvider({
-  children,
-}: CurrencySwapProviderProps) {
+export function CurrencySwapProvider({ children }: CurrencySwapProviderProps) {
   const [isUsdMode, setIsUsdMode] = useState(false);
 
   const toggle = useCallback(() => {
@@ -22,9 +17,5 @@ export function CurrencySwapProvider({
     toggle,
   };
 
-  return (
-    <CurrencySwapContext.Provider value={value}>
-      {children}
-    </CurrencySwapContext.Provider>
-  );
+  return <CurrencySwapContext.Provider value={value}>{children}</CurrencySwapContext.Provider>;
 }

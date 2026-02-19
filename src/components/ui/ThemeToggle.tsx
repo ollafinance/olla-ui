@@ -8,13 +8,13 @@ export function ThemeToggle() {
   return (
     <button
       onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-      className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-white dark:bg-zinc-900 border-gray-200 dark:border-zinc-800 hover:bg-gray-100 dark:hover:bg-zinc-800 h-9 w-9"
+      className="ring-offset-background focus-visible:ring-ring border-input inline-flex h-9 w-9 items-center justify-center rounded-md border border-gray-200 bg-white text-sm font-medium whitespace-nowrap transition-colors hover:bg-gray-100 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:bg-zinc-800"
       aria-label="Toggle theme"
     >
-      <img 
-        src={theme === "dark" ? moonIcon : sunIcon} 
+      <img
+        src={theme === "dark" ? moonIcon : sunIcon}
         alt={theme === "dark" ? "Dark Mode" : "Light Mode"}
-        className="w-[1.2rem] h-[1.2rem]"
+        className="h-[1.2rem] w-[1.2rem]"
         width="20"
         height="20"
       />

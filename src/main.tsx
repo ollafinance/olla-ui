@@ -43,5 +43,5 @@ createRoot(document.getElementById("root")!).render(
         </WagmiProvider>
       </ThemeProvider>
     </QueryClientProvider>
-  </StrictMode>,
+  </StrictMode>
 );

@@ -16,19 +16,19 @@ export function StakingCardSuccess({
   onViewExplorer,
 }: StakingCardSuccessProps) {
   return (
-    <div className="bg-card rounded-card p-8 w-full h-full min-h-[551px] flex flex-col">
-      <div className="text-[67px] leading-none tracking-[-1.35px] text-black font-medium whitespace-nowrap">
+    <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
+      <div className="text-[67px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black">
         <p className="mb-0">Transaction</p>
         <p>Successful!</p>
       </div>
 
       <div className="mt-[22px] flex gap-4 text-black">
         <div className="flex flex-col">
-          <span className="text-sm text-muted-foreground">Staked</span>
+          <span className="text-muted-foreground text-sm">Staked</span>
           <span className="text-lg font-medium">{amount} Aztec</span>
         </div>
         <div className="flex flex-col">
-          <span className="text-sm text-muted-foreground">Received</span>
+          <span className="text-muted-foreground text-sm">Received</span>
           <span className="text-lg font-medium">{shares} stAztec</span>
         </div>
       </div>
@@ -37,29 +37,25 @@ export function StakingCardSuccess({
         <img src={ollaLoading} alt="Success" className="h-[59px] w-[128px]" />
       </div>
 
-      <div className="mt-[31px] h-px w-full max-w-[487px] bg-primary-line" />
+      <div className="bg-primary-line mt-[31px] h-px w-full max-w-[487px]" />
 
       <div className="flex-1" />
 
-      <div className="flex gap-2 flex-wrap">
+      <div className="flex flex-wrap gap-2">
         <Button
           variant="pink"
           size="xl"
           onClick={onStakeMore}
-          className="bg-primary px-5 py-3 text-base text-black leading-[1.16] tracking-[-0.32px] font-medium rounded-full"
+          className="bg-primary rounded-full px-5 py-3 text-base leading-[1.16] font-medium tracking-[-0.32px] text-black"
         >
           Stake More
-          <img
-            src={arrowRightIcon}
-            alt=""
-            className="h-3 w-3 ml-2.5 inline-block"
-          />
+          <img src={arrowRightIcon} alt="" className="ml-2.5 inline-block h-3 w-3" />
         </Button>
         <Button
           variant="pink"
           size="xl"
           onClick={onViewExplorer}
-          className="bg-card-secondary px-5 py-3 text-base text-black leading-[1.16] tracking-[-0.32px] font-medium rounded-full"
+          className="bg-card-secondary rounded-full px-5 py-3 text-base leading-[1.16] font-medium tracking-[-0.32px] text-black"
         >
           View on Explorer
         </Button>
@@ -67,4 +63,3 @@ export function StakingCardSuccess({
     </div>
   );
 }
-

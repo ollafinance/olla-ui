@@ -14,39 +14,35 @@ export function PortfolioCard({
   return (
     <div
       className={cn(
-        "bg-card-tertiary rounded-card p-6 w-full min-h-[175px] flex flex-col items-start justify-end",
-        className,
+        "bg-card-tertiary rounded-card flex min-h-[175px] w-full flex-col items-start justify-end p-6",
+        className
       )}
     >
-      <p className="text-lg text-card-tertiary-foreground font-medium leading-[1.16]">
-        Portfolio
-      </p>
+      <p className="text-card-tertiary-foreground text-lg leading-[1.16] font-medium">Portfolio</p>
 
       <div className="flex-1" />
 
-      <div className="flex justify-between w-full gap-4">
+      <div className="flex w-full justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <span className="text-xs text-card-tertiary-foreground leading-[1.16]">
+          <span className="text-card-tertiary-foreground text-xs leading-[1.16]">
             Total Staked Balance
           </span>
-          <div className="h-px w-[123px] bg-secondary-accent" />
-          <span className="text-[21.3px] text-black font-medium leading-[1.16]">
-            {totalStaked}
-          </span>
-          <span className="text-xs text-card-tertiary-foreground tracking-[0.18px] leading-[1.16]">
+          <div className="bg-secondary-accent h-px w-[123px]" />
+          <span className="text-[21.3px] leading-[1.16] font-medium text-black">{totalStaked}</span>
+          <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
             Aztec
           </span>
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-xs text-card-tertiary-foreground leading-[1.16]">
+          <span className="text-card-tertiary-foreground text-xs leading-[1.16]">
             Total Rewards Earned
           </span>
-          <div className="h-px w-[123px] bg-secondary-accent" />
-          <span className="text-[21.3px] text-black font-medium leading-[1.16]">
+          <div className="bg-secondary-accent h-px w-[123px]" />
+          <span className="text-[21.3px] leading-[1.16] font-medium text-black">
             {rewardsEarned}
           </span>
-          <span className="text-xs text-card-tertiary-foreground tracking-[0.18px] leading-[1.16]">
+          <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
             Aztec
           </span>
         </div>

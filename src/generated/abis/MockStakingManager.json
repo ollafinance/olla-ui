@@ -1,10 +1,34 @@
 [
   {
     "type": "function",
-    "name": "cleanActivatedAttesters",
+    "name": "activatedAttesterCount",
     "inputs": [],
-    "outputs": [],
-    "stateMutability": "pure"
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "computeAttesterState",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "slashingDelta",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "completed",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable"
   },
   {
     "type": "function",
@@ -30,7 +54,30 @@
         "internalType": "uint256"
       }
     ],
-    "stateMutability": "pure"
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "getAttesterStateLiveness",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "lastUpdated",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxAge",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "isStale",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -56,7 +103,7 @@
         "internalType": "uint256"
       }
     ],
-    "stateMutability": "pure"
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -94,7 +141,7 @@
         "internalType": "uint256"
       }
     ],
-    "stateMutability": "pure"
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -106,6 +153,11 @@
         "type": "tuple",
         "internalType": "struct IStakingManager.StakingState",
         "components": [
+          {
+            "name": "slashingDelta",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
           {
             "name": "stakedAmount",
             "type": "uint256",
@@ -128,6 +180,19 @@
   },
   {
     "type": "function",
+    "name": "getUnstakeCursor",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "cursor",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
     "name": "getUnstakedFunds",
     "inputs": [],
     "outputs": [
@@ -135,6 +200,11 @@
         "name": "received",
         "type": "uint256",
         "internalType": "uint256"
+      },
+      {
+        "name": "hasRemainingExits",
+        "type": "bool",
+        "internalType": "bool"
       }
     ],
     "stateMutability": "pure"
@@ -151,6 +221,19 @@
       }
     ],
     "stateMutability": "pure"
+  },
+  {
+    "type": "function",
+    "name": "hasExitableUnstakes",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "bool",
+        "internalType": "bool"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -237,6 +320,19 @@
   },
   {
     "type": "function",
+    "name": "pendingUnstakeCount",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "pendingUnstakes",
     "inputs": [],
     "outputs": [
@@ -246,6 +342,32 @@
         "internalType": "uint256"
       }
     ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "setAttesterStateMaxAge",
+    "inputs": [
+      {
+        "name": "maxAge",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "setGasThreshold",
+    "inputs": [
+      {
+        "name": "threshold",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
     "stateMutability": "pure"
   },
   {
@@ -316,7 +438,13 @@
         "internalType": "uint256"
       }
     ],
-    "outputs": [],
+    "outputs": [
+      {
+        "name": "unstakedAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable"
   },
   {
@@ -344,6 +472,81 @@
       },
       {
         "name": "amount",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AttesterStateMaxAgeUpdated",
+    "inputs": [
+      {
+        "name": "oldMaxAge",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "newMaxAge",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AttesterStateStale",
+    "inputs": [
+      {
+        "name": "lastUpdated",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxAge",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "AttesterStateUpdated",
+    "inputs": [
+      {
+        "name": "slashingDelta",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "totalStaked",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "pendingUnstakeAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "withdrawableAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "timestamp",
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
@@ -455,6 +658,22 @@
   },
   {
     "type": "error",
+    "name": "StakingManager__AttesterStateStale",
+    "inputs": [
+      {
+        "name": "lastUpdated",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
+        "name": "maxAge",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "StakingManager__ClaimAmountMismatch",
     "inputs": []
   },
@@ -472,6 +691,22 @@
     "type": "error",
     "name": "StakingManager__InsufficientStake",
     "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "StakingManager__InvalidParameter",
+    "inputs": []
+  },
+  {
+    "type": "error",
+    "name": "StakingManager__Unauthorized",
+    "inputs": [
+      {
+        "name": "caller",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
   },
   {
     "type": "error",

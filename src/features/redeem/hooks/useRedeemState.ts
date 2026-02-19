@@ -26,9 +26,7 @@ interface UseRedeemStateReturn {
   };
 }
 
-export function useRedeemState(
-  options: UseRedeemStateOptions = {},
-): UseRedeemStateReturn {
+export function useRedeemState(options: UseRedeemStateOptions = {}): UseRedeemStateReturn {
   const { initialState = "idle", demoMode = true } = options;
 
   const [state, setState] = useState<RedeemState>(initialState);
@@ -37,9 +35,7 @@ export function useRedeemState(
   const [claims, setClaims] = useState<ClaimItem[]>(MOCK_CLAIMS);
 
   const simulatedReceived =
-    amount && !isNaN(Number(amount))
-      ? (Number(amount) * 0.95).toFixed(2)
-      : "0.00";
+    amount && !isNaN(Number(amount)) ? (Number(amount) * 0.95).toFixed(2) : "0.00";
 
   const withdraw = useCallback(() => {
     if (!demoMode) return;
@@ -88,8 +84,8 @@ export function useRedeemState(
                 year: "numeric",
               }),
             }
-          : claim,
-      ),
+          : claim
+      )
     );
   }, []);
 
@@ -110,4 +106,3 @@ export function useRedeemState(
     },
   };
 }
-

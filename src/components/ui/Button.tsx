@@ -4,14 +4,35 @@ import spinnerIcon from "@/assets/icons/spinner.svg";
 import arrowRightIcon from "@/assets/icons/arrow-right.svg";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "outline" | "ghost" | "danger" | "pink" | "cyan" | "muted" | "surface";
+  variant?:
+    | "primary"
+    | "secondary"
+    | "outline"
+    | "ghost"
+    | "danger"
+    | "pink"
+    | "cyan"
+    | "muted"
+    | "surface";
   size?: "sm" | "md" | "lg" | "xl";
   isLoading?: boolean;
   showArrow?: boolean;
 }
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant = "primary", size = "md", isLoading, showArrow = false, children, disabled, ...props }, ref) => {
+  (
+    {
+      className,
+      variant = "primary",
+      size = "md",
+      isLoading,
+      showArrow = false,
+      children,
+      disabled,
+      ...props
+    },
+    ref
+  ) => {
     const variants = {
       primary: "bg-primary text-primary-foreground hover:bg-primary/90 rounded-full",
       secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80 rounded-full",
@@ -36,7 +57,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
         ref={ref}
         disabled={disabled || isLoading}
         className={cn(
-          "inline-flex items-center justify-center gap-2 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none",
+          "focus:ring-ring inline-flex items-center justify-center gap-2 font-medium transition-colors duration-200 focus:ring-2 focus:ring-offset-2 focus:outline-none disabled:pointer-events-none disabled:opacity-50",
           variants[variant],
           sizes[size],
           className
@@ -45,7 +66,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
       >
         {isLoading && (
           <span
-            className="animate-spin motion-reduce:animate-none -ml-1 mr-1 h-4 w-4 inline-block"
+            className="mr-1 -ml-1 inline-block h-4 w-4 animate-spin motion-reduce:animate-none"
             style={{
               backgroundColor: "currentColor",
               maskImage: `url(${spinnerIcon})`,

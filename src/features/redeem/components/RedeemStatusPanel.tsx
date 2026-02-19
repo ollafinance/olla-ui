@@ -16,8 +16,8 @@ export function RedeemStatusPanel({
 }: RedeemStatusPanelProps) {
   return (
     <Card className="bg-muted border-border/50">
-      <CardHeader className="pb-2 border-border/10">
-        <CardTitle className="text-m font-semibold text-primary uppercase tracking-wide">
+      <CardHeader className="border-border/10 pb-2">
+        <CardTitle className="text-m text-primary font-semibold tracking-wide uppercase">
           Your Status
         </CardTitle>
       </CardHeader>
@@ -26,20 +26,18 @@ export function RedeemStatusPanel({
         <div className="space-y-2">
           <div className="text-m text-muted-foreground flex justify-between">
             <span>stAztec Balance:</span>
-            <span className="font-mono text-foreground">
-              {stAztecBalance} stAZT
-            </span>
+            <span className="text-foreground font-mono">{stAztecBalance} stAZT</span>
           </div>
           <div className="text-m text-muted-foreground flex justify-between">
             <span>Asset Balance:</span>
-            <span className="font-mono text-foreground">{balance} AZT</span>
+            <span className="text-foreground font-mono">{balance} AZT</span>
           </div>
         </div>
 
         {/* Active Request Status */}
         {hasActiveRequests && (
-          <div className="pt-4 border-t border-border/10 space-y-2">
-            <div className="text-sm text-muted-foreground">
+          <div className="border-border/10 space-y-2 border-t pt-4">
+            <div className="text-muted-foreground text-sm">
               You have active withdrawal requests.
             </div>
             {cta}

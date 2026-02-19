@@ -21,9 +21,7 @@ const isProduction = APP_ENV === "production";
 
 // In production, only allow Mainnet.
 // In dev/test, allow Foundry (local), Sepolia, and Mainnet.
-const chains = isProduction
-  ? ([mainnet] as const)
-  : ([foundry, sepolia, mainnet] as const);
+const chains = isProduction ? ([mainnet] as const) : ([foundry, sepolia, mainnet] as const);
 
 const transports = {
   [mainnet.id]: http(RPC_URL_MAINNET),

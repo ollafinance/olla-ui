@@ -8,12 +8,7 @@ interface RedeemInputProps {
   disabled?: boolean;
 }
 
-export function RedeemInput({
-  amount,
-  onAmountChange,
-  onMaxClick,
-  disabled,
-}: RedeemInputProps) {
+export function RedeemInput({ amount, onAmountChange, onMaxClick, disabled }: RedeemInputProps) {
   return (
     <div className="relative">
       <Input
@@ -31,7 +26,7 @@ export function RedeemInput({
           size="sm"
           onClick={onMaxClick}
           disabled={disabled}
-          className="h-8 text-xs font-semibold text-primary hover:text-primary/80"
+          className="text-primary hover:text-primary/80 h-8 text-xs font-semibold"
         >
           MAX
         </Button>

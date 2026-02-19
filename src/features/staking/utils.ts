@@ -5,12 +5,7 @@ export interface ButtonStateParams {
   deposit: { isSigning: boolean; isPending: boolean; isConfirming: boolean };
 }
 
-export function getButtonState({
-  isConnected,
-  isInputValid,
-  amount,
-  deposit,
-}: ButtonStateParams) {
+export function getButtonState({ isConnected, isInputValid, amount, deposit }: ButtonStateParams) {
   let buttonText = "Enter Amount";
   let isLoading = false;
   let isDisabled = !isConnected || !isInputValid;

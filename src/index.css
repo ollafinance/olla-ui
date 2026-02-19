@@ -321,8 +321,8 @@
 
   /* Font */
   --font-sans:
-    "Season Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
-    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+    "Season Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
 }
 
 body {
@@ -418,8 +418,6 @@ body {
 
 @media (min-width: 1024px) {
   .container-app {
-    max-width: calc(
-      var(--size-card-primary) + var(--size-card-secondary) + var(--space-3)
-    );
+    max-width: calc(var(--size-card-primary) + var(--size-card-secondary) + var(--space-3));
   }
 }

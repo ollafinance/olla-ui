@@ -15,7 +15,7 @@ export function PercentageButtons({
   className,
 }: PercentageButtonsProps) {
   return (
-    <div className={cn("flex gap-5px items-center", className)}>
+    <div className={cn("gap-5px flex items-center", className)}>
       {PERCENTAGE_OPTIONS.map((option) => {
         const isSelected = selectedPercentage === option.value;
         return (
@@ -25,11 +25,11 @@ export function PercentageButtons({
             disabled={disabled}
             onClick={() => onSelect(option.value)}
             className={cn(
-              "flex items-center justify-center px-3 py-3 rounded-full text-xs leading-[1.16] font-medium transition-colors duration-200",
+              "flex items-center justify-center rounded-full px-3 py-3 text-xs leading-[1.16] font-medium transition-colors duration-200",
               isSelected
                 ? "bg-primary text-primary-accent"
                 : "bg-primary-muted text-primary-accent hover:bg-primary/30",
-              disabled && "opacity-50 pointer-events-none",
+              disabled && "pointer-events-none opacity-50"
             )}
           >
             {option.label}
@@ -39,4 +39,3 @@ export function PercentageButtons({
     </div>
   );
 }
-

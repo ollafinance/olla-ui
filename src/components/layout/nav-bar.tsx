@@ -2,16 +2,16 @@ import { Link } from "@tanstack/react-router";
 
 export function NavBar() {
   return (
-    <nav className="flex items-center gap-2 bg-surface p-2 rounded-full border border-surface-border">
+    <nav className="bg-surface border-surface-border flex items-center gap-2 rounded-full border p-2">
       <Link
         to="/stake"
-        className="px-4 py-3 text-lg font-medium rounded-[56px] tracking-[-0.36px] transition-all leading-[1.16] bg-surface text-surface-foreground [&.active]:bg-card [&.active]:text-black"
+        className="bg-surface text-surface-foreground [&.active]:bg-card rounded-[56px] px-4 py-3 text-lg leading-[1.16] font-medium tracking-[-0.36px] transition-all [&.active]:text-black"
       >
         Stake
       </Link>
       <Link
         to="/redeem"
-        className="px-4 py-3 text-lg font-medium rounded-[56px] tracking-[-0.36px] transition-all leading-[1.16] bg-surface text-surface-foreground [&.active]:bg-card [&.active]:text-black"
+        className="bg-surface text-surface-foreground [&.active]:bg-card rounded-[56px] px-4 py-3 text-lg leading-[1.16] font-medium tracking-[-0.36px] transition-all [&.active]:text-black"
       >
         Redeem
       </Link>
