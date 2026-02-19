@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Toggle } from "@/components/ui/Toggle";
 import { Tooltip } from "@/components/ui/Tooltip";
+import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { PercentageButtons } from "@/features/staking/components/shared/PercentageButtons";
 import { ProtocolInfo } from "@/components/ProtocolInfo";
+import { useCurrencySwap } from "@/hooks/useCurrencySwap";
 import { MOCK_BALANCES, REDEEM_CONSTANTS } from "../../constants";
-import arrowUpDownIcon from "@/assets/icons/arrow-up-down.svg";
 import infoIcon from "@/assets/icons/info-icon.svg";
 
 interface WithdrawalCardIdleProps {
@@ -20,6 +21,7 @@ export function WithdrawalCardIdle({
   onAmountChange,
   onWithdraw,
 }: WithdrawalCardIdleProps) {
+  const { isUsdMode } = useCurrencySwap();
   const [selectedPercentage, setSelectedPercentage] = useState<
     number | undefined
   >(0.25);
@@ -45,9 +47,16 @@ export function WithdrawalCardIdle({
       ? Number(amount) * REDEEM_CONSTANTS.INSTANT_WITHDRAW_FEE_PERCENT
       : 0;
 
+  const primaryValue = isUsdMode ? usdValue : (amount || "00.00");
+  const primaryLabel = isUsdMode ? "USD" : "Aztec";
+  const primaryPrefix = isUsdMode ? "$ " : "";
+
+  const secondaryValue = isUsdMode ? (amount || "00.00") : usdValue;
+  const secondaryLabel = isUsdMode ? "Aztec" : "";
+  const secondaryPrefix = isUsdMode ? "" : "$ ";
+
   return (
     <div className="bg-card rounded-card flex flex-col w-full h-full min-h-[551px]">
-      {/* Top Section: Request Withdrawal Input */}
       <div className="flex flex-col gap-8 pt-6 pb-4 px-8">
         <div className="flex items-center justify-between w-full">
           <h2 className="text-[21.33px] text-black leading-[1.16] font-medium">
@@ -121,7 +130,6 @@ export function WithdrawalCardIdle({
         </div>
       </div>
 
-      {/* Bottom Section: You Will Receive */}
       <div className="pb-4 px-4">
         <div className="bg-[#efeee6] rounded-[28px] p-6 flex flex-col gap-5 w-full">
           <p className="text-base text-black leading-[1.16] font-medium">
@@ -131,10 +139,10 @@ export function WithdrawalCardIdle({
           <div className="flex flex-col gap-[11px] w-full">
             <div className="flex items-end justify-between w-full">
               <span className="text-[50px] leading-[1.16] tracking-[-1px] text-black font-medium">
-                {amount || "00.00"}
+                {primaryPrefix}{primaryValue}
               </span>
               <span className="text-base text-black leading-[1.8] font-medium">
-                Aztec
+                {primaryLabel}
               </span>
             </div>
 
@@ -142,9 +150,9 @@ export function WithdrawalCardIdle({
 
             <div className="flex items-center justify-between w-full">
               <span className="text-base text-muted font-medium leading-[1.16]">
-                $ {usdValue}
+                {secondaryPrefix}{secondaryValue} {secondaryLabel}
               </span>
-              <img src={arrowUpDownIcon} alt="" className="h-[11px] w-[14px]" />
+              <CurrencySwapButton />
             </div>
           </div>
 
