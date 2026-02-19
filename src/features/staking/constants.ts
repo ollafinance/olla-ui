@@ -29,4 +29,3 @@ export const ERROR_MESSAGES = {
   INSUFFICIENT_BALANCE: "Insufficient Balance",
   TRANSACTION_REJECTED: "Transaction Rejected",
 } as const;
-

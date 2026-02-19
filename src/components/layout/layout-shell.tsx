@@ -9,15 +9,15 @@ interface LayoutShellProps {
 
 export function LayoutShell({ children }: LayoutShellProps) {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col items-center transition-colors duration-300">
-      <div className="w-full flex flex-col items-center p-4 flex-1">
-        <div className="w-full max-w-4xl mb-6 mt-4">
+    <div className="bg-background text-foreground flex min-h-screen flex-col items-center transition-colors duration-300">
+      <div className="flex w-full flex-1 flex-col items-center p-4">
+        <div className="mt-4 mb-6 w-full max-w-4xl">
           <Header />
         </div>
-        <div className="w-full max-w-fit mb-6 mt-4">
+        <div className="mt-4 mb-6 w-full max-w-fit">
           <NavBar />
         </div>
-        <div className="w-full max-w-4xl flex-1 justify-center items-center">
+        <div className="w-full max-w-4xl flex-1 items-center justify-center">
           <main>{children}</main>
         </div>
       </div>

@@ -56,12 +56,7 @@ export function WithdrawalCard({
         />
       );
     case "error":
-      return (
-        <TransactionErrorCard
-          errorMessage={error || undefined}
-          onReturn={onReset}
-        />
-      );
+      return <TransactionErrorCard errorMessage={error || undefined} onReturn={onReset} />;
     default:
       return null;
   }

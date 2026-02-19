@@ -25,9 +25,7 @@ export function getRedeemButtonState({
     buttonText = "Confirming Request...";
     isLoading = true;
   } else {
-    buttonText = isInputValid
-      ? `Request Redeem ${amount} stAZT`
-      : "Enter Amount";
+    buttonText = isInputValid ? `Request Redeem ${amount} stAZT` : "Enter Amount";
   }
 
   // Override disabled state during loading

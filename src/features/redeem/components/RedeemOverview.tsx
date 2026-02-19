@@ -6,21 +6,18 @@ interface RedeemOverviewProps {
   potentialAssets?: bigint;
 }
 
-export function RedeemOverview({
-  exchangeRate,
-  potentialAssets,
-}: RedeemOverviewProps) {
+export function RedeemOverview({ exchangeRate, potentialAssets }: RedeemOverviewProps) {
   return (
     <Card className="bg-muted border-border/50">
-      <CardHeader className="pb-2 border-border/10">
-        <CardTitle className="text-m font-semibold text-primary uppercase tracking-wide">
+      <CardHeader className="border-border/10 pb-2">
+        <CardTitle className="text-m text-primary font-semibold tracking-wide uppercase">
           Redemption Overview
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-2">
         <div className="text-m text-muted-foreground flex justify-between">
           <span>Exchange Rate:</span>
-          <span className="font-mono text-foreground">
+          <span className="text-foreground font-mono">
             1 stAZT ≈ {exchangeRate ? formatEther(exchangeRate) : "..."} AZT
           </span>
         </div>
@@ -28,9 +25,7 @@ export function RedeemOverview({
         {potentialAssets && potentialAssets > 0n && (
           <div className="text-m text-muted-foreground flex justify-between">
             <span>You Receive:</span>
-            <span className="font-mono text-foreground">
-              {formatEther(potentialAssets)} AZT
-            </span>
+            <span className="text-foreground font-mono">{formatEther(potentialAssets)} AZT</span>
           </div>
         )}
       </CardContent>

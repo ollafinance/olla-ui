@@ -14,15 +14,9 @@ interface StakingCardIdleProps {
   onStakeWithError: () => void;
 }
 
-export function StakingCardIdle({
-  amount,
-  onAmountChange,
-  onStake,
-}: StakingCardIdleProps) {
+export function StakingCardIdle({ amount, onAmountChange, onStake }: StakingCardIdleProps) {
   const { isUsdMode } = useCurrencySwap();
-  const [selectedPercentage, setSelectedPercentage] = useState<
-    number | undefined
-  >(0.25);
+  const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
 
   const handlePercentageSelect = (percentage: number) => {
     setSelectedPercentage(percentage);
@@ -30,9 +24,7 @@ export function StakingCardIdle({
     if (isUsdMode) {
       const usdBalance = balance * STAKING_CONSTANTS.AZTEC_PRICE_USD;
       const newUsdAmount = (usdBalance * percentage).toFixed(2);
-      const tokenAmount = (
-        parseFloat(newUsdAmount) / STAKING_CONSTANTS.AZTEC_PRICE_USD
-      ).toFixed(2);
+      const tokenAmount = (parseFloat(newUsdAmount) / STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2);
       onAmountChange(tokenAmount);
     } else {
       const newAmount = (balance * percentage).toFixed(2);
@@ -53,9 +45,7 @@ export function StakingCardIdle({
     if (isUsdMode) {
       const usdAmount = parseFloat(inputValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
-        const tokenAmount = (
-          usdAmount / STAKING_CONSTANTS.AZTEC_PRICE_USD
-        ).toFixed(2);
+        const tokenAmount = (usdAmount / STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2);
         onAmountChange(tokenAmount);
       } else {
         onAmountChange("0");
@@ -71,24 +61,22 @@ export function StakingCardIdle({
   const secondaryLabel = isUsdMode ? "Aztec" : "$";
 
   return (
-    <div className="bg-card rounded-card p-6 flex flex-col items-center justify-between w-full h-full min-h-[551px]">
-      <div className="flex items-center justify-between w-full">
-        <h2 className="text-lg text-black leading-[1.16] font-medium">
-          You Stake
-        </h2>
+    <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col items-center justify-between p-6">
+      <div className="flex w-full items-center justify-between">
+        <h2 className="text-lg leading-[1.16] font-medium text-black">You Stake</h2>
         <BalanceBadge />
       </div>
 
-      <div className="flex flex-col gap-3 w-full flex-1 justify-center">
+      <div className="flex w-full flex-1 flex-col justify-center gap-3">
         <PercentageButtons
           selectedPercentage={selectedPercentage}
           onSelect={handlePercentageSelect}
         />
 
-        <div className="flex items-end justify-between w-full">
-          <div className="flex items-end max-w-[70%]">
+        <div className="flex w-full items-end justify-between">
+          <div className="flex max-w-[70%] items-end">
             {isUsdMode && (
-              <span className="text-[67px] leading-[1.16] tracking-[-1.35px] text-black pr-2 font-medium">
+              <span className="pr-2 text-[67px] leading-[1.16] font-medium tracking-[-1.35px] text-black">
                 $
               </span>
             )}
@@ -98,33 +86,31 @@ export function StakingCardIdle({
               placeholder="0.00"
               value={displayValue}
               onChange={handleInputChange}
-              className="text-[67px] leading-[1.16] tracking-[-1.35px] text-black bg-transparent border-none outline-none font-medium w-full"
+              className="w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] text-black outline-none"
             />
           </div>
-          <span className="text-base text-black leading-[1.8] font-medium shrink-0">
+          <span className="shrink-0 text-base leading-[1.8] font-medium text-black">
             {primaryLabel}
           </span>
         </div>
 
-        <div className="h-px w-full bg-border" />
+        <div className="bg-border h-px w-full" />
 
-        <div className="flex items-center justify-between w-full">
-          <span className="text-base text-primary-accent font-medium leading-[1.16]">
-            {isUsdMode
-              ? `${secondaryValue} ${secondaryLabel}`
-              : `$ ${secondaryValue}`}
+        <div className="flex w-full items-center justify-between">
+          <span className="text-primary-accent text-base leading-[1.16] font-medium">
+            {isUsdMode ? `${secondaryValue} ${secondaryLabel}` : `$ ${secondaryValue}`}
           </span>
           <CurrencySwapButton />
         </div>
       </div>
 
-      <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-43px ">
+      <div className="gap-43px flex w-full flex-col items-center justify-between lg:flex-row">
         <ProtocolInfo
           exchangeRate={STAKING_CONSTANTS.EXCHANGE_RATE}
           transactionFee={STAKING_CONSTANTS.TRANSACTION_FEE}
           apy={STAKING_CONSTANTS.APY}
         />
-        <div className="flex gap-2 items-center">
+        <div className="flex items-center gap-2">
           <Button
             variant="muted"
             size="xl"
@@ -140,4 +126,3 @@ export function StakingCardIdle({
     </div>
   );
 }
-

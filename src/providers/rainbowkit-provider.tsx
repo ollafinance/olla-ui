@@ -60,11 +60,7 @@ const ollaDarkTheme = merge(darkTheme(), {
   },
 });
 
-export function RainbowKitProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function RainbowKitProvider({ children }: { children: React.ReactNode }) {
   const { theme } = useTheme();
 
   const activeTheme =
@@ -76,7 +72,5 @@ export function RainbowKitProvider({
         ? ollaDarkTheme
         : ollaLightTheme;
 
-  return (
-    <RainbowKitProviderLib theme={activeTheme}>{children}</RainbowKitProviderLib>
-  );
+  return <RainbowKitProviderLib theme={activeTheme}>{children}</RainbowKitProviderLib>;
 }

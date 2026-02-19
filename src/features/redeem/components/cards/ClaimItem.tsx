@@ -13,10 +13,7 @@ interface ClaimItemProps {
 
 function StatusDot({ color }: { color: string }) {
   return (
-    <div
-      className="w-[9px] h-[9px] rounded-full shrink-0"
-      style={{ backgroundColor: color }}
-    />
+    <div className="h-[9px] w-[9px] shrink-0 rounded-full" style={{ backgroundColor: color }} />
   );
 }
 
@@ -40,7 +37,7 @@ export function ClaimItem({
           variant="cyan"
           size="sm"
           onClick={() => onClaim?.(id)}
-          className="h-[30px] px-[15px] py-2 rounded-full bg-secondary-accent text-card text-xs font-medium"
+          className="bg-secondary-accent text-card h-[30px] rounded-full px-[15px] py-2 text-xs font-medium"
         >
           Claim
         </Button>
@@ -52,7 +49,7 @@ export function ClaimItem({
       statusTextColor: "text-card-claims-foreground",
       statusText: "Processing",
       rightContent: (
-        <span className="text-xs text-card-claims-foreground font-medium leading-[1.16]">
+        <span className="text-card-claims-foreground text-xs leading-[1.16] font-medium">
           {daysLeft} Days Left
         </span>
       ),
@@ -63,9 +60,7 @@ export function ClaimItem({
       statusTextColor: "text-[#373737]",
       statusText: "Claimed",
       rightContent: (
-        <span className="text-xs text-[#9c9c9c] font-medium leading-[1.16]">
-          {claimedDate}
-        </span>
+        <span className="text-xs leading-[1.16] font-medium text-[#9c9c9c]">{claimedDate}</span>
       ),
     },
   };
@@ -85,28 +80,22 @@ export function ClaimItem({
         : "text-black";
 
   return (
-    <div className={`${config.bg} rounded-[16px] p-4 flex flex-col gap-3`}>
-      <div className="flex items-center justify-between w-full">
+    <div className={`${config.bg} flex flex-col gap-3 rounded-[16px] p-4`}>
+      <div className="flex w-full items-center justify-between">
         <div className="flex items-center gap-2">
           <StatusDot color={config.dotColor} />
-          <span
-            className={`text-xs ${config.statusTextColor} font-medium leading-[1.16]`}
-          >
+          <span className={`text-xs ${config.statusTextColor} leading-[1.16] font-medium`}>
             {config.statusText}
           </span>
         </div>
         {config.rightContent}
       </div>
-      <div className="flex items-center justify-between w-full">
-        <span
-          className={`text-base ${amountTextColor} font-medium leading-[1.16]`}
-        >
+      <div className="flex w-full items-center justify-between">
+        <span className={`text-base ${amountTextColor} leading-[1.16] font-medium`}>
           {amount} Aztec
         </span>
         {status === "ready" ? null : (
-          <span
-            className={`text-xs ${usdTextColor} font-medium leading-[1.16]`}
-          >
+          <span className={`text-xs ${usdTextColor} leading-[1.16] font-medium`}>
             ~ $ {usdValue}
           </span>
         )}
@@ -114,4 +103,3 @@ export function ClaimItem({
     </div>
   );
 }
-

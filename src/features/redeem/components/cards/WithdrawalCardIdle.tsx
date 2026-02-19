@@ -22,9 +22,7 @@ export function WithdrawalCardIdle({
   onWithdraw,
 }: WithdrawalCardIdleProps) {
   const { isUsdMode } = useCurrencySwap();
-  const [selectedPercentage, setSelectedPercentage] = useState<
-    number | undefined
-  >(0.25);
+  const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
 
   const [isInstantWithdraw, setIsInstantWithdraw] = useState(false);
 
@@ -47,35 +45,33 @@ export function WithdrawalCardIdle({
       ? Number(amount) * REDEEM_CONSTANTS.INSTANT_WITHDRAW_FEE_PERCENT
       : 0;
 
-  const primaryValue = isUsdMode ? usdValue : (amount || "00.00");
+  const primaryValue = isUsdMode ? usdValue : amount || "00.00";
   const primaryLabel = isUsdMode ? "USD" : "Aztec";
   const primaryPrefix = isUsdMode ? "$ " : "";
 
-  const secondaryValue = isUsdMode ? (amount || "00.00") : usdValue;
+  const secondaryValue = isUsdMode ? amount || "00.00" : usdValue;
   const secondaryLabel = isUsdMode ? "Aztec" : "";
   const secondaryPrefix = isUsdMode ? "" : "$ ";
 
   return (
-    <div className="bg-card rounded-card flex flex-col w-full h-full min-h-[551px]">
-      <div className="flex flex-col gap-8 pt-6 pb-4 px-8">
-        <div className="flex items-center justify-between w-full">
-          <h2 className="text-[21.33px] text-black leading-[1.16] font-medium">
+    <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col">
+      <div className="flex flex-col gap-8 px-8 pt-6 pb-4">
+        <div className="flex w-full items-center justify-between">
+          <h2 className="text-[21.33px] leading-[1.16] font-medium text-black">
             Request Withdrawal
           </h2>
-          <div className="bg-[#efeee6] flex items-center gap-2 pl-[17px] pr-1 py-1 rounded-full">
-            <span className="text-xs text-black leading-[1.16] font-medium">
-              Balance
-            </span>
-            <div className="bg-card flex items-center justify-center px-[15px] py-2 rounded-full">
-              <span className="text-xs text-black leading-[1.16] font-medium text-center">
+          <div className="flex items-center gap-2 rounded-full bg-[#efeee6] py-1 pr-1 pl-[17px]">
+            <span className="text-xs leading-[1.16] font-medium text-black">Balance</span>
+            <div className="bg-card flex items-center justify-center rounded-full px-[15px] py-2">
+              <span className="text-center text-xs leading-[1.16] font-medium text-black">
                 {MOCK_BALANCES.STAZTEC_BALANCE} stAztec
               </span>
             </div>
           </div>
         </div>
 
-        <div className="flex flex-col mb-4 gap-[11px] w-full">
-          <div className="flex flex-col gap-2 lg:flex-row items-center justify-between w-full">
+        <div className="mb-4 flex w-full flex-col gap-[11px]">
+          <div className="flex w-full flex-col items-center justify-between gap-2 lg:flex-row">
             <PercentageButtons
               selectedPercentage={selectedPercentage}
               onSelect={handlePercentageSelect}
@@ -90,13 +86,13 @@ export function WithdrawalCardIdle({
                 <img
                   src={infoIcon}
                   alt=""
-                  className="h-4 w-4 opacity-50 hover:opacity-100 transition-opacity"
+                  className="h-4 w-4 opacity-50 transition-opacity hover:opacity-100"
                 />
               </Tooltip>
             </div>
           </div>
 
-          <div className="flex items-end justify-between w-full">
+          <div className="flex w-full items-end justify-between">
             <input
               type="text"
               inputMode="decimal"
@@ -106,57 +102,53 @@ export function WithdrawalCardIdle({
                 setSelectedPercentage(undefined);
                 onAmountChange(e.target.value);
               }}
-              className="text-[50px] leading-[1.16] tracking-[-1px] text-black bg-transparent border-none outline-none w-[70%] font-medium"
+              className="w-[70%] border-none bg-transparent text-[50px] leading-[1.16] font-medium tracking-[-1px] text-black outline-none"
             />
-            <span className="text-base text-black leading-[1.8] font-medium">
-              stAztec
-            </span>
+            <span className="text-base leading-[1.8] font-medium text-black">stAztec</span>
           </div>
 
-          <div className="flex items-center justify-between w-full min-h-[20px]">
+          <div className="flex min-h-[20px] w-full items-center justify-between">
             {isInstantWithdraw && instantWithdrawFee > 0 ? (
               <>
-                <span className="text-sm text-muted font-medium leading-[1.16]">
+                <span className="text-muted text-sm leading-[1.16] font-medium">
                   Instant withdrawal fee (0.5%)
                 </span>
-                <span className="text-sm text-black font-medium leading-[1.16]">
+                <span className="text-sm leading-[1.16] font-medium text-black">
                   - {instantWithdrawFee.toFixed(2)} stAztec
                 </span>
               </>
             ) : null}
           </div>
 
-          <div className="h-px w-full bg-border" />
+          <div className="bg-border h-px w-full" />
         </div>
       </div>
 
-      <div className="pb-4 px-4">
-        <div className="bg-[#efeee6] rounded-[28px] p-6 flex flex-col gap-5 w-full">
-          <p className="text-base text-black leading-[1.16] font-medium">
-            You will receive
-          </p>
+      <div className="px-4 pb-4">
+        <div className="flex w-full flex-col gap-5 rounded-[28px] bg-[#efeee6] p-6">
+          <p className="text-base leading-[1.16] font-medium text-black">You will receive</p>
 
-          <div className="flex flex-col gap-[11px] w-full">
-            <div className="flex items-end justify-between w-full">
-              <span className="text-[50px] leading-[1.16] tracking-[-1px] text-black font-medium">
-                {primaryPrefix}{primaryValue}
+          <div className="flex w-full flex-col gap-[11px]">
+            <div className="flex w-full items-end justify-between">
+              <span className="text-[50px] leading-[1.16] font-medium tracking-[-1px] text-black">
+                {primaryPrefix}
+                {primaryValue}
               </span>
-              <span className="text-base text-black leading-[1.8] font-medium">
-                {primaryLabel}
-              </span>
+              <span className="text-base leading-[1.8] font-medium text-black">{primaryLabel}</span>
             </div>
 
-            <div className="h-px w-full bg-border" />
+            <div className="bg-border h-px w-full" />
 
-            <div className="flex items-center justify-between w-full">
-              <span className="text-base text-muted font-medium leading-[1.16]">
-                {secondaryPrefix}{secondaryValue} {secondaryLabel}
+            <div className="flex w-full items-center justify-between">
+              <span className="text-muted text-base leading-[1.16] font-medium">
+                {secondaryPrefix}
+                {secondaryValue} {secondaryLabel}
               </span>
               <CurrencySwapButton />
             </div>
           </div>
 
-          <div className="flex flex-col lg:flex-row items-center justify-between w-full gap-[43px]">
+          <div className="flex w-full flex-col items-center justify-between gap-[43px] lg:flex-row">
             <ProtocolInfo
               exchangeRate={REDEEM_CONSTANTS.EXCHANGE_RATE}
               transactionFee={REDEEM_CONSTANTS.TRANSACTION_FEE}

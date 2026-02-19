@@ -10,16 +10,13 @@ export const initialCurrencySwapState: CurrencySwapState = {
   toggle: () => null,
 };
 
-export const CurrencySwapContext =
-  createContext<CurrencySwapState>(initialCurrencySwapState);
+export const CurrencySwapContext = createContext<CurrencySwapState>(initialCurrencySwapState);
 
 export const useCurrencySwap = () => {
   const context = useContext(CurrencySwapContext);
 
   if (context === undefined)
-    throw new Error(
-      "useCurrencySwap must be used within a CurrencySwapProvider",
-    );
+    throw new Error("useCurrencySwap must be used within a CurrencySwapProvider");
 
   return context;
 };

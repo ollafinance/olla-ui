@@ -8,12 +8,7 @@ interface StakingInputProps {
   disabled?: boolean;
 }
 
-export function StakingInput({
-  amount,
-  onAmountChange,
-  onMaxClick,
-  disabled,
-}: StakingInputProps) {
+export function StakingInput({ amount, onAmountChange, onMaxClick, disabled }: StakingInputProps) {
   return (
     <div className="relative">
       <Input
@@ -31,7 +26,7 @@ export function StakingInput({
           size="sm"
           onClick={onMaxClick}
           disabled={disabled}
-          className="h-8 text-xs font-semibold text-primary hover:text-primary/80"
+          className="text-primary hover:text-primary/80 h-8 text-xs font-semibold"
         >
           MAX
         </Button>

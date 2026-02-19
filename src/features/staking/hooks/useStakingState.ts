@@ -22,9 +22,7 @@ interface UseStakingStateReturn {
   };
 }
 
-export function useStakingState(
-  options: UseStakingStateOptions = {},
-): UseStakingStateReturn {
+export function useStakingState(options: UseStakingStateOptions = {}): UseStakingStateReturn {
   const { initialState = "idle", demoMode = true } = options;
 
   const [state, setState] = useState<StakingState>(initialState);
@@ -32,9 +30,7 @@ export function useStakingState(
   const [error, setError] = useState<string | null>(null);
 
   const simulatedShares =
-    amount && !isNaN(Number(amount))
-      ? (Number(amount) * 0.95).toFixed(2)
-      : "0.00";
+    amount && !isNaN(Number(amount)) ? (Number(amount) * 0.95).toFixed(2) : "0.00";
 
   const stake = useCallback(() => {
     if (!demoMode) return;
@@ -77,4 +73,3 @@ export function useStakingState(
     },
   };
 }
-

@@ -7,9 +7,7 @@ const walletConnectProjectIdSchema = z.preprocess((value) => {
 }, z.string().min(1).optional());
 
 const envSchema = z.object({
-  VITE_APP_ENV: z
-    .enum(["development", "production", "test"])
-    .default("development"),
+  VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
   VITE_RPC_URL_FOUNDRY: z
     .string()
     .url("VITE_RPC_URL_FOUNDRY must be a valid URL")
@@ -26,8 +24,7 @@ function validateEnv() {
     VITE_RPC_URL_FOUNDRY: import.meta.env.VITE_RPC_URL_FOUNDRY,
     VITE_RPC_URL_MAINNET: import.meta.env.VITE_RPC_URL_MAINNET,
     VITE_RPC_URL_SEPOLIA: import.meta.env.VITE_RPC_URL_SEPOLIA,
-    VITE_WALLET_CONNECT_PROJECT_ID: import.meta.env
-      .VITE_WALLET_CONNECT_PROJECT_ID,
+    VITE_WALLET_CONNECT_PROJECT_ID: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
   });
 
   if (!result.success) {
@@ -39,7 +36,7 @@ function validateEnv() {
 
   if (!isDev && !result.data.VITE_WALLET_CONNECT_PROJECT_ID) {
     throw new Error(
-      "Environment validation failed:\n  - VITE_WALLET_CONNECT_PROJECT_ID: VITE_WALLET_CONNECT_PROJECT_ID is required",
+      "Environment validation failed:\n  - VITE_WALLET_CONNECT_PROJECT_ID: VITE_WALLET_CONNECT_PROJECT_ID is required"
     );
   }
 

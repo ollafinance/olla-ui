@@ -7,9 +7,9 @@ export function Footer() {
   const isDark = theme === "dark";
 
   return (
-    <footer className="w-full mt-auto pt-8">
-      <div className="border-t border-border/50 mb-6 w-full" />
-      <div className="w-full mx-auto flex items-center justify-between px-4 pb-6">
+    <footer className="mt-auto w-full pt-8">
+      <div className="border-border/50 mb-6 w-full border-t" />
+      <div className="mx-auto flex w-full items-center justify-between px-4 pb-6">
         <div className="flex items-center gap-10">
           <img
             src={isDark ? ollaLogoWhite : ollaLogoBlack}
@@ -31,9 +31,7 @@ export function Footer() {
             Privacy Notice
           </a>
         </div>
-        <span className="text-muted-foreground text-sm font-medium">
-          v0.1.0
-        </span>
+        <span className="text-muted-foreground text-sm font-medium">v0.1.0</span>
       </div>
     </footer>
   );
