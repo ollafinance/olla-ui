@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { createRouter, RouterProvider } from "@tanstack/react-router";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { RainbowKitProvider } from "@/providers/rainbowkit-provider";
+import { CurrencySwapProvider } from "@/providers/currency-swap-provider";
 
 import "./index.css";
 
@@ -35,7 +36,9 @@ createRoot(document.getElementById("root")!).render(
       <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
         <WagmiProvider>
           <RainbowKitProvider>
-            <RouterProvider router={router} />
+            <CurrencySwapProvider>
+              <RouterProvider router={router} />
+            </CurrencySwapProvider>
           </RainbowKitProvider>
         </WagmiProvider>
       </ThemeProvider>
