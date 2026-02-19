@@ -128,10 +128,55 @@ src/
 ├── generated/      # Generated ABIs and addresses (gitignored)
 ├── components/     # React components
 ├── constants/      # Contract configurations
-├── hooks/          # Custom React hooks (useAztecToken, useOllaCore)
+├── hooks/          # Custom React hooks
+│   ├── protocol/   # Protocol hooks (contract interactions)
+│   └── *.ts        # Utility hooks (useTheme, useDebounce, etc.)
 ├── providers/      # Global application providers
 ├── App.tsx         # Main application component
 ├── main.tsx        # Entry point
+```
+
+## Protocol Hooks
+
+Located in `src/hooks/protocol/`, these hooks wrap smart contract interactions:
+
+| Hook | Purpose | Contract |
+|------|---------|----------|
+| `useDeposit` | Deposit assets with EIP-2612 permit, calculates `minSharesOut` for MEV protection | `OllaCore.depositWithPermit` |
+| `useRequestRedeem` | Request a queued withdrawal with permit | `OllaCore.requestRedeemWithPermit` |
+| `useInstantRedeem` | Instant redemption with permit, calculates `minAssetsOut` (accounts for instant fee) | `OllaCore.redeemWithPermit` |
+| `useClaimRequest` | Claim a finalized withdrawal request | `OllaCore.claimRequestById` |
+| `useOllaCoreReads` | Read-only: exchange rate, conversions, preview amounts, active requests, available liquidity | `OllaCore` (view functions) |
+| `useStAztec` | Read stAztec balance, allowance; approve spender | `StAztec` |
+| `useAztecToken` | Read Asset balance, allowance; approve spender | `MockAztec` |
+| `useWithdrawalRequest` | Read withdrawal request details by ID | `WithdrawalQueue` |
+
+### Shared Utilities
+
+| File | Purpose |
+|------|---------|
+| `src/lib/permit.ts` | EIP-2612 permit signing utilities (domain extraction, message building) |
+| `src/constants/protocol.ts` | Protocol constants (slippage tolerance, deadline) |
+
+### Usage Example
+
+```typescript
+import { useDeposit, useOllaCoreReads } from "@/hooks/protocol";
+
+function StakingForm() {
+  const { write: deposit, isSigning, isPending, isConfirming } = useDeposit({
+    onSuccess: () => console.log("Deposited!"),
+  });
+  
+  const { exchangeRate, potentialShares, availableForInstantRedemption } = 
+    useOllaCoreReads({ amountToConvert: "1.0" });
+
+  const handleDeposit = () => {
+    deposit("1.0"); // Deposits 1.0 Aztec, calculates minSharesOut automatically
+  };
+
+  // ...
+}
 ```
 
 ## Related
