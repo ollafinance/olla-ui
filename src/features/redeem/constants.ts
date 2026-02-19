@@ -18,7 +18,7 @@ export const MOCK_BALANCES = {
 export const REDEEM_CONSTANTS = {
   AZTEC_PRICE_USD: 2.1,
   EXCHANGE_RATE: "0.95",
-  TRANSACTION_FEE: "~0.0001 AZTEC",
+  TRANSACTION_FEE: "0.0001",
   APY: "5.2%",
   INSTANT_WITHDRAW_FEE_PERCENT: 0.005,
   WITHDRAWAL_TIME_ESTIMATE: "~7 days",
@@ -46,4 +46,3 @@ export const MOCK_CLAIMS: ClaimItem[] = [
     claimedDate: "10 Jan 2025",
   },
 ];
-

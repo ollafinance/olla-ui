@@ -1,19 +1,18 @@
-import { STAKING_CONSTANTS } from "../../constants";
 import { cn } from "@/lib/utils";
 
-interface StakeInfoProps {
-  exchangeRate?: string;
-  transactionFee?: string;
-  apy?: string;
+interface ProtocolInfoProps {
+  exchangeRate: string | number;
+  transactionFee: string | number;
+  apy: string;
   className?: string;
 }
 
-export function StakeInfo({
-  exchangeRate = `1 Aztec = ${STAKING_CONSTANTS.EXCHANGE_RATE} stAztec`,
-  transactionFee = `~${STAKING_CONSTANTS.TRANSACTION_FEE} Aztec`,
-  apy = STAKING_CONSTANTS.APY,
+export function ProtocolInfo({
+  exchangeRate,
+  transactionFee,
+  apy,
   className,
-}: StakeInfoProps) {
+}: ProtocolInfoProps) {
   return (
     <div
       className={cn(
@@ -23,11 +22,13 @@ export function StakeInfo({
     >
       <div className="flex flex-col">
         <span className="font-normal">Exchange Rate</span>
-        <span className="tracking-[0.48px] font-medium">{exchangeRate}</span>
+        <span className="tracking-[0.48px] font-medium">
+          1 Aztec = {exchangeRate} stAztec
+        </span>
       </div>
       <div className="flex flex-col">
         <span className="font-normal">Transaction Fee</span>
-        <span className="tracking-[0.48px] font-medium">{transactionFee}</span>
+        <span className="tracking-[0.48px] font-medium">~{transactionFee} ETH</span>
       </div>
       <div className="flex flex-col">
         <span className="font-normal">APY</span>
@@ -36,4 +37,3 @@ export function StakeInfo({
     </div>
   );
 }
-

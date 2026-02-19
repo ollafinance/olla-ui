@@ -1,3 +1,3 @@
 export { StakingCard, ReceiveCard, ReturnsCard } from "./cards";
-export { PercentageButtons, BalanceBadge, StakeInfo } from "./shared";
+export { PercentageButtons, BalanceBadge } from "./shared";
 
