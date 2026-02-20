@@ -79,6 +79,15 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     },
   });
 
+  const { data: instantRedemptionFeeBP } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "instantRedemptionFeeBP",
+    query: {
+      refetchInterval: 30000, // Fee changes less frequently
+    },
+  });
+
   return {
     exchangeRate: exchangeRate as bigint | undefined,
     potentialShares: potentialShares as bigint | undefined,
@@ -87,6 +96,7 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     previewRedeemAssets: previewRedeemAssets as bigint | undefined,
     activeRequestIds: (activeRequestIds as bigint[]) || [],
     availableForInstantRedemption: availableForInstantRedemption as bigint | undefined,
+    instantRedemptionFeeBP: instantRedemptionFeeBP as bigint | undefined,
     refetchPreviewDeposit,
     refetchPreviewRedeem,
   };

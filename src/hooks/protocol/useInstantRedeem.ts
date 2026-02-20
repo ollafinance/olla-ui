@@ -16,16 +16,22 @@ import {
   PERMIT_TYPES,
   type Eip712DomainTuple,
 } from "@/lib/permit";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface UseInstantRedeemOptions {
   onSuccess?: () => void;
+  onConfirmed?: () => void;
 }
+
+const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
 
 export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
   const { address } = useConnection();
   const config = useConfig();
   const [isSigning, setIsSigning] = useState(false);
+  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCalledConfirmed = useRef(false);
 
   const { data: stAztecDomain } = useReadContract({
     address: CONTRACTS.StAztec.address,
@@ -48,10 +54,40 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
     data: instantRedeemHash,
     isPending: isInstantRedeemPending,
     error: instantRedeemError,
+    reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isInstantRedeemConfirming, isSuccess: isInstantRedeemConfirmed } =
-    useWaitForTransactionReceipt({ hash: instantRedeemHash });
+  const {
+    isLoading: isInstantRedeemConfirming,
+    isSuccess: isInstantRedeemConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: instantRedeemHash });
+
+  // Clear timeout on success or unmount
+  useEffect(() => {
+    if (isInstantRedeemConfirmed && timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isInstantRedeemConfirmed]);
+
+  // Handle confirmation - refetch nonce and call callback
+  useEffect(() => {
+    if (isInstantRedeemConfirmed && !hasCalledConfirmed.current) {
+      hasCalledConfirmed.current = true;
+
+      // Refetch nonce for next transaction
+      refetchStAztecNonce();
+
+      // Call user callback
+      options.onConfirmed?.();
+    }
+  }, [isInstantRedeemConfirmed, refetchStAztecNonce, options]);
 
   const instantRedeem = async (amount: string) => {
     if (!address || !stAztecDomain || stAztecNonce === undefined) return;
@@ -60,6 +96,7 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
 
     try {
       setIsSigning(true);
+      setTimeoutError(null);
 
       const { data: currentNonce } = await refetchStAztecNonce();
       if (currentNonce === undefined || currentNonce === null)
@@ -68,6 +105,7 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
       const value = parseEther(amount);
       const deadline = BigInt(Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
 
+      // Get expected assets and apply slippage
       const expectedAssets = await readContract(config, {
         address: CONTRACTS.OllaCore.address,
         abi: CONTRACTS.OllaCore.abi,
@@ -76,6 +114,7 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
       });
       if (expectedAssets === undefined || expectedAssets === null)
         throw new Error("Could not fetch preview redeem");
+
       const minAssetsOut = applySlippage(
         expectedAssets as bigint,
         PROTOCOL_CONSTANTS.SLIPPAGE_TOLERANCE_BP
@@ -113,6 +152,14 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
         {
           onSuccess: () => {
             setIsSigning(false);
+            // Start timeout for confirmation
+            timeoutRef.current = setTimeout(() => {
+              setTimeoutError(
+                new Error(
+                  "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+                )
+              );
+            }, CONFIRMATION_TIMEOUT_MS);
             options.onSuccess?.();
           },
           onError: () => setIsSigning(false),
@@ -124,6 +171,20 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
     }
   };
 
+  const reset = useCallback(() => {
+    setIsSigning(false);
+    setTimeoutError(null);
+    hasCalledConfirmed.current = false;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    resetWriteContract();
+  }, [resetWriteContract]);
+
+  // Combine errors - prioritize timeout error if confirmation is stuck
+  const combinedError = timeoutError || receiptError || instantRedeemError;
+
   return {
     write: instantRedeem,
     isSigning,
@@ -131,6 +192,7 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
     isConfirming: isInstantRedeemConfirming,
     isConfirmed: isInstantRedeemConfirmed,
     hash: instantRedeemHash,
-    error: instantRedeemError,
+    error: combinedError,
+    reset,
   };
 }

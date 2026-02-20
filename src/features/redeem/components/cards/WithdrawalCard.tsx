@@ -9,11 +9,19 @@ interface WithdrawalCardProps {
   amount: string;
   onAmountChange: (val: string) => void;
   onWithdraw: () => void;
-  onWithdrawWithError: () => void;
-  onTransitionToSuccess: () => void;
-  onTransitionToError: (msg: string) => void;
   onReset: () => void;
   error: string | null;
+  isConnected: boolean;
+  balance: string;
+  exchangeRate: string;
+  previewAssets: string;
+  minAssetsOut: string;
+  isInstantMode: boolean;
+  onInstantModeChange: (val: boolean) => void;
+  instantWithdrawFee: string;
+  instantWithdrawFeePercent: string;
+  canInstantRedeem: boolean;
+  hash: `0x${string}` | undefined;
 }
 
 export function WithdrawalCard({
@@ -21,20 +29,20 @@ export function WithdrawalCard({
   amount,
   onAmountChange,
   onWithdraw,
-  onWithdrawWithError,
-  onTransitionToSuccess,
-  onTransitionToError,
   onReset,
   error,
+  isConnected,
+  balance,
+  exchangeRate,
+  previewAssets,
+  minAssetsOut,
+  isInstantMode,
+  onInstantModeChange,
+  instantWithdrawFee,
+  instantWithdrawFeePercent,
+  canInstantRedeem,
+  hash,
 }: WithdrawalCardProps) {
-  const handleTransition = () => {
-    if (Math.random() > 0.3) {
-      onTransitionToSuccess();
-    } else {
-      onTransitionToError("Transaction rejected by user");
-    }
-  };
-
   switch (state) {
     case "idle":
       return (
@@ -42,17 +50,29 @@ export function WithdrawalCard({
           amount={amount}
           onAmountChange={onAmountChange}
           onWithdraw={onWithdraw}
-          onWithdrawWithError={onWithdrawWithError}
+          isConnected={isConnected}
+          balance={balance}
+          exchangeRate={exchangeRate}
+          previewAssets={previewAssets}
+          minAssetsOut={minAssetsOut}
+          isInstantMode={isInstantMode}
+          onInstantModeChange={onInstantModeChange}
+          instantWithdrawFee={instantWithdrawFee}
+          instantWithdrawFeePercent={instantWithdrawFeePercent}
+          canInstantRedeem={canInstantRedeem}
         />
       );
+    case "signing":
     case "pending":
-      return <WithdrawalCardPending onTransition={handleTransition} />;
+    case "confirming":
+      return <WithdrawalCardPending state={state} />;
     case "success":
       return (
         <WithdrawalCardSuccess
           amount={amount}
+          isInstantMode={isInstantMode}
+          hash={hash}
           onWithdrawMore={onReset}
-          onViewExplorer={() => console.log("View on Explorer clicked")}
         />
       );
     case "error":
