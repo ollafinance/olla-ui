@@ -80,10 +80,10 @@ export function useDeposit(options: UseDepositOptions = {}) {
   useEffect(() => {
     if (isDepositConfirmed && !hasCalledConfirmed.current) {
       hasCalledConfirmed.current = true;
-      
+
       // Refetch nonce for next transaction
       refetchNonce();
-      
+
       // Call user callback
       options.onConfirmed?.();
     }
@@ -105,9 +105,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
         throw new Error("Could not fetch nonce");
 
       const value = parseEther(amount);
-      const deadline = BigInt(
-        Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS
-      );
+      const deadline = BigInt(Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
 
       const expectedShares = await readContract(config, {
         address: CONTRACTS.OllaCore.address,
@@ -144,15 +142,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
 
       const { v, r, s } = parseSignature(signature);
 
-      const args = [
-        value,
-        address,
-        minSharesOut,
-        deadline,
-        Number(v),
-        r,
-        s,
-      ];
+      const args = [value, address, minSharesOut, deadline, Number(v), r, s];
 
       depositMutate(
         {
@@ -166,7 +156,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
             bigint,
             number,
             `0x${string}`,
-            `0x${string}`
+            `0x${string}`,
           ],
         },
         {

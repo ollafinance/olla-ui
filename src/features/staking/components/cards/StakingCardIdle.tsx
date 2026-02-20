@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { BalanceBadge } from "../shared/BalanceBadge";
 import { PercentageButtons } from "../shared/PercentageButtons";
@@ -50,12 +51,16 @@ export function StakingCardIdle({
       ? (Number(amount) * STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2)
       : "0.00";
 
-  const isInputValid = !!amount && !isNaN(Number(amount)) && Number(amount) > 0;
+  const numericAmount = Number(amount);
+  const numericBalance = parseFloat(balance);
+  const isInputValid =
+    !!amount && !isNaN(numericAmount) && numericAmount > 0 && numericAmount <= numericBalance;
+  const isBalanceExceeded = numericAmount > numericBalance;
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPercentage(undefined);
     const inputValue = sanitizeNumericInput(e.target.value);
-    
+
     if (isUsdMode) {
       const usdAmount = parseFloat(inputValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
@@ -126,16 +131,31 @@ export function StakingCardIdle({
         />
         <div className="flex items-center gap-2">
           {isConnected ? (
-            <Button
-              variant="muted"
-              size="xl"
-              onClick={onStake}
-              disabled={!isInputValid}
-              showArrow
-              className="w-button-stake h-button bg-muted-soft text-black"
-            >
-              Stake
-            </Button>
+            isBalanceExceeded ? (
+              <Tooltip content="You do not have this amount of Aztec tokens in your wallet">
+                <Button
+                  variant="muted"
+                  size="xl"
+                  onClick={onStake}
+                  disabled={true}
+                  showArrow
+                  className="w-button-stake h-button bg-muted-soft text-black"
+                >
+                  Stake
+                </Button>
+              </Tooltip>
+            ) : (
+              <Button
+                variant="muted"
+                size="xl"
+                onClick={onStake}
+                disabled={!isInputValid}
+                showArrow
+                className="w-button-stake h-button bg-muted-soft text-black"
+              >
+                Stake
+              </Button>
+            )
           ) : (
             <ConnectButton />
           )}
