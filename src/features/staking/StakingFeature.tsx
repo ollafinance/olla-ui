@@ -5,16 +5,19 @@ import { PageLayout } from "@/components/layout/page-layout";
 
 export function StakingFeature() {
   const {
+    isConnected,
     state,
     amount,
     setAmount,
     stake,
-    stakeWithError,
     reset,
     error,
-    simulatedShares,
-    _internal,
-  } = useStakingState({ demoMode: true });
+    aztecBalance,
+    stAztecBalance,
+    exchangeRate,
+    previewShares,
+    hash,
+  } = useStakingState();
 
   return (
     <PageLayout
@@ -22,23 +25,30 @@ export function StakingFeature() {
         <StakingCard
           state={state}
           amount={amount}
-          simulatedShares={simulatedShares}
+          isConnected={isConnected}
+          balance={aztecBalance}
+          previewShares={previewShares}
+          exchangeRate={exchangeRate}
           onAmountChange={setAmount}
           onStake={stake}
-          onStakeWithError={stakeWithError}
-          onTransitionToSuccess={_internal.transitionToSuccess}
-          onTransitionToError={_internal.transitionToError}
           onReset={reset}
           error={error}
+          hash={hash}
         />
       }
       topCards={
         <>
-          <ReceiveCard shares={simulatedShares} />
-          <ReturnsCard shares={simulatedShares} />
+          <ReceiveCard shares={previewShares} />
+          <ReturnsCard shares={previewShares} />
         </>
       }
-      bottomCard={<PortfolioCard className="lg:h-card-third" />}
+      bottomCard={
+        <PortfolioCard
+          isConnected={isConnected}
+          totalStaked={stAztecBalance}
+          className="lg:h-card-third"
+        />
+      }
     />
   );
 }

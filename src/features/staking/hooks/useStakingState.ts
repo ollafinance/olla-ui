@@ -1,75 +1,105 @@
-import { useState, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
+import { useConnection } from "wagmi";
+import { formatEther } from "viem";
+import { useDeposit } from "@/hooks/protocol/useDeposit";
+import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
+import { useAztecToken } from "@/hooks/protocol/useAztecToken";
+import { useStAztec } from "@/hooks/protocol/useStAztec";
 
-export type StakingState = "idle" | "pending" | "success" | "error";
-
-interface UseStakingStateOptions {
-  initialState?: StakingState;
-  demoMode?: boolean;
-}
+export type StakingState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
 interface UseStakingStateReturn {
+  isConnected: boolean;
   state: StakingState;
   amount: string;
   setAmount: (val: string) => void;
   stake: () => void;
-  stakeWithError: () => void;
   reset: () => void;
   error: string | null;
-  simulatedShares: string;
-  _internal: {
-    transitionToSuccess: () => void;
-    transitionToError: (errorMessage: string) => void;
-  };
+  aztecBalance: string;
+  stAztecBalance: string;
+  exchangeRate: string;
+  previewShares: string;
+  hash: `0x${string}` | undefined;
 }
 
-export function useStakingState(options: UseStakingStateOptions = {}): UseStakingStateReturn {
-  const { initialState = "idle", demoMode = true } = options;
+export function useStakingState(): UseStakingStateReturn {
+  const { address, isConnected } = useConnection();
+  const [amount, setAmount] = useState("");
+  const [manualError, setManualError] = useState<string | null>(null);
 
-  const [state, setState] = useState<StakingState>(initialState);
-  const [amount, setAmount] = useState("95.00");
-  const [error, setError] = useState<string | null>(null);
+  const deposit = useDeposit({
+    onSuccess: () => {
+      setManualError(null);
+    },
+  });
 
-  const simulatedShares =
-    amount && !isNaN(Number(amount)) ? (Number(amount) * 0.95).toFixed(2) : "0.00";
+  const reads = useOllaCoreReads({
+    amountToConvert: amount,
+    address: address,
+  });
+
+  const { balance: aztecBalance } = useAztecToken();
+  const { balance: stAztecBalance } = useStAztec();
+
+  const state = useMemo<StakingState>(() => {
+    if (manualError || deposit.error) return "error";
+    if (deposit.isConfirmed) return "success";
+    if (deposit.isConfirming) return "confirming";
+    if (deposit.isPending) return "pending";
+    if (deposit.isSigning) return "signing";
+    return "idle";
+  }, [
+    deposit.isSigning,
+    deposit.isPending,
+    deposit.isConfirming,
+    deposit.isConfirmed,
+    deposit.error,
+    manualError,
+  ]);
+
+  const error = useMemo(() => {
+    if (manualError) return manualError;
+    if (deposit.error) {
+      const err = deposit.error as Error & { shortMessage?: string };
+      return err.shortMessage || err.message || "Transaction failed";
+    }
+    return null;
+  }, [deposit.error, manualError]);
 
   const stake = useCallback(() => {
-    if (!demoMode) return;
-    setError(null);
-    setState("pending");
-  }, [demoMode]);
-
-  const stakeWithError = useCallback(() => {
-    if (!demoMode) return;
-    setError(null);
-    setState("pending");
-  }, [demoMode]);
+    if (!isConnected) return;
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
+    setManualError(null);
+    deposit.write(amount);
+  }, [isConnected, amount, deposit]);
 
   const reset = useCallback(() => {
-    setState("idle");
-    setError(null);
-  }, []);
+    setAmount("");
+    setManualError(null);
+    deposit.reset();
+  }, [deposit]);
 
-  const transitionToSuccess = useCallback(() => {
-    setState("success");
-  }, []);
+  const exchangeRate = reads.exchangeRate
+    ? (1 / Number(formatEther(reads.exchangeRate))).toFixed(4)
+    : "1.0000";
 
-  const transitionToError = useCallback((errorMessage: string) => {
-    setState("error");
-    setError(errorMessage);
-  }, []);
+  const previewShares = reads.previewDepositShares
+    ? Number(formatEther(reads.previewDepositShares)).toFixed(4)
+    : "0";
 
   return {
+    isConnected,
     state,
     amount,
     setAmount,
     stake,
-    stakeWithError,
     reset,
     error,
-    simulatedShares,
-    _internal: {
-      transitionToSuccess,
-      transitionToError,
-    },
+    aztecBalance,
+    stAztecBalance,
+    exchangeRate,
+    previewShares,
+    hash: deposit.hash,
   };
 }
