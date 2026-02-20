@@ -7,6 +7,7 @@ import { PercentageButtons } from "../shared/PercentageButtons";
 import { ProtocolInfo } from "@/components/ProtocolInfo";
 import { useCurrencySwap } from "@/hooks/useCurrencySwap";
 import { STAKING_CONSTANTS } from "../../constants";
+import { sanitizeNumericInput } from "@/lib/utils";
 
 interface StakingCardIdleProps {
   amount: string;
@@ -53,7 +54,8 @@ export function StakingCardIdle({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPercentage(undefined);
-    const inputValue = e.target.value;
+    const inputValue = sanitizeNumericInput(e.target.value);
+    
     if (isUsdMode) {
       const usdAmount = parseFloat(inputValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
