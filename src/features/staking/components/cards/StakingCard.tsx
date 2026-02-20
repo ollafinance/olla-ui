@@ -7,53 +7,51 @@ import { TransactionErrorCard } from "@/components/cards";
 interface StakingCardProps {
   state: StakingState;
   amount: string;
-  simulatedShares: string;
+  isConnected: boolean;
+  balance: string;
+  previewShares: string;
+  exchangeRate: string;
   onAmountChange: (val: string) => void;
   onStake: () => void;
-  onStakeWithError: () => void;
-  onTransitionToSuccess: () => void;
-  onTransitionToError: (msg: string) => void;
   onReset: () => void;
   error: string | null;
+  hash?: `0x${string}`;
 }
 
 export function StakingCard({
   state,
   amount,
-  simulatedShares,
+  isConnected,
+  balance,
+  previewShares,
+  exchangeRate,
   onAmountChange,
   onStake,
-  onStakeWithError,
-  onTransitionToSuccess,
-  onTransitionToError,
   onReset,
   error,
+  hash,
 }: StakingCardProps) {
-  const handleTransition = () => {
-    if (Math.random() > 0.3) {
-      onTransitionToSuccess();
-    } else {
-      onTransitionToError("Transaction rejected by user");
-    }
-  };
-
   switch (state) {
     case "idle":
       return (
         <StakingCardIdle
           amount={amount}
+          balance={balance}
+          isConnected={isConnected}
+          exchangeRate={exchangeRate}
           onAmountChange={onAmountChange}
           onStake={onStake}
-          onStakeWithError={onStakeWithError}
         />
       );
+    case "signing":
     case "pending":
-      return <StakingCardPending onTransition={handleTransition} />;
+    case "confirming":
+      return <StakingCardPending state={state} hash={hash} />;
     case "success":
       return (
         <StakingCardSuccess
           amount={amount}
-          shares={simulatedShares}
+          shares={previewShares}
           onStakeMore={onReset}
           onViewExplorer={() => console.log("View on Explorer clicked")}
         />

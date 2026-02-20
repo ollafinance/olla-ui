@@ -16,16 +16,22 @@ import {
   PERMIT_TYPES,
   type Eip712DomainTuple,
 } from "@/lib/permit";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface UseDepositOptions {
   onSuccess?: () => void;
+  onConfirmed?: () => void;
 }
+
+const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
 
 export function useDeposit(options: UseDepositOptions = {}) {
   const { address } = useConnection();
   const config = useConfig();
   const [isSigning, setIsSigning] = useState(false);
+  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCalledConfirmed = useRef(false);
 
   const { data: assetDomain } = useReadContract({
     address: CONTRACTS.Asset.address,
@@ -48,18 +54,51 @@ export function useDeposit(options: UseDepositOptions = {}) {
     data: depositHash,
     isPending: isDepositPending,
     error: depositError,
+    reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } =
-    useWaitForTransactionReceipt({ hash: depositHash });
+  const {
+    isLoading: isDepositConfirming,
+    isSuccess: isDepositConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: depositHash });
+
+  // Clear timeout on success or unmount
+  useEffect(() => {
+    if (isDepositConfirmed && timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isDepositConfirmed]);
+
+  // Handle confirmation - refetch nonce and call callback
+  useEffect(() => {
+    if (isDepositConfirmed && !hasCalledConfirmed.current) {
+      hasCalledConfirmed.current = true;
+
+      // Refetch nonce for next transaction
+      refetchNonce();
+
+      // Call user callback
+      options.onConfirmed?.();
+    }
+  }, [isDepositConfirmed, refetchNonce, options]);
 
   const deposit = async (amount: string) => {
-    if (!address || !assetDomain || nonce === undefined) return;
+    if (!address || !assetDomain || nonce === undefined) {
+      return;
+    }
 
     const domain = extractDomainParams(assetDomain as Eip712DomainTuple);
 
     try {
       setIsSigning(true);
+      setTimeoutError(null);
 
       const { data: currentNonce } = await refetchNonce();
       if (currentNonce === undefined || currentNonce === null)
@@ -103,26 +142,59 @@ export function useDeposit(options: UseDepositOptions = {}) {
 
       const { v, r, s } = parseSignature(signature);
 
+      const args = [value, address, minSharesOut, deadline, Number(v), r, s];
+
       depositMutate(
         {
           address: CONTRACTS.OllaCore.address,
           abi: CONTRACTS.OllaCore.abi,
           functionName: "depositWithPermit",
-          args: [value, address, minSharesOut, deadline, Number(v), r, s],
+          args: args as [
+            bigint,
+            `0x${string}`,
+            bigint,
+            bigint,
+            number,
+            `0x${string}`,
+            `0x${string}`,
+          ],
         },
         {
           onSuccess: () => {
             setIsSigning(false);
+            // Start timeout for confirmation
+            timeoutRef.current = setTimeout(() => {
+              setTimeoutError(
+                new Error(
+                  "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+                )
+              );
+            }, CONFIRMATION_TIMEOUT_MS);
             options.onSuccess?.();
           },
-          onError: () => setIsSigning(false),
+          onError: () => {
+            setIsSigning(false);
+          },
         }
       );
-    } catch (error) {
-      console.error("Permit signing failed:", error);
+    } catch {
       setIsSigning(false);
     }
   };
+
+  const reset = useCallback(() => {
+    setIsSigning(false);
+    setTimeoutError(null);
+    hasCalledConfirmed.current = false;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    resetWriteContract();
+  }, [resetWriteContract]);
+
+  // Combine errors - prioritize timeout error if confirmation is stuck
+  const combinedError = timeoutError || receiptError || depositError;
 
   return {
     write: deposit,
@@ -131,6 +203,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
     isConfirming: isDepositConfirming,
     isConfirmed: isDepositConfirmed,
     hash: depositHash,
-    error: depositError,
+    error: combinedError,
+    reset,
   };
 }

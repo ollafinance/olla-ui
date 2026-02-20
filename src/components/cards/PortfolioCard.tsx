@@ -3,14 +3,32 @@ import { cn } from "@/lib/utils";
 interface PortfolioCardProps {
   totalStaked?: string;
   rewardsEarned?: string;
+  isConnected?: boolean;
   className?: string;
 }
 
 export function PortfolioCard({
-  totalStaked = "3095.00",
-  rewardsEarned = "295.00",
+  totalStaked,
+  rewardsEarned,
+  isConnected,
   className,
 }: PortfolioCardProps) {
+  if (!isConnected) {
+    return (
+      <div
+        className={cn(
+          "bg-card-tertiary rounded-card flex min-h-[175px] w-full flex-col items-start justify-center p-6",
+          className
+        )}
+      >
+        <p className="text-card-tertiary-foreground text-lg leading-[1.16] font-medium">
+          Portfolio
+        </p>
+        <p className="text-muted-foreground mt-4 text-sm">Connect wallet to see your portfolio</p>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
@@ -28,9 +46,11 @@ export function PortfolioCard({
             Total Staked Balance
           </span>
           <div className="bg-secondary-accent h-px w-[123px]" />
-          <span className="text-[21.3px] leading-[1.16] font-medium text-black">{totalStaked}</span>
+          <span className="text-[21.3px] leading-[1.16] font-medium text-black">
+            {Number(totalStaked).toFixed(4) || "0.00"}
+          </span>
           <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
-            Aztec
+            stAztec
           </span>
         </div>
 
@@ -40,7 +60,7 @@ export function PortfolioCard({
           </span>
           <div className="bg-secondary-accent h-px w-[123px]" />
           <span className="text-[21.3px] leading-[1.16] font-medium text-black">
-            {rewardsEarned}
+            {rewardsEarned || "0.00"}
           </span>
           <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
             Aztec

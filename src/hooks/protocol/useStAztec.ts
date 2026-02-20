@@ -6,6 +6,7 @@ import {
 } from "wagmi";
 import { formatEther, parseEther } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
+import { useBlockWatcher } from "./useBlockWatcher";
 
 export function useStAztec() {
   const { address } = useConnection();
@@ -31,6 +32,18 @@ export function useStAztec() {
     address: CONTRACTS.StAztec.address,
     abi: CONTRACTS.StAztec.abi,
     functionName: "totalSupply",
+  });
+
+  // Refetch on new blocks
+  useBlockWatcher({
+    onBlock: () => {
+      if (address) {
+        refetchBalance();
+        refetchAllowance();
+        refetchTotalSupply();
+      }
+    },
+    enabled: !!address,
   });
 
   // WRITES

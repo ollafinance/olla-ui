@@ -1,24 +1,24 @@
-import { useEffect } from "react";
 import ollaLoading from "@/assets/icons/olla-loading.svg";
 
 interface StakingCardPendingProps {
-  onTransition: () => void;
+  state: "signing" | "pending" | "confirming";
+  hash?: `0x${string}`;
 }
 
-export function StakingCardPending({ onTransition }: StakingCardPendingProps) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onTransition();
-    }, 2000);
+export function StakingCardPending({ state }: StakingCardPendingProps) {
+  const titles: Record<"signing" | "pending" | "confirming", [string, string]> = {
+    signing: ["Sign", "Transaction..."],
+    pending: ["Transaction", "Submitted..."],
+    confirming: ["Transaction", "Confirming..."],
+  };
 
-    return () => clearTimeout(timer);
-  }, [onTransition]);
+  const [line1, line2] = titles[state];
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
       <div className="text-[67px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black">
-        <p className="mb-0">Transaction</p>
-        <p>Submitted...</p>
+        <p className="mb-0">{line1}</p>
+        <p>{line2}</p>
       </div>
 
       <div className="mt-[22px]">

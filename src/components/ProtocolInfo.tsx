@@ -1,13 +1,18 @@
 import { cn } from "@/lib/utils";
 
 interface ProtocolInfoProps {
-  exchangeRate: string | number;
-  transactionFee: string | number;
-  apy: string;
+  exchangeRate: string;
+  transactionFee?: string;
+  apy?: string;
   className?: string;
 }
 
-export function ProtocolInfo({ exchangeRate, transactionFee, apy, className }: ProtocolInfoProps) {
+export function ProtocolInfo({
+  exchangeRate,
+  transactionFee = "0.0001",
+  apy = "5.2%",
+  className,
+}: ProtocolInfoProps) {
   return (
     <div
       className={cn(

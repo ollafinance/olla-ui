@@ -179,6 +179,34 @@ function StakingForm() {
 }
 ```
 
+## Troubleshooting
+
+### Transaction stuck in "Confirming" state
+
+If your transaction gets stuck on "Confirming" indefinitely after the first successful transaction, this is likely a **wallet nonce mismatch** issue.
+
+**Symptoms:**
+- First transaction succeeds and is mined
+- Second transaction shows "Confirming" forever
+- No new blocks are produced on the local chain
+- `cast tx <hash>` shows the transaction has a nonce much higher than expected (e.g., nonce 21 when it should be nonce 1)
+
+**Root Cause:**
+The wallet (MetaMask) caches the transaction nonce from previous sessions. When you reset the Foundry/Anvil chain, the chain's nonce counter resets to 0, but the wallet still thinks the account has sent many transactions. This creates a gap in nonces that the chain cannot fill.
+
+**Solution:**
+Reset your wallet's nonce cache:
+1. Open MetaMask
+2. Go to Settings → Advanced
+3. Click "Reset Account" (this clears the transaction history for the current network)
+4. Try the transaction again
+
+**Prevention:**
+Always reset your wallet after resetting the local chain:
+1. Reset Foundry/Anvil chain
+2. Reset MetaMask account (Settings → Advanced → Reset Account)
+3. Then start testing
+
 ## Related
 
 - [olla-core](https://github.com/ollafinance/core) - Smart contracts
