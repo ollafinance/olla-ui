@@ -7,3 +7,4 @@ export { useStAztec } from "./useStAztec";
 export { useAztecToken } from "./useAztecToken";
 export { useWithdrawalRequest } from "./useWithdrawalQueue";
 export { useBlockWatcher } from "./useBlockWatcher";
+export { useGasEstimate } from "./useGasEstimate";

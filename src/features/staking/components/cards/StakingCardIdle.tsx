@@ -17,6 +17,9 @@ interface StakingCardIdleProps {
   exchangeRate: string;
   onAmountChange: (val: string) => void;
   onStake: () => void;
+  estimatedFee: string;
+  isEstimatingFee: boolean;
+  gasEstimateError: string | null;
 }
 
 export function StakingCardIdle({
@@ -26,6 +29,9 @@ export function StakingCardIdle({
   exchangeRate,
   onAmountChange,
   onStake,
+  estimatedFee,
+  isEstimatingFee,
+  gasEstimateError,
 }: StakingCardIdleProps) {
   const { isUsdMode } = useCurrencySwap();
   const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
@@ -126,7 +132,9 @@ export function StakingCardIdle({
       <div className="gap-43px flex w-full flex-col items-center justify-between lg:flex-row">
         <ProtocolInfo
           exchangeRate={exchangeRate}
-          transactionFee={STAKING_CONSTANTS.TRANSACTION_FEE}
+          transactionFee={estimatedFee}
+          isFeeLoading={isEstimatingFee}
+          feeError={gasEstimateError}
           apy={STAKING_CONSTANTS.APY}
         />
         <div className="flex items-center gap-2">

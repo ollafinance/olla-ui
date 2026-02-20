@@ -1,10 +1,14 @@
 import { useState, useMemo, useCallback } from "react";
 import { useConnection } from "wagmi";
-import { formatEther } from "viem";
+import { formatEther, parseEther, type Abi } from "viem";
+import { useDebounce } from "@/hooks/useDebounce";
 import { useDeposit } from "@/hooks/protocol/useDeposit";
+import { useGasEstimate } from "@/hooks/protocol/useGasEstimate";
 import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
+import { CONTRACTS } from "@/constants/contracts";
+import { PROTOCOL_CONSTANTS, applySlippage } from "@/constants/protocol";
 
 export type StakingState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -21,6 +25,9 @@ interface UseStakingStateReturn {
   exchangeRate: string;
   previewShares: string;
   hash: `0x${string}` | undefined;
+  estimatedFee: string;
+  isEstimatingFee: boolean;
+  gasEstimateError: string | null;
 }
 
 export function useStakingState(): UseStakingStateReturn {
@@ -45,6 +52,29 @@ export function useStakingState(): UseStakingStateReturn {
 
   const { balance: aztecBalance } = useAztecToken();
   const { balance: stAztecBalance } = useStAztec();
+
+  // Debounce amount for gas estimation
+  const debouncedAmount = useDebounce(amount, 500);
+
+  // Calculate gas estimate args
+  const numericAmount = Number(debouncedAmount);
+  const isValidForEstimation = !isNaN(numericAmount) && numericAmount > 0;
+
+  const assets = isValidForEstimation ? parseEther(debouncedAmount) : 0n;
+  const minSharesOut = isValidForEstimation && reads.previewDepositShares
+    ? applySlippage(reads.previewDepositShares, PROTOCOL_CONSTANTS.SLIPPAGE_TOLERANCE_BP)
+    : 0n;
+
+  // Estimate gas for deposit
+  const { estimatedFee, isLoading: isEstimatingFee, errorMessage: gasEstimateError } = useGasEstimate({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi as Abi,
+    functionName: "deposit",
+    args: isValidForEstimation && address
+      ? [assets, address, minSharesOut]
+      : [0n, address || "0x0", 0n],
+    enabled: isValidForEstimation && !!address,
+  });
 
   const state = useMemo<StakingState>(() => {
     if (manualError || deposit.error) return "error";
@@ -105,5 +135,8 @@ export function useStakingState(): UseStakingStateReturn {
     exchangeRate,
     previewShares,
     hash: deposit.hash,
+    estimatedFee,
+    isEstimatingFee,
+    gasEstimateError,
   };
 }

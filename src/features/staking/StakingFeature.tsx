@@ -17,6 +17,9 @@ export function StakingFeature() {
     exchangeRate,
     previewShares,
     hash,
+    estimatedFee,
+    isEstimatingFee,
+    gasEstimateError,
   } = useStakingState();
 
   return (
@@ -34,6 +37,9 @@ export function StakingFeature() {
           onReset={reset}
           error={error}
           hash={hash}
+          estimatedFee={estimatedFee}
+          isEstimatingFee={isEstimatingFee}
+          gasEstimateError={gasEstimateError}
         />
       }
       topCards={

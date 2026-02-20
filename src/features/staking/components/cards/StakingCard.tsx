@@ -16,6 +16,9 @@ interface StakingCardProps {
   onReset: () => void;
   error: string | null;
   hash?: `0x${string}`;
+  estimatedFee: string;
+  isEstimatingFee: boolean;
+  gasEstimateError: Error | null;
 }
 
 export function StakingCard({
@@ -30,6 +33,9 @@ export function StakingCard({
   onReset,
   error,
   hash,
+  estimatedFee,
+  isEstimatingFee,
+  gasEstimateError,
 }: StakingCardProps) {
   switch (state) {
     case "idle":
@@ -41,6 +47,9 @@ export function StakingCard({
           exchangeRate={exchangeRate}
           onAmountChange={onAmountChange}
           onStake={onStake}
+          estimatedFee={estimatedFee}
+          isEstimatingFee={isEstimatingFee}
+          gasEstimateError={gasEstimateError}
         />
       );
     case "signing":
