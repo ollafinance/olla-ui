@@ -6,6 +6,7 @@ import {
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
+import { useBlockWatcher } from "./useBlockWatcher";
 
 export function useAztecToken() {
   const { address } = useConnection();
@@ -25,6 +26,17 @@ export function useAztecToken() {
     functionName: "allowance",
     args: address ? [address, CONTRACTS.OllaCore.address] : undefined,
     query: { enabled: !!address },
+  });
+
+  // Refetch on new blocks
+  useBlockWatcher({
+    onBlock: () => {
+      if (address) {
+        refetchBalance();
+        refetchAllowance();
+      }
+    },
+    enabled: !!address,
   });
 
   // WRITES

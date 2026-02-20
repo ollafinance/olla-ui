@@ -32,6 +32,10 @@ export function useStakingState(): UseStakingStateReturn {
     onSuccess: () => {
       setManualError(null);
     },
+    onConfirmed: () => {
+      // Queries are automatically invalidated in useDeposit hook
+      // This callback can be used for additional UI updates if needed
+    },
   });
 
   const reads = useOllaCoreReads({

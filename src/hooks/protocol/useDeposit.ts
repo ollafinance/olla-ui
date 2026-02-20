@@ -16,16 +16,22 @@ import {
   PERMIT_TYPES,
   type Eip712DomainTuple,
 } from "@/lib/permit";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface UseDepositOptions {
   onSuccess?: () => void;
+  onConfirmed?: () => void;
 }
+
+const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
 
 export function useDeposit(options: UseDepositOptions = {}) {
   const { address } = useConnection();
   const config = useConfig();
   const [isSigning, setIsSigning] = useState(false);
+  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCalledConfirmed = useRef(false);
 
   const { data: assetDomain } = useReadContract({
     address: CONTRACTS.Asset.address,
@@ -51,61 +57,57 @@ export function useDeposit(options: UseDepositOptions = {}) {
     reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isDepositConfirming, isSuccess: isDepositConfirmed } =
-    useWaitForTransactionReceipt({ hash: depositHash });
+  const {
+    isLoading: isDepositConfirming,
+    isSuccess: isDepositConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: depositHash });
 
-  console.log("[useDeposit] Hook render:", {
-    address,
-    isSigning,
-    hasAssetDomain: !!assetDomain,
-    hasNonce: nonce !== undefined,
-    depositHash,
-    isDepositPending,
-    isDepositConfirming,
-    isDepositConfirmed,
-    depositError: depositError?.message,
-  });
-
+  // Clear timeout on success or unmount
   useEffect(() => {
-    if (depositHash) {
-      console.log("[useDeposit] Hash changed:", depositHash);
+    if (isDepositConfirmed && timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
     }
-  }, [depositHash]);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isDepositConfirmed]);
 
+  // Handle confirmation - refetch nonce and call callback
   useEffect(() => {
-    console.log("[useDeposit] Confirmation state changed:", {
-      isDepositConfirming,
-      isDepositConfirmed,
-    });
-  }, [isDepositConfirming, isDepositConfirmed]);
+    if (isDepositConfirmed && !hasCalledConfirmed.current) {
+      hasCalledConfirmed.current = true;
+      
+      // Refetch nonce for next transaction
+      refetchNonce();
+      
+      // Call user callback
+      options.onConfirmed?.();
+    }
+  }, [isDepositConfirmed, refetchNonce, options]);
 
   const deposit = async (amount: string) => {
-    console.log("[useDeposit] deposit() called with amount:", amount);
-
     if (!address || !assetDomain || nonce === undefined) {
-      console.log("[useDeposit] Early return - missing data:", {
-        hasAddress: !!address,
-        hasAssetDomain: !!assetDomain,
-        hasNonce: nonce !== undefined,
-      });
       return;
     }
 
     const domain = extractDomainParams(assetDomain as Eip712DomainTuple);
-    console.log("[useDeposit] EIP-712 domain:", domain);
 
     try {
       setIsSigning(true);
-      console.log("[useDeposit] Signing started...");
+      setTimeoutError(null);
 
       const { data: currentNonce } = await refetchNonce();
-      console.log("[useDeposit] Refetched nonce:", currentNonce);
       if (currentNonce === undefined || currentNonce === null)
         throw new Error("Could not fetch nonce");
 
       const value = parseEther(amount);
-      const deadline = BigInt(Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
-      console.log("[useDeposit] Parsed value:", value.toString(), "deadline:", deadline.toString());
+      const deadline = BigInt(
+        Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS
+      );
 
       const expectedShares = await readContract(config, {
         address: CONTRACTS.OllaCore.address,
@@ -113,23 +115,12 @@ export function useDeposit(options: UseDepositOptions = {}) {
         functionName: "previewDeposit",
         args: [value],
       });
-      console.log("[useDeposit] Expected shares:", expectedShares?.toString());
       if (expectedShares === undefined || expectedShares === null)
         throw new Error("Could not fetch preview deposit");
       const minSharesOut = applySlippage(
         expectedShares as bigint,
         PROTOCOL_CONSTANTS.SLIPPAGE_TOLERANCE_BP
       );
-      console.log("[useDeposit] Min shares out (with slippage):", minSharesOut.toString());
-
-      const permitMessage = buildPermitMessage(
-        address,
-        CONTRACTS.OllaCore.address,
-        value,
-        currentNonce as bigint,
-        deadline
-      );
-      console.log("[useDeposit] Permit message:", permitMessage);
 
       const signature = await mutateAsync({
         domain: {
@@ -142,46 +133,78 @@ export function useDeposit(options: UseDepositOptions = {}) {
           Permit: PERMIT_TYPES,
         },
         primaryType: "Permit",
-        message: permitMessage,
+        message: buildPermitMessage(
+          address,
+          CONTRACTS.OllaCore.address,
+          value,
+          currentNonce as bigint,
+          deadline
+        ),
       });
-      console.log("[useDeposit] Signature obtained:", signature);
 
       const { v, r, s } = parseSignature(signature);
-      console.log("[useDeposit] Signature parsed:", { v, r, s });
 
-      const txArgs = [value, address, minSharesOut, deadline, Number(v), r, s];
-      console.log("[useDeposit] Calling depositMutate with args:", txArgs);
+      const args = [
+        value,
+        address,
+        minSharesOut,
+        deadline,
+        Number(v),
+        r,
+        s,
+      ];
 
       depositMutate(
         {
           address: CONTRACTS.OllaCore.address,
           abi: CONTRACTS.OllaCore.abi,
           functionName: "depositWithPermit",
-          args: txArgs as [bigint, `0x${string}`, bigint, bigint, number, `0x${string}`, `0x${string}`],
+          args: args as [
+            bigint,
+            `0x${string}`,
+            bigint,
+            bigint,
+            number,
+            `0x${string}`,
+            `0x${string}`
+          ],
         },
         {
-          onSuccess: (hash) => {
-            console.log("[useDeposit] depositMutate onSuccess - hash:", hash);
+          onSuccess: () => {
             setIsSigning(false);
+            // Start timeout for confirmation
+            timeoutRef.current = setTimeout(() => {
+              setTimeoutError(
+                new Error(
+                  "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+                )
+              );
+            }, CONFIRMATION_TIMEOUT_MS);
             options.onSuccess?.();
           },
-          onError: (error) => {
-            console.error("[useDeposit] depositMutate onError:", error);
+          onError: () => {
             setIsSigning(false);
           },
         }
       );
-    } catch (error) {
-      console.error("[useDeposit] Permit signing failed:", error);
+    } catch {
       setIsSigning(false);
     }
   };
 
-  const reset = () => {
-    console.log("[useDeposit] reset() called");
+  const reset = useCallback(() => {
     setIsSigning(false);
+    setTimeoutError(null);
+    hasCalledConfirmed.current = false;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
     resetWriteContract();
-  };
+  }, [resetWriteContract]);
+
+  // Combine errors - prioritize timeout error if confirmation is stuck
+  const combinedError = timeoutError || receiptError || depositError;
 
   return {
     write: deposit,
@@ -190,7 +213,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
     isConfirming: isDepositConfirming,
     isConfirmed: isDepositConfirmed,
     hash: depositHash,
-    error: depositError,
+    error: combinedError,
     reset,
   };
 }
