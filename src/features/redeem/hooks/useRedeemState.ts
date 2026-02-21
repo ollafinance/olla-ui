@@ -33,7 +33,8 @@ interface UseRedeemStateReturn {
   exchangeRate: string;
 
   // Preview Values
-  previewAssets: string;
+  grossAssets: string; // Converted assets without any fees
+  previewAssets: string; // What user actually receives (after fee in instant mode)
   minAssetsOut: string;
   instantWithdrawFee: string;
   instantWithdrawFeePercent: string;
@@ -98,20 +99,30 @@ export function useRedeemState(): UseRedeemStateReturn {
     ? Number(formatEther(reads.exchangeRate)).toFixed(4)
     : "1.0000";
 
-  // Preview assets (what you get for your shares)
-  const previewAssets = reads.previewRedeemAssets
-    ? Number(formatEther(reads.previewRedeemAssets)).toFixed(4)
+  // Gross assets (converted without any fees)
+  const grossAssets = reads.potentialAssets
+    ? Number(formatEther(reads.potentialAssets)).toFixed(4)
     : "0";
 
-  // Instant redemption fee calculation
+  // Preview assets (what user actually receives)
+  // For instant mode: after instant fee (previewRedeem)
+  // For regular mode: full amount (convertToAssets)
+  const previewAssets = isInstantMode
+    ? (reads.previewRedeemAssets
+        ? Number(formatEther(reads.previewRedeemAssets)).toFixed(4)
+        : "0")
+    : grossAssets;
+
+  // Instant redemption fee calculation (actual difference between gross and net)
+  const instantWithdrawFee = useMemo(() => {
+    if (!isInstantMode || !reads.potentialAssets || !reads.previewRedeemAssets) return "0";
+    const fee = reads.potentialAssets - reads.previewRedeemAssets;
+    return Number(formatEther(fee)).toFixed(4);
+  }, [isInstantMode, reads.potentialAssets, reads.previewRedeemAssets]);
+
+  // Fee percentage for display
   const instantRedemptionFeeBP = reads.instantRedemptionFeeBP ?? 50n; // Default 0.5%
   const feePercent = Number(instantRedemptionFeeBP) / 100; // BP to percentage
-
-  const instantWithdrawFee = useMemo(() => {
-    if (!amount || !isInstantMode) return "0";
-    return ((Number(amount) * feePercent) / 100).toFixed(4);
-  }, [amount, isInstantMode, feePercent]);
-
   const instantWithdrawFeePercent = `${feePercent.toFixed(2)}%`;
 
   // Min assets out (with slippage)
@@ -164,6 +175,7 @@ export function useRedeemState(): UseRedeemStateReturn {
     error,
     stAztecBalance,
     exchangeRate,
+    grossAssets,
     previewAssets,
     minAssetsOut,
     instantWithdrawFee,

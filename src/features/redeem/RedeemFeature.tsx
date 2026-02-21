@@ -16,6 +16,7 @@ export function RedeemFeature() {
     error,
     stAztecBalance,
     exchangeRate,
+    grossAssets,
     previewAssets,
     minAssetsOut,
     instantWithdrawFee,
@@ -37,6 +38,7 @@ export function RedeemFeature() {
           isConnected={isConnected}
           balance={stAztecBalance}
           exchangeRate={exchangeRate}
+          grossAssets={grossAssets}
           previewAssets={previewAssets}
           minAssetsOut={minAssetsOut}
           isInstantMode={isInstantMode}

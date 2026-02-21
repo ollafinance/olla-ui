@@ -14,6 +14,7 @@ interface WithdrawalCardProps {
   isConnected: boolean;
   balance: string;
   exchangeRate: string;
+  grossAssets: string;
   previewAssets: string;
   minAssetsOut: string;
   isInstantMode: boolean;
@@ -34,6 +35,7 @@ export function WithdrawalCard({
   isConnected,
   balance,
   exchangeRate,
+  grossAssets,
   previewAssets,
   minAssetsOut,
   isInstantMode,
@@ -53,6 +55,7 @@ export function WithdrawalCard({
           isConnected={isConnected}
           balance={balance}
           exchangeRate={exchangeRate}
+          grossAssets={grossAssets}
           previewAssets={previewAssets}
           minAssetsOut={minAssetsOut}
           isInstantMode={isInstantMode}

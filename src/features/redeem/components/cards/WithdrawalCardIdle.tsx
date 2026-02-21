@@ -17,6 +17,7 @@ interface WithdrawalCardIdleProps {
   isConnected: boolean;
   balance: string;
   exchangeRate: string;
+  grossAssets: string;
   previewAssets: string;
   minAssetsOut: string;
   isInstantMode: boolean;
@@ -33,6 +34,7 @@ export function WithdrawalCardIdle({
   isConnected,
   balance,
   exchangeRate,
+  grossAssets,
   previewAssets,
   minAssetsOut,
   isInstantMode,
@@ -100,7 +102,8 @@ export function WithdrawalCardIdle({
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col">
-      <div className="flex flex-col gap-8 px-8 pt-6 pb-4">
+      {/* Top section - Header and Input */}
+      <div className="flex flex-col gap-4 px-8 pt-6 pb-4">
         <div className="flex w-full items-center justify-between">
           <h2 className="text-[21.33px] leading-[1.16] font-medium text-black">
             Request Withdrawal
@@ -162,35 +165,60 @@ export function WithdrawalCardIdle({
             </div>
             <span className="text-base leading-[1.8] font-medium text-black">{primaryLabel}</span>
           </div>
-
-          <div className="flex min-h-[20px] w-full items-center justify-between">
-            {isInstantMode && instantWithdrawFee !== "0" ? (
-              <>
-                <span className="text-muted text-sm leading-[1.16] font-medium">
-                  Instant withdrawal fee ({instantWithdrawFeePercent})
-                </span>
-                <span className="text-sm leading-[1.16] font-medium text-black">
-                  - {instantWithdrawFee} stAztec
-                </span>
-              </>
-            ) : null}
-          </div>
-
           <div className="bg-border h-px w-full" />
+          <div className="flex w-full items-center justify-between">
+            <span className="text-primary-accent text-base leading-[1.16] font-medium">
+              {isUsdMode ? `${amount} Aztec` : `$${usdValue} USD`}
+            </span>
+            <CurrencySwapButton />
+          </div>
         </div>
       </div>
 
-      <div className="px-4 pb-4">
-        <div className="flex w-full flex-col gap-5 rounded-[28px] bg-[#efeee6] p-6">
-          <p className="text-base leading-[1.16] font-medium text-black">You will receive</p>
+      {/* Middle section - takes remaining space */}
+      <div className="flex-1" />
 
-          <div className="flex w-full flex-col gap-[11px]">
+      {/* Bottom section - always at bottom */}
+      <div className="px-4 pb-4">
+        <div className="flex w-full flex-col gap-3 rounded-[28px] bg-[#efeee6] p-4">
+          <p className="text-sm leading-[1.16] font-medium text-black">You will receive</p>
+
+          <div className="flex w-full flex-col gap-2">
+            {/* Show gross amount when instant mode is on */}
+            {isInstantMode && (
+              <>
+                <div className="flex w-full items-baseline justify-between">
+                  <span className="text-base leading-[1.16] font-medium tracking-[-0.5px] text-black">
+                    {isUsdMode ? "$" : ""}
+                    {grossAssets}
+                  </span>
+                  <span className="text-xs leading-[1.8] font-medium text-black">
+                    {isUsdMode ? "USD" : "Aztec"}
+                  </span>
+                </div>
+
+                {/* Fee line - SEPARATE and MORE VISIBLE */}
+                {instantWithdrawFee !== "0" && (
+                  <div className="flex w-full items-center justify-between py-0.5">
+                    <span className="text-sm leading-[1.16] font-bold text-red-600">
+                      -{instantWithdrawFee} {isUsdMode ? "USD" : "Aztec"}
+                    </span>
+                    <span className="text-sm leading-[1.16] font-medium text-black">
+                      Instant fee ({instantWithdrawFeePercent})
+                    </span>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Net amount - always shown */}
             <div className="flex w-full items-end justify-between">
-              <span className="text-[50px] leading-[1.16] font-medium tracking-[-1px] text-black">
-                {isUsdMode ? "$" : ""}
-                {previewAssets}
+              <span className="text-[36px] leading-[1.16] font-medium tracking-[-0.8px] text-black">
+                {isUsdMode
+                  ? `$${(Number(previewAssets) * AZTEC_PRICE_USD).toFixed(2)} USD`
+                  : `${previewAssets} Aztec`}
               </span>
-              <span className="text-base leading-[1.8] font-medium text-black">
+              <span className="text-sm leading-[1.8] font-medium text-black">
                 {isUsdMode ? "USD" : "Aztec"}
               </span>
             </div>
@@ -198,14 +226,28 @@ export function WithdrawalCardIdle({
             <div className="bg-border h-px w-full" />
 
             <div className="flex w-full items-center justify-between">
-              <span className="text-muted text-sm leading-[1.16] font-medium">
-                Min received: {minAssetsOut} Aztec
-              </span>
+              <div className="flex flex-col gap-0.5">
+                {/* Converted value - show opposite currency */}
+                <span className="text-primary-accent text-sm leading-[1.16] font-medium">
+                  {isUsdMode
+                    ? `${previewAssets} Aztec`
+                    : `$${(Number(previewAssets) * AZTEC_PRICE_USD).toFixed(2)} USD`}
+                </span>
+                {isInstantMode ? (
+                  <span className="text-muted text-xs leading-[1.16] font-medium">
+                    Min: {minAssetsOut} Aztec • Rate may vary
+                  </span>
+                ) : (
+                  <span className="text-muted text-xs leading-[1.16] font-medium">
+                    Final amount depends on exchange rate at claim time
+                  </span>
+                )}
+              </div>
               <CurrencySwapButton />
             </div>
           </div>
 
-          <div className="flex w-full flex-col items-center justify-between gap-[43px] lg:flex-row">
+          <div className="flex w-full flex-col items-center justify-between gap-4 lg:flex-row">
             <ProtocolInfo exchangeRate={exchangeRate} transactionFee="0.0001" apy="5.2%" />
             <div className="flex items-center gap-2">
               {isConnected ? (
