@@ -271,9 +271,9 @@ export function WithdrawalCardIdle({
                     onClick={onWithdraw}
                     disabled={!isInputValid}
                     showArrow
-                    className="w-button-stake h-button bg-primary text-black"
+                    className="w-button-stake h-button bg-primary text-black whitespace-nowrap"
                   >
-                    {isInstantMode ? "Instant Withdraw" : "Withdraw"}
+                    Withdraw
                   </Button>
                 )
               ) : (
