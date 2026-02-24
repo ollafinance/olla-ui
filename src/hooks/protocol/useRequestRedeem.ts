@@ -7,7 +7,7 @@ import {
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
-import { PROTOCOL_CONSTANTS } from "@/constants/protocol";
+import { PROTOCOL_CONSTANTS, CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import {
   extractDomainParams,
   buildPermitMessage,
@@ -20,8 +20,6 @@ export interface UseRequestRedeemOptions {
   onSuccess?: () => void;
   onConfirmed?: () => void;
 }
-
-const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
 
 export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
   const { address } = useConnection();
@@ -72,6 +70,13 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
       }
     };
   }, [isRequestRedeemConfirmed]);
+
+  // Reset hasCalledConfirmed when a new transaction hash is generated
+  useEffect(() => {
+    if (requestRedeemHash) {
+      hasCalledConfirmed.current = false;
+    }
+  }, [requestRedeemHash]);
 
   // Handle confirmation - refetch nonce and call callback
   useEffect(() => {

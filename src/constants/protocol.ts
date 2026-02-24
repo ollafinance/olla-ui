@@ -5,6 +5,8 @@ export const PROTOCOL_CONSTANTS = {
 
 export const BP_DIVISOR = 10000n;
 
+export const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
+
 export function applySlippage(amount: bigint, slippageBp: bigint): bigint {
   return (amount * (BP_DIVISOR - slippageBp)) / BP_DIVISOR;
 }

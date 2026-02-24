@@ -7,9 +7,14 @@ import {
 import { parseEther, formatEther } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
 import { useBlockWatcher } from "./useBlockWatcher";
+import { CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export function useAztecToken() {
   const { address } = useConnection();
+  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCalledConfirmed = useRef(false);
 
   // READS
   const { data: balance, refetch: refetchBalance } = useReadContract({
@@ -44,15 +49,45 @@ export function useAztecToken() {
     mutate: approve,
     data: approveHash,
     isPending: isApprovePending,
-    reset: resetApprove,
+    error: approveError,
+    reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed } =
+  const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed, error: receiptError } =
     useWaitForTransactionReceipt({ hash: approveHash });
 
-  // Actions - refetch handled via onSuccess callbacks
+  // Clear timeout on success or unmount
+  useEffect(() => {
+    if (isApproveConfirmed && timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isApproveConfirmed]);
+
+  // Reset hasCalledConfirmed when a new transaction hash is generated
+  useEffect(() => {
+    if (approveHash) {
+      hasCalledConfirmed.current = false;
+    }
+  }, [approveHash]);
+
+  // Handle confirmation
+  useEffect(() => {
+    if (isApproveConfirmed && !hasCalledConfirmed.current) {
+      hasCalledConfirmed.current = true;
+      refetchAllowance();
+    }
+  }, [isApproveConfirmed, refetchAllowance]);
+
+  // Actions
   const approveSpender = (amount: string) => {
     if (!address) return;
+    setTimeoutError(null);
     approve(
       {
         address: CONTRACTS.Asset.address,
@@ -60,9 +95,33 @@ export function useAztecToken() {
         functionName: "approve",
         args: [CONTRACTS.OllaCore.address, parseEther(amount)],
       },
-      { onSuccess: () => refetchAllowance() }
+      {
+        onSuccess: () => {
+          // Start timeout for confirmation
+          timeoutRef.current = setTimeout(() => {
+            setTimeoutError(
+              new Error(
+                "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+              )
+            );
+          }, CONFIRMATION_TIMEOUT_MS);
+        },
+      }
     );
   };
+
+  const reset = useCallback(() => {
+    setTimeoutError(null);
+    hasCalledConfirmed.current = false;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    resetWriteContract();
+  }, [resetWriteContract]);
+
+  // Combine errors - prioritize timeout error if confirmation is stuck
+  const combinedError = timeoutError || receiptError || approveError;
 
   return {
     balance: balance ? formatEther(balance as bigint) : "0",
@@ -73,7 +132,8 @@ export function useAztecToken() {
       isConfirming: isApproveConfirming,
       isConfirmed: isApproveConfirmed,
       hash: approveHash,
-      reset: resetApprove,
+      error: combinedError,
+      reset,
     },
     refetchBalance,
     refetchAllowance,
