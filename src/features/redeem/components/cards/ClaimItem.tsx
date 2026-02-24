@@ -1,4 +1,4 @@
-import type { ClaimStatus } from "../hooks/useClaims";
+import type { ClaimStatus } from "../../hooks/useClaims";
 import { Button } from "@/components/ui/Button";
 
 interface ClaimItemProps {

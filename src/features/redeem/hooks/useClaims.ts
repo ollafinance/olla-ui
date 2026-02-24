@@ -199,7 +199,7 @@ export function useClaims() {
           isInstant: false,
         };
       })
-      .filter((item): item is ClaimItemData => item !== null);
+      .filter((item): item is NonNullable<typeof item> => item !== null) as ClaimItemData[];
   }, [
     requestDetailsData,
     allRequestIds,

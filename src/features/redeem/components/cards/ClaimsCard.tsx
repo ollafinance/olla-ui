@@ -1,4 +1,4 @@
-import type { ClaimItemData } from "../hooks/useClaims";
+import type { ClaimItemData } from "../../hooks/useClaims";
 import { ClaimItem } from "./ClaimItem";
 import { Button } from "@/components/ui/Button";
 
