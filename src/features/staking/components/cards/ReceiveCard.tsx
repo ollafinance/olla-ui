@@ -1,23 +1,19 @@
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
-import { useCurrencySwap } from "@/hooks/useCurrencySwap";
-import { STAKING_CONSTANTS } from "../../constants";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ReceiveCardProps {
-  shares?: string;
-  usdValue?: string;
+  shares: string;
+  usdValue: string;
 }
 
-export function ReceiveCard({ shares = "95.00", usdValue }: ReceiveCardProps) {
-  const { isUsdMode } = useCurrencySwap();
+export function ReceiveCard({ shares, usdValue }: ReceiveCardProps) {
+  const { isUsdMode } = useCurrency();
 
-  const calculatedUsdValue =
-    usdValue || (parseFloat(shares) * STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2);
-
-  const primaryValue = isUsdMode ? calculatedUsdValue : shares;
+  const primaryValue = isUsdMode ? usdValue : shares;
   const primaryLabel = isUsdMode ? "USD" : "stAztec";
   const primaryPrefix = isUsdMode ? "$ " : "";
 
-  const secondaryValue = isUsdMode ? shares : calculatedUsdValue;
+  const secondaryValue = isUsdMode ? shares : usdValue;
   const secondaryLabel = isUsdMode ? "stAztec" : "";
   const secondaryPrefix = isUsdMode ? "" : "$ ";
 

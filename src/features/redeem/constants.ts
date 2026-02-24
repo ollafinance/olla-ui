@@ -10,7 +10,6 @@ export interface ClaimItem {
 }
 
 export const REDEEM_CONSTANTS = {
-  AZTEC_PRICE_USD: 2.1,
   EXCHANGE_RATE: "0.95",
   TRANSACTION_FEE: "0.0001",
   APY: "5.2%",

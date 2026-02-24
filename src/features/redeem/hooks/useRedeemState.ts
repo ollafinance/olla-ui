@@ -108,9 +108,9 @@ export function useRedeemState(): UseRedeemStateReturn {
   // For instant mode: after instant fee (previewRedeem)
   // For regular mode: full amount (convertToAssets)
   const previewAssets = isInstantMode
-    ? (reads.previewRedeemAssets
-        ? Number(formatEther(reads.previewRedeemAssets)).toFixed(4)
-        : "0")
+    ? reads.previewRedeemAssets
+      ? Number(formatEther(reads.previewRedeemAssets)).toFixed(4)
+      : "0"
     : grossAssets;
 
   // Instant redemption fee calculation (actual difference between gross and net)

@@ -6,7 +6,7 @@ import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { BalanceBadge } from "../shared/BalanceBadge";
 import { PercentageButtons } from "../shared/PercentageButtons";
 import { ProtocolInfo } from "@/components/ProtocolInfo";
-import { useCurrencySwap } from "@/hooks/useCurrencySwap";
+import { useCurrency } from "@/hooks/useCurrency";
 import { STAKING_CONSTANTS } from "../../constants";
 import { sanitizeNumericInput } from "@/lib/utils";
 
@@ -27,7 +27,7 @@ export function StakingCardIdle({
   onAmountChange,
   onStake,
 }: StakingCardIdleProps) {
-  const { isUsdMode } = useCurrencySwap();
+  const { isUsdMode, aztecToUsd, usdToAztec } = useCurrency();
   const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
 
   const handlePercentageSelect = (percentage: number) => {
@@ -36,20 +36,16 @@ export function StakingCardIdle({
     if (isNaN(parsedBalance) || parsedBalance <= 0) return;
 
     if (isUsdMode) {
-      const usdBalance = parsedBalance * STAKING_CONSTANTS.AZTEC_PRICE_USD;
-      const newUsdAmount = (usdBalance * percentage).toFixed(2);
-      const tokenAmount = (parseFloat(newUsdAmount) / STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2);
-      onAmountChange(tokenAmount);
+      const usdBalance = aztecToUsd(parsedBalance);
+      const newUsdAmount = (parseFloat(usdBalance) * percentage).toFixed(2);
+      onAmountChange(usdToAztec(newUsdAmount));
     } else {
       const newAmount = (parsedBalance * percentage).toFixed(2);
       onAmountChange(newAmount);
     }
   };
 
-  const usdValue =
-    amount && !isNaN(Number(amount))
-      ? (Number(amount) * STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2)
-      : "0.00";
+  const usdValue = aztecToUsd(amount);
 
   const numericAmount = Number(amount);
   const numericBalance = parseFloat(balance);
@@ -64,8 +60,7 @@ export function StakingCardIdle({
     if (isUsdMode) {
       const usdAmount = parseFloat(inputValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
-        const tokenAmount = (usdAmount / STAKING_CONSTANTS.AZTEC_PRICE_USD).toFixed(2);
-        onAmountChange(tokenAmount);
+        onAmountChange(usdToAztec(usdAmount));
       } else {
         onAmountChange("0");
       }

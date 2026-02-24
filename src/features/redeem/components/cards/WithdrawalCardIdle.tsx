@@ -6,7 +6,7 @@ import { Toggle } from "@/components/ui/Toggle";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { PercentageButtons } from "@/features/staking/components/shared/PercentageButtons";
 import { ProtocolInfo } from "@/components/ProtocolInfo";
-import { useCurrencySwap } from "@/hooks/useCurrencySwap";
+import { useCurrency } from "@/hooks/useCurrency";
 import { sanitizeNumericInput } from "@/lib/utils";
 import infoIcon from "@/assets/icons/info-icon.svg";
 
@@ -33,7 +33,7 @@ export function WithdrawalCardIdle({
   onWithdraw,
   isConnected,
   balance,
-  exchangeRate,
+  exchangeRate: exchangeRateProp,
   grossAssets,
   previewAssets,
   minAssetsOut,
@@ -43,10 +43,11 @@ export function WithdrawalCardIdle({
   instantWithdrawFeePercent,
   canInstantRedeem,
 }: WithdrawalCardIdleProps) {
-  const { isUsdMode } = useCurrencySwap();
+  const exchangeRateNum = parseFloat(exchangeRateProp) || null;
+  const { isUsdMode, stAztecToUsd, usdToStAztec, aztecToUsd } = useCurrency({
+    exchangeRate: exchangeRateNum,
+  });
   const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>();
-
-  const AZTEC_PRICE_USD = 2.1; // TODO: Get from config
 
   const handlePercentageSelect = (percentage: number) => {
     setSelectedPercentage(percentage);
@@ -54,10 +55,9 @@ export function WithdrawalCardIdle({
     if (isNaN(parsedBalance) || parsedBalance <= 0) return;
 
     if (isUsdMode) {
-      const usdBalance = parsedBalance * AZTEC_PRICE_USD;
-      const newUsdAmount = (usdBalance * percentage).toFixed(2);
-      const tokenAmount = (parseFloat(newUsdAmount) / AZTEC_PRICE_USD).toFixed(2);
-      onAmountChange(tokenAmount);
+      const usdBalance = stAztecToUsd(parsedBalance);
+      const newUsdAmount = (parseFloat(usdBalance) * percentage).toFixed(2);
+      onAmountChange(usdToStAztec(newUsdAmount));
     } else {
       const newAmount = (parsedBalance * percentage).toFixed(2);
       onAmountChange(newAmount);
@@ -71,8 +71,7 @@ export function WithdrawalCardIdle({
     if (isUsdMode) {
       const usdAmount = parseFloat(inputValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
-        const tokenAmount = (usdAmount / AZTEC_PRICE_USD).toFixed(2);
-        onAmountChange(tokenAmount);
+        onAmountChange(usdToStAztec(usdAmount));
       } else {
         onAmountChange("0");
       }
@@ -81,8 +80,9 @@ export function WithdrawalCardIdle({
     }
   };
 
-  const usdValue =
-    amount && !isNaN(Number(amount)) ? (Number(amount) * AZTEC_PRICE_USD).toFixed(2) : "0.00";
+  const usdValue = stAztecToUsd(amount);
+  const previewUsdValue = aztecToUsd(previewAssets);
+  const grossUsdValue = aztecToUsd(grossAssets);
 
   const numericAmount = Number(amount);
   const numericBalance = parseFloat(balance);
@@ -95,7 +95,7 @@ export function WithdrawalCardIdle({
 
   const handleToggleInstantMode = (checked: boolean) => {
     if (!canInstantRedeem && checked) {
-      return; // Don't allow enabling if insufficient liquidity
+      return;
     }
     onInstantModeChange(checked);
   };
@@ -168,7 +168,7 @@ export function WithdrawalCardIdle({
           <div className="bg-border h-px w-full" />
           <div className="flex w-full items-center justify-between">
             <span className="text-primary-accent text-base leading-[1.16] font-medium">
-              {isUsdMode ? `${amount} Aztec` : `$${usdValue} USD`}
+              {isUsdMode ? `${amount} stAztec` : `$${usdValue} USD`}
             </span>
             <CurrencySwapButton />
           </div>
@@ -189,8 +189,7 @@ export function WithdrawalCardIdle({
               <>
                 <div className="flex w-full items-baseline justify-between">
                   <span className="text-base leading-[1.16] font-medium tracking-[-0.5px] text-black">
-                    {isUsdMode ? "$" : ""}
-                    {grossAssets}
+                    {isUsdMode ? `$${grossUsdValue}` : grossAssets}
                   </span>
                   <span className="text-xs leading-[1.8] font-medium text-black">
                     {isUsdMode ? "USD" : "Aztec"}
@@ -201,7 +200,8 @@ export function WithdrawalCardIdle({
                 {instantWithdrawFee !== "0" && (
                   <div className="flex w-full items-center justify-between py-0.5">
                     <span className="text-sm leading-[1.16] font-bold text-red-600">
-                      -{instantWithdrawFee} {isUsdMode ? "USD" : "Aztec"}
+                      -{isUsdMode ? aztecToUsd(instantWithdrawFee) : instantWithdrawFee}{" "}
+                      {isUsdMode ? "USD" : "Aztec"}
                     </span>
                     <span className="text-sm leading-[1.16] font-medium text-black">
                       Instant fee ({instantWithdrawFeePercent})
@@ -214,9 +214,7 @@ export function WithdrawalCardIdle({
             {/* Net amount - always shown */}
             <div className="flex w-full items-end justify-between">
               <span className="text-[36px] leading-[1.16] font-medium tracking-[-0.8px] text-black">
-                {isUsdMode
-                  ? `$${(Number(previewAssets) * AZTEC_PRICE_USD).toFixed(2)} USD`
-                  : `${previewAssets} Aztec`}
+                {isUsdMode ? `$${previewUsdValue}` : previewAssets}
               </span>
               <span className="text-sm leading-[1.8] font-medium text-black">
                 {isUsdMode ? "USD" : "Aztec"}
@@ -229,9 +227,7 @@ export function WithdrawalCardIdle({
               <div className="flex flex-col gap-0.5">
                 {/* Converted value - show opposite currency */}
                 <span className="text-primary-accent text-sm leading-[1.16] font-medium">
-                  {isUsdMode
-                    ? `${previewAssets} Aztec`
-                    : `$${(Number(previewAssets) * AZTEC_PRICE_USD).toFixed(2)} USD`}
+                  {isUsdMode ? `${previewAssets} Aztec` : `$${previewUsdValue} USD`}
                 </span>
                 {isInstantMode ? (
                   <span className="text-muted text-xs leading-[1.16] font-medium">
@@ -248,7 +244,7 @@ export function WithdrawalCardIdle({
           </div>
 
           <div className="flex w-full flex-col items-center justify-between gap-4 lg:flex-row">
-            <ProtocolInfo exchangeRate={exchangeRate} transactionFee="0.0001" apy="5.2%" />
+            <ProtocolInfo exchangeRate={exchangeRateProp} transactionFee="0.0001" apy="5.2%" />
             <div className="flex items-center gap-2">
               {isConnected ? (
                 isBalanceExceeded ? (
@@ -271,7 +267,7 @@ export function WithdrawalCardIdle({
                     onClick={onWithdraw}
                     disabled={!isInputValid}
                     showArrow
-                    className="w-button-stake h-button bg-primary text-black whitespace-nowrap"
+                    className="w-button-stake h-button bg-primary whitespace-nowrap text-black"
                   >
                     Withdraw
                   </Button>
