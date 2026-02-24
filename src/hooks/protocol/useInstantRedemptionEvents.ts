@@ -25,9 +25,7 @@ const INSTANT_REDEMPTION_EVENT = parseAbiItem(
  * @note Fetches events from block 0. For mainnet, this could be slow/expensive.
  * Consider using an indexer (The Graph, Goldsky) or limiting block range for production.
  */
-export function useInstantRedemptionEvents(
-  address: `0x${string}` | undefined
-) {
+export function useInstantRedemptionEvents(address: `0x${string}` | undefined) {
   const publicClient = usePublicClient();
   const [events, setEvents] = useState<InstantRedemptionEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -79,9 +77,7 @@ export function useInstantRedemptionEvents(
       setEvents(redemptionEvents);
     } catch (err) {
       console.error("Failed to fetch instant redemption events:", err);
-      setError(
-        err instanceof Error ? err : new Error("Failed to fetch instant redemption events")
-      );
+      setError(err instanceof Error ? err : new Error("Failed to fetch instant redemption events"));
       setEvents([]);
     } finally {
       setIsLoading(false);

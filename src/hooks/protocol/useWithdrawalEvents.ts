@@ -29,14 +29,9 @@ const WITHDRAWAL_CLAIMED_EVENT = parseAbiItem(
  * @note Fetches events from block 0. For mainnet, this could be slow/expensive.
  * Consider using an indexer (The Graph, Goldsky) or limiting block range for production.
  */
-export function useWithdrawalEvents(
-  address: `0x${string}` | undefined,
-  requestIds: bigint[]
-) {
+export function useWithdrawalEvents(address: `0x${string}` | undefined, requestIds: bigint[]) {
   const publicClient = usePublicClient();
-  const [eventData, setEventData] = useState<Map<bigint, WithdrawalEventData>>(
-    new Map()
-  );
+  const [eventData, setEventData] = useState<Map<bigint, WithdrawalEventData>>(new Map());
   const [claimedRequestIds, setClaimedRequestIds] = useState<bigint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -123,7 +118,7 @@ export function useWithdrawalEvents(
         const existing = eventMap.get(requestId) || { requestId };
         existing.claimedAt = Number(block.timestamp);
         eventMap.set(requestId, existing);
-        
+
         // Track claimed request IDs
         if (!claimedIds.includes(requestId)) {
           claimedIds.push(requestId);
@@ -134,9 +129,7 @@ export function useWithdrawalEvents(
       setClaimedRequestIds(claimedIds);
     } catch (err) {
       console.error("Failed to fetch withdrawal events:", err);
-      setError(
-        err instanceof Error ? err : new Error("Failed to fetch event logs")
-      );
+      setError(err instanceof Error ? err : new Error("Failed to fetch event logs"));
       // On error, return empty map - fallback will use hardcoded estimates
       setEventData(new Map());
       setClaimedRequestIds([]);

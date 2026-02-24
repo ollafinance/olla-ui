@@ -60,8 +60,11 @@ export function useStAztec() {
     reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isApproveConfirming, isSuccess: isApproveConfirmed, error: receiptError } =
-    useWaitForTransactionReceipt({ hash: approveHash });
+  const {
+    isLoading: isApproveConfirming,
+    isSuccess: isApproveConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: approveHash });
 
   // Clear timeout on success or unmount
   useEffect(() => {

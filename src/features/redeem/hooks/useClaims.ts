@@ -64,14 +64,14 @@ export function useClaims() {
   // Combine active and claimed request IDs, removing duplicates
   const allRequestIds = useMemo(() => {
     const combined = [...activeRequestIds];
-    
+
     // Add claimed request IDs that aren't already in the active list
     for (const claimedId of claimedRequestIds) {
       if (!combined.some((id) => id === claimedId)) {
         combined.push(claimedId);
       }
     }
-    
+
     return combined;
   }, [activeRequestIds, claimedRequestIds]);
 
@@ -105,19 +105,16 @@ export function useClaims() {
   });
 
   // Calculate days left until claimable
-  const calculateDaysLeft = useCallback(
-    (requestedAt?: number): number | undefined => {
-      if (!requestedAt) return undefined;
+  const calculateDaysLeft = useCallback((requestedAt?: number): number | undefined => {
+    if (!requestedAt) return undefined;
 
-      const now = Math.floor(Date.now() / 1000);
-      const unlockTime = requestedAt + PROTOCOL_CONSTANTS.WITHDRAWAL_DELAY_DAYS * 24 * 60 * 60;
-      const secondsLeft = Math.max(0, unlockTime - now);
-      const daysLeft = Math.ceil(secondsLeft / (24 * 60 * 60));
+    const now = Math.floor(Date.now() / 1000);
+    const unlockTime = requestedAt + PROTOCOL_CONSTANTS.WITHDRAWAL_DELAY_DAYS * 24 * 60 * 60;
+    const secondsLeft = Math.max(0, unlockTime - now);
+    const daysLeft = Math.ceil(secondsLeft / (24 * 60 * 60));
 
-      return daysLeft > 0 ? daysLeft : undefined;
-    },
-    []
-  );
+    return daysLeft > 0 ? daysLeft : undefined;
+  }, []);
 
   // Format relative date (e.g., "2 days ago", "just now")
   const formatRelativeDate = useCallback((timestamp?: number): string | undefined => {

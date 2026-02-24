@@ -8,4 +8,7 @@ export { useAztecToken } from "./useAztecToken";
 export { useWithdrawalRequest } from "./useWithdrawalQueue";
 export { useBlockWatcher } from "./useBlockWatcher";
 export { useWithdrawalEvents, type WithdrawalEventData } from "./useWithdrawalEvents";
-export { useInstantRedemptionEvents, type InstantRedemptionEvent } from "./useInstantRedemptionEvents";
+export {
+  useInstantRedemptionEvents,
+  type InstantRedemptionEvent,
+} from "./useInstantRedemptionEvents";

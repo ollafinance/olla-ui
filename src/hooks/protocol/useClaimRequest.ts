@@ -21,8 +21,11 @@ export function useClaimRequest(options: UseClaimRequestOptions = {}) {
     reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isClaimConfirming, isSuccess: isClaimConfirmed, error: receiptError } =
-    useWaitForTransactionReceipt({ hash: claimHash });
+  const {
+    isLoading: isClaimConfirming,
+    isSuccess: isClaimConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: claimHash });
 
   // Clear timeout on success or unmount
   useEffect(() => {
