@@ -1,7 +1,6 @@
 export const STAKING_CONSTANTS = {
   APY: "5.2%",
   TRANSACTION_FEE: "0.0001",
-  AZTEC_PRICE_USD: 0.52,
   EXCHANGE_RATE: 0.95,
 } as const;
 

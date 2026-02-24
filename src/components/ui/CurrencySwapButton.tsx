@@ -1,4 +1,4 @@
-import { useCurrencySwap } from "@/hooks/useCurrencySwap";
+import { useCurrency } from "@/hooks/useCurrency";
 import arrowUpDownIcon from "@/assets/icons/arrow-up-down.svg";
 import { cn } from "@/lib/utils";
 
@@ -7,7 +7,7 @@ interface CurrencySwapButtonProps {
 }
 
 export function CurrencySwapButton({ className }: CurrencySwapButtonProps) {
-  const { toggle } = useCurrencySwap();
+  const { toggle } = useCurrency();
 
   return (
     <button

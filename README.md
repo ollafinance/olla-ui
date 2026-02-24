@@ -151,6 +151,47 @@ Located in `src/hooks/protocol/`, these hooks wrap smart contract interactions:
 | `useAztecToken` | Read Asset balance, allowance; approve spender | `MockAztec` |
 | `useWithdrawalRequest` | Read withdrawal request details by ID | `WithdrawalQueue` |
 
+### Exchange Rate & USD Value Calculations
+
+The contract's `exchangeRate()` returns the ratio in **18-decimal fixed-point** format:
+- **Format**: `stAztec / Aztec` (how many Aztec tokens 1 stAztec represents)
+- **Example**: Rate of `1.111111111111111111` means 1 stAztec = 1.111... Aztec
+
+**Important**: Do NOT invert the exchange rate. Use the value directly from the contract.
+
+#### USD Value Calculation (Staking)
+
+When displaying USD values in the "You Receive" card:
+
+```
+1. Deposit: 10 Aztec tokens
+2. Contract previewDeposit(10) → 9 stAztec shares
+3. USD value = 9 stAztec × 1.111 (exchange rate) × $2.10 (Aztec price)
+              = 10 Aztec × $2.10
+              = $21.00
+```
+
+**Key insight**: The USD value of stAztec shares should equal the USD value of the deposited Aztec amount. The exchange rate ensures this parity:
+- `stAztecToAztec(shares) = shares × exchangeRate`
+- `stAztecToUsd(shares) = stAztecToAztec(shares) × AZTEC_PRICE_USD`
+
+#### Implementation
+
+```typescript
+// useStakingState.ts - Correct implementation
+const exchangeRateNum = reads.exchangeRate
+  ? Number(formatEther(reads.exchangeRate))  // Use directly, DON'T invert
+  : null;
+
+const { stAztecToUsd } = useCurrency({
+  exchangeRate: exchangeRateNum,
+});
+
+const previewSharesUsd = stAztecToUsd(previewShares); // Returns correct USD value
+```
+
+**Common Pitfall**: Inverting the exchange rate (doing `1 / rate`) causes USD values to be incorrect. When the rate is 1.111, inverting gives 0.9, which makes 9 stAztec appear worth only $17.01 instead of $21.
+
 ### Shared Utilities
 
 | File | Purpose |

@@ -5,6 +5,7 @@ import { useDeposit } from "@/hooks/protocol/useDeposit";
 import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export type StakingState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -20,6 +21,7 @@ interface UseStakingStateReturn {
   stAztecBalance: string;
   exchangeRate: string;
   previewShares: string;
+  previewSharesUsd: string;
   hash: `0x${string}` | undefined;
 }
 
@@ -45,6 +47,12 @@ export function useStakingState(): UseStakingStateReturn {
 
   const { balance: aztecBalance } = useAztecToken();
   const { balance: stAztecBalance } = useStAztec();
+
+  const exchangeRateNum = reads.exchangeRate ? Number(formatEther(reads.exchangeRate)) : null;
+
+  const { stAztecToUsd } = useCurrency({
+    exchangeRate: exchangeRateNum,
+  });
 
   const state = useMemo<StakingState>(() => {
     if (manualError || deposit.error) return "error";
@@ -84,13 +92,13 @@ export function useStakingState(): UseStakingStateReturn {
     deposit.reset();
   }, [deposit]);
 
-  const exchangeRate = reads.exchangeRate
-    ? (1 / Number(formatEther(reads.exchangeRate))).toFixed(4)
-    : "1.0000";
+  const exchangeRate = exchangeRateNum?.toFixed(4) ?? "1.0000";
 
   const previewShares = reads.previewDepositShares
     ? Number(formatEther(reads.previewDepositShares)).toFixed(4)
     : "0";
+
+  const previewSharesUsd = stAztecToUsd(previewShares);
 
   return {
     isConnected,
@@ -104,6 +112,7 @@ export function useStakingState(): UseStakingStateReturn {
     stAztecBalance,
     exchangeRate,
     previewShares,
+    previewSharesUsd,
     hash: deposit.hash,
   };
 }

@@ -16,6 +16,7 @@ export function StakingFeature() {
     stAztecBalance,
     exchangeRate,
     previewShares,
+    previewSharesUsd,
     hash,
   } = useStakingState();
 
@@ -38,7 +39,7 @@ export function StakingFeature() {
       }
       topCards={
         <>
-          <ReceiveCard shares={previewShares} />
+          <ReceiveCard shares={previewShares} usdValue={previewSharesUsd} />
           <ReturnsCard shares={previewShares} />
         </>
       }
