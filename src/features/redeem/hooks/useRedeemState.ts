@@ -5,6 +5,8 @@ import { useRequestRedeem } from "@/hooks/protocol/useRequestRedeem";
 import { useInstantRedeem } from "@/hooks/protocol/useInstantRedeem";
 import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
+import { useClaimRequest } from "@/hooks/protocol/useClaimRequest";
+import { useClaims, type ClaimItemData } from "./useClaims";
 
 export type RedeemState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -44,6 +46,24 @@ interface UseRedeemStateReturn {
 
   // Transaction
   hash: `0x${string}` | undefined;
+
+  // Claims
+  claims: ClaimItemData[];
+  isLoadingClaims: boolean;
+  claimsError: Error | null;
+  hasMoreClaims: boolean;
+  loadMoreClaims: () => void;
+  refetchClaims: () => void;
+  totalClaims: number;
+
+  // Claim Action
+  claim: (requestId: bigint) => void;
+  claimingRequestId: number | null;
+  isClaiming: boolean;
+  isClaimConfirming: boolean;
+  isClaimConfirmed: boolean;
+  claimError: string | null;
+  claimHash: `0x${string}` | undefined;
 }
 
 export function useRedeemState(): UseRedeemStateReturn {
@@ -52,15 +72,30 @@ export function useRedeemState(): UseRedeemStateReturn {
   const [isInstantMode, setIsInstantMode] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
 
-  // Protocol hooks
+  // Claims data - initialize BEFORE withdrawal hooks so we can refetch after
+  const {
+    claims,
+    isLoading: isLoadingClaims,
+    error: claimsError,
+    hasMore: hasMoreClaims,
+    loadMore: loadMoreClaims,
+    refetch: refetchClaims,
+    totalClaims,
+  } = useClaims();
+
+  // Protocol hooks for withdrawal
   const requestRedeem = useRequestRedeem({
     onConfirmed: () => {
-      // Refetch queries handled by wagmi cache invalidation
+      // Immediately refetch claims to show the new withdrawal request
+      refetchClaims();
     },
   });
 
   const instantRedeem = useInstantRedeem({
-    onConfirmed: () => {},
+    onConfirmed: () => {
+      // Immediately refetch claims to show the instant redemption
+      refetchClaims();
+    },
   });
 
   // Reads
@@ -74,7 +109,44 @@ export function useRedeemState(): UseRedeemStateReturn {
   // Determine active hook based on mode
   const activeHook = isInstantMode ? instantRedeem : requestRedeem;
 
-  // State machine
+  // Claim action
+  const [claimingRequestId, setClaimingRequestId] = useState<number | null>(null);
+
+  const claimHook = useClaimRequest({
+    onSuccess: () => {
+      // Will trigger onConfirmed when transaction is mined
+    },
+    onConfirmed: () => {
+      // Refetch claims to update the list
+      refetchClaims();
+      setClaimingRequestId(null);
+    },
+  });
+
+  const claim = useCallback(
+    (requestId: bigint) => {
+      setClaimingRequestId(Number(requestId));
+      claimHook.write(requestId);
+    },
+    [claimHook]
+  );
+
+  // Claim transaction states
+  const isClaiming = claimHook.isPending || claimHook.isConfirming;
+  const isClaimConfirming = claimHook.isConfirming;
+  const isClaimConfirmed = claimHook.isConfirmed;
+  const claimHash = claimHook.hash;
+
+  // Claim error
+  const claimError = useMemo(() => {
+    if (claimHook.error) {
+      const err = claimHook.error as Error & { shortMessage?: string };
+      return err.shortMessage || err.message || "Claim failed";
+    }
+    return null;
+  }, [claimHook.error]);
+
+  // State machine for withdrawal
   const state = useMemo<RedeemState>(() => {
     if (manualError || activeHook.error) return "error";
     if (activeHook.isConfirmed) return "success";
@@ -159,9 +231,11 @@ export function useRedeemState(): UseRedeemStateReturn {
   const reset = useCallback(() => {
     setAmount("");
     setManualError(null);
+    setClaimingRequestId(null);
     requestRedeem.reset();
     instantRedeem.reset();
-  }, [requestRedeem, instantRedeem]);
+    claimHook.reset();
+  }, [requestRedeem, instantRedeem, claimHook]);
 
   return {
     isConnected,
@@ -182,5 +256,21 @@ export function useRedeemState(): UseRedeemStateReturn {
     instantWithdrawFeePercent,
     canInstantRedeem,
     hash: activeHook.hash,
+    // Claims
+    claims,
+    isLoadingClaims,
+    claimsError,
+    hasMoreClaims,
+    loadMoreClaims,
+    refetchClaims,
+    totalClaims,
+    // Claim Action
+    claim,
+    claimingRequestId,
+    isClaiming,
+    isClaimConfirming,
+    isClaimConfirmed,
+    claimError,
+    claimHash,
   };
 }

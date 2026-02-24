@@ -1,4 +1,4 @@
-import type { ClaimStatus } from "../../constants";
+import type { ClaimStatus } from "../hooks/useClaims";
 import { Button } from "@/components/ui/Button";
 
 interface ClaimItemProps {
@@ -9,6 +9,8 @@ interface ClaimItemProps {
   daysLeft?: number;
   claimedDate?: string;
   onClaim?: (id: number) => void;
+  isClaiming?: boolean;
+  claimHash?: `0x${string}`;
 }
 
 function StatusDot({ color }: { color: string }) {
@@ -25,6 +27,8 @@ export function ClaimItem({
   daysLeft,
   claimedDate,
   onClaim,
+  isClaiming = false,
+  claimHash,
 }: ClaimItemProps) {
   const statusConfig = {
     ready: {
@@ -32,7 +36,12 @@ export function ClaimItem({
       dotColor: "#17AAC0",
       statusTextColor: "text-secondary-accent",
       statusText: "Ready to claim",
-      rightContent: (
+      rightContent: isClaiming ? (
+        <div className="flex items-center gap-2">
+          <div className="border-secondary-accent h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
+          <span className="text-secondary-accent text-xs">Claiming...</span>
+        </div>
+      ) : (
         <Button
           variant="cyan"
           size="sm"
@@ -50,7 +59,7 @@ export function ClaimItem({
       statusText: "Processing",
       rightContent: (
         <span className="text-card-claims-foreground text-xs leading-[1.16] font-medium">
-          {daysLeft} Days Left
+          {daysLeft} {daysLeft === 1 ? "Day" : "Days"} Left
         </span>
       ),
     },
@@ -63,17 +72,26 @@ export function ClaimItem({
         <span className="text-xs leading-[1.16] font-medium text-[#9c9c9c]">{claimedDate}</span>
       ),
     },
+    instant: {
+      bg: "bg-[#e1e1e1]",
+      dotColor: "#9c9c9c",
+      statusTextColor: "text-[#373737]",
+      statusText: "⚡ Instant redemption",
+      rightContent: (
+        <span className="text-xs leading-[1.16] font-medium text-[#9c9c9c]">{claimedDate}</span>
+      ),
+    },
   };
 
   const config = statusConfig[status];
   const amountTextColor =
-    status === "claimed"
+    status === "claimed" || status === "instant"
       ? "text-[#373737]"
       : status === "processing"
         ? "text-card-claims-foreground"
         : "text-black";
   const usdTextColor =
-    status === "claimed"
+    status === "claimed" || status === "instant"
       ? "text-[#9c9c9c]"
       : status === "processing"
         ? "text-card-claims-foreground"
@@ -92,7 +110,7 @@ export function ClaimItem({
       </div>
       <div className="flex w-full items-center justify-between">
         <span className={`text-base ${amountTextColor} leading-[1.16] font-medium`}>
-          {amount} Aztec
+          {Number(amount).toFixed(4)} Aztec
         </span>
         {status === "ready" ? null : (
           <span className={`text-xs ${usdTextColor} leading-[1.16] font-medium`}>
@@ -100,6 +118,20 @@ export function ClaimItem({
           </span>
         )}
       </div>
+      {/* Transaction hash link for claiming */}
+      {isClaiming && claimHash && (
+        <div className="mt-1 flex items-center gap-1 text-xs">
+          <span className="text-muted-foreground">Tx:</span>
+          <a
+            href={`https://etherscan.io/tx/${claimHash}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-secondary-accent max-w-[200px] truncate hover:underline"
+          >
+            {claimHash.slice(0, 6)}...{claimHash.slice(-4)}
+          </a>
+        </div>
+      )}
     </div>
   );
 }

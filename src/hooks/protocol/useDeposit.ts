@@ -9,7 +9,7 @@ import {
 import { parseEther, parseSignature } from "viem";
 import { readContract } from "wagmi/actions";
 import { CONTRACTS } from "@/constants/contracts";
-import { PROTOCOL_CONSTANTS, applySlippage } from "@/constants/protocol";
+import { PROTOCOL_CONSTANTS, applySlippage, CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import {
   extractDomainParams,
   buildPermitMessage,
@@ -22,8 +22,6 @@ export interface UseDepositOptions {
   onSuccess?: () => void;
   onConfirmed?: () => void;
 }
-
-const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
 
 export function useDeposit(options: UseDepositOptions = {}) {
   const { address } = useConnection();
@@ -75,6 +73,13 @@ export function useDeposit(options: UseDepositOptions = {}) {
       }
     };
   }, [isDepositConfirmed]);
+
+  // Reset hasCalledConfirmed when a new transaction hash is generated
+  useEffect(() => {
+    if (depositHash) {
+      hasCalledConfirmed.current = false;
+    }
+  }, [depositHash]);
 
   // Handle confirmation - refetch nonce and call callback
   useEffect(() => {
