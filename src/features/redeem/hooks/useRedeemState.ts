@@ -72,15 +72,30 @@ export function useRedeemState(): UseRedeemStateReturn {
   const [isInstantMode, setIsInstantMode] = useState(false);
   const [manualError, setManualError] = useState<string | null>(null);
 
+  // Claims data - initialize BEFORE withdrawal hooks so we can refetch after
+  const {
+    claims,
+    isLoading: isLoadingClaims,
+    error: claimsError,
+    hasMore: hasMoreClaims,
+    loadMore: loadMoreClaims,
+    refetch: refetchClaims,
+    totalClaims,
+  } = useClaims();
+
   // Protocol hooks for withdrawal
   const requestRedeem = useRequestRedeem({
     onConfirmed: () => {
-      // Refetch queries handled by wagmi cache invalidation
+      // Immediately refetch claims to show the new withdrawal request
+      refetchClaims();
     },
   });
 
   const instantRedeem = useInstantRedeem({
-    onConfirmed: () => {},
+    onConfirmed: () => {
+      // Immediately refetch claims to show the instant redemption
+      refetchClaims();
+    },
   });
 
   // Reads
@@ -93,17 +108,6 @@ export function useRedeemState(): UseRedeemStateReturn {
 
   // Determine active hook based on mode
   const activeHook = isInstantMode ? instantRedeem : requestRedeem;
-
-  // Claims data
-  const {
-    claims,
-    isLoading: isLoadingClaims,
-    error: claimsError,
-    hasMore: hasMoreClaims,
-    loadMore: loadMoreClaims,
-    refetch: refetchClaims,
-    totalClaims,
-  } = useClaims();
 
   // Claim action
   const [claimingRequestId, setClaimingRequestId] = useState<number | null>(null);

@@ -37,12 +37,14 @@ export function useWithdrawalEvents(
   const [eventData, setEventData] = useState<Map<bigint, WithdrawalEventData>>(
     new Map()
   );
+  const [claimedRequestIds, setClaimedRequestIds] = useState<bigint[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
   const fetchEvents = useCallback(async () => {
-    if (!publicClient || !address || requestIds.length === 0) {
+    if (!publicClient || !address) {
       setEventData(new Map());
+      setClaimedRequestIds([]);
       return;
     }
 
@@ -82,6 +84,7 @@ export function useWithdrawalEvents(
 
       // Create a map to store event data by request ID
       const eventMap = new Map<bigint, WithdrawalEventData>();
+      const claimedIds: bigint[] = [];
 
       // Process requested events
       for (const log of requestedLogs) {
@@ -120,9 +123,15 @@ export function useWithdrawalEvents(
         const existing = eventMap.get(requestId) || { requestId };
         existing.claimedAt = Number(block.timestamp);
         eventMap.set(requestId, existing);
+        
+        // Track claimed request IDs
+        if (!claimedIds.includes(requestId)) {
+          claimedIds.push(requestId);
+        }
       }
 
       setEventData(eventMap);
+      setClaimedRequestIds(claimedIds);
     } catch (err) {
       console.error("Failed to fetch withdrawal events:", err);
       setError(
@@ -130,6 +139,7 @@ export function useWithdrawalEvents(
       );
       // On error, return empty map - fallback will use hardcoded estimates
       setEventData(new Map());
+      setClaimedRequestIds([]);
     } finally {
       setIsLoading(false);
     }
@@ -142,17 +152,18 @@ export function useWithdrawalEvents(
 
   // Auto-refresh every 10 seconds
   useEffect(() => {
-    if (!address || requestIds.length === 0) return;
+    if (!address) return;
 
     const interval = setInterval(() => {
       fetchEvents();
     }, CLAIMS_REFRESH_INTERVAL_MS);
 
     return () => clearInterval(interval);
-  }, [fetchEvents, address, requestIds]);
+  }, [fetchEvents, address]);
 
   return {
     eventData,
+    claimedRequestIds,
     isLoading,
     error,
     refetch: fetchEvents,

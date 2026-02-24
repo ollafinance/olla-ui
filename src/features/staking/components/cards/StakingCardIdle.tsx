@@ -78,7 +78,7 @@ export function StakingCardIdle({
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col items-center justify-between p-6">
       <div className="flex w-full items-center justify-between">
         <h2 className="text-lg leading-[1.16] font-medium text-black">You Stake</h2>
-        <BalanceBadge balance={balance} isConnected={isConnected} />
+        <BalanceBadge balance={balance} isConnected={isConnected} currency="aztec" />
       </div>
 
       <div className="flex w-full flex-1 flex-col justify-center gap-3">

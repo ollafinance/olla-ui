@@ -1,9 +1,10 @@
 interface BalanceBadgeProps {
+  currency: "aztec" | "stAztec";
   balance?: string;
   isConnected?: boolean;
 }
 
-export function BalanceBadge({ balance, isConnected }: BalanceBadgeProps) {
+export function BalanceBadge({ balance, isConnected, currency }: BalanceBadgeProps) {
   const displayBalance = isConnected && balance ? balance : "----";
 
   return (
@@ -11,7 +12,7 @@ export function BalanceBadge({ balance, isConnected }: BalanceBadgeProps) {
       <span className="text-xs leading-[1.16] font-medium text-black">Balance</span>
       <div className="bg-card flex items-center justify-center rounded-[45px] px-[15px] py-2">
         <span className="text-center text-xs leading-[1.16] font-medium text-black">
-          {Number(displayBalance).toFixed(4)} Aztec
+          {Number(displayBalance).toFixed(4)} {currency}
         </span>
       </div>
     </div>

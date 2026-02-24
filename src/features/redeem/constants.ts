@@ -1,4 +1,4 @@
-export type ClaimStatus = "ready" | "processing" | "claimed";
+export type ClaimStatus = "ready" | "processing" | "claimed" | "instant";
 
 export interface ClaimItem {
   id: number;

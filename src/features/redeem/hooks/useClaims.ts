@@ -2,17 +2,20 @@ import { useReadContracts, useConnection } from "wagmi";
 import { CONTRACTS } from "@/constants/contracts";
 import { PROTOCOL_CONSTANTS, CLAIMS_REFRESH_INTERVAL_MS } from "@/constants/protocol";
 import { useWithdrawalEvents } from "@/hooks/protocol/useWithdrawalEvents";
+import { useInstantRedemptionEvents } from "@/hooks/protocol/useInstantRedemptionEvents";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useState, useMemo, useCallback } from "react";
 import { formatEther } from "viem";
 
-export type ClaimStatus = "ready" | "processing" | "claimed";
+export type ClaimStatus = "ready" | "processing" | "claimed" | "instant";
+export type ClaimType = "queued" | "instant";
 
 export interface ClaimItemData {
   id: number;
   amount: string; // Formatted assets (e.g., "250.00")
   status: ClaimStatus;
+  claimType: ClaimType;
   usdValue: string; // Calculated USD value
   daysLeft?: number; // For processing status
   claimedDate?: string; // Relative time for claimed status (e.g., "2 days ago")
@@ -21,33 +24,66 @@ export interface ClaimItemData {
   requestedAt?: number; // Timestamp (if available)
   finalized: boolean;
   claimed: boolean;
+  isInstant?: boolean; // Whether this is an instant redemption
 }
 
 const CLAIMS_PAGE_SIZE = 10;
 
 /**
  * Hook to fetch and manage withdrawal claims data.
- * Fetches active requests, enriches with event timestamps, calculates USD values,
- * and provides pagination with priority sorting (ready > processing > claimed).
+ * Fetches both active requests and historical claimed requests from events,
+ * plus instant redemptions, enriches with timestamps, calculates USD values,
+ * and provides pagination with priority sorting (ready > processing > instant > claimed).
  */
 export function useClaims() {
   const { address } = useConnection();
   const [page, setPage] = useState(1);
 
-  // Get active request IDs
+  // Get active request IDs from contract (non-claimed requests)
   const { activeRequestIds, exchangeRate } = useOllaCoreReads({
     address: address,
   });
 
-  // Fetch request details using multicall
+  // Get claimed request IDs and event timestamps from withdrawal event logs
+  const {
+    eventData,
+    claimedRequestIds,
+    isLoading: isLoadingEvents,
+    error: eventsError,
+    refetch: refetchEvents,
+  } = useWithdrawalEvents(address, activeRequestIds);
+
+  // Get instant redemption events
+  const {
+    events: instantRedemptionEvents,
+    isLoading: isLoadingInstantEvents,
+    error: instantEventsError,
+    refetch: refetchInstantEvents,
+  } = useInstantRedemptionEvents(address);
+
+  // Combine active and claimed request IDs, removing duplicates
+  const allRequestIds = useMemo(() => {
+    const combined = [...activeRequestIds];
+    
+    // Add claimed request IDs that aren't already in the active list
+    for (const claimedId of claimedRequestIds) {
+      if (!combined.some((id) => id === claimedId)) {
+        combined.push(claimedId);
+      }
+    }
+    
+    return combined;
+  }, [activeRequestIds, claimedRequestIds]);
+
+  // Fetch request details using multicall for ALL requests (active + claimed)
   const requestDetailsContracts = useMemo(() => {
-    return activeRequestIds.map((id) => ({
+    return allRequestIds.map((id) => ({
       address: CONTRACTS.WithdrawalQueue.address,
       abi: CONTRACTS.WithdrawalQueue.abi,
       functionName: "getRequest",
       args: [id],
     }));
-  }, [activeRequestIds]);
+  }, [allRequestIds]);
 
   const {
     data: requestDetailsData,
@@ -61,14 +97,6 @@ export function useClaims() {
       refetchInterval: CLAIMS_REFRESH_INTERVAL_MS,
     },
   });
-
-  // Fetch event timestamps
-  const {
-    eventData,
-    isLoading: isLoadingEvents,
-    error: eventsError,
-    refetch: refetchEvents,
-  } = useWithdrawalEvents(address, activeRequestIds);
 
   // Get currency utilities for USD calculations
   const exchangeRateNum = exchangeRate ? Number(formatEther(exchangeRate)) : null;
@@ -114,15 +142,15 @@ export function useClaims() {
     });
   }, []);
 
-  // Transform raw data to ClaimItemData[]
-  const claims: ClaimItemData[] = useMemo(() => {
+  // Transform queued withdrawal data to ClaimItemData[]
+  const queuedClaims: ClaimItemData[] = useMemo(() => {
     if (!requestDetailsData || requestDetailsData.length === 0) return [];
 
     return requestDetailsData
       .map((result, index) => {
         if (!result.result) return null;
 
-        const requestId = activeRequestIds[index];
+        const requestId = allRequestIds[index];
         const request = result.result as {
           recipient: `0x${string}`;
           finalized: boolean;
@@ -133,10 +161,11 @@ export function useClaims() {
         };
 
         const eventInfo = eventData.get(requestId);
+        const isClaimed = claimedRequestIds.includes(requestId);
 
         // Determine status
         let status: ClaimStatus;
-        if (request.claimed) {
+        if (isClaimed || request.claimed) {
           status = "claimed";
         } else if (request.finalized) {
           status = "ready";
@@ -161,6 +190,7 @@ export function useClaims() {
           id: Number(requestId),
           amount: assetsFormatted,
           status,
+          claimType: "queued",
           usdValue,
           daysLeft,
           claimedDate,
@@ -168,36 +198,79 @@ export function useClaims() {
           assetsExpected: request.assetsExpected,
           requestedAt: eventInfo?.requestedAt,
           finalized: request.finalized,
-          claimed: request.claimed,
+          claimed: isClaimed || request.claimed,
+          isInstant: false,
         };
       })
       .filter((item): item is ClaimItemData => item !== null);
   }, [
     requestDetailsData,
-    activeRequestIds,
+    allRequestIds,
     eventData,
+    claimedRequestIds,
     stAztecToUsd,
     calculateDaysLeft,
     formatRelativeDate,
   ]);
 
-  // Sort by priority: ready > processing > claimed
+  // Transform instant redemption events to ClaimItemData[]
+  const instantClaims: ClaimItemData[] = useMemo(() => {
+    if (!instantRedemptionEvents || instantRedemptionEvents.length === 0) return [];
+
+    return instantRedemptionEvents.map((event, index) => {
+      // Calculate amounts
+      const sharesFormatted = formatEther(event.shares);
+      const netAssetsFormatted = formatEther(event.netAssets);
+      const usdValue = stAztecToUsd(sharesFormatted);
+
+      // Format completion date
+      const completedDate = formatRelativeDate(event.timestamp);
+
+      // Generate a unique ID for instant redemptions (use negative numbers to avoid conflicts)
+      const id = -1 * (index + 1);
+
+      return {
+        id,
+        amount: netAssetsFormatted,
+        status: "instant",
+        claimType: "instant",
+        usdValue,
+        claimedDate: completedDate,
+        shares: event.shares,
+        assetsExpected: event.netAssets,
+        requestedAt: event.timestamp,
+        finalized: true,
+        claimed: true,
+        isInstant: true,
+      };
+    });
+  }, [instantRedemptionEvents, stAztecToUsd, formatRelativeDate]);
+
+  // Combine all claims
+  const allClaims = useMemo(() => {
+    return [...queuedClaims, ...instantClaims];
+  }, [queuedClaims, instantClaims]);
+
+  // Sort by priority: ready > processing > (instant = claimed by time)
   const sortedClaims = useMemo(() => {
     const priority: Record<ClaimStatus, number> = {
       ready: 0,
       processing: 1,
-      claimed: 2,
+      instant: 2,
+      claimed: 2, // Same priority as instant - both sorted by time
     };
 
-    return [...claims].sort((a, b) => {
+    return [...allClaims].sort((a, b) => {
       // First sort by status priority
       const priorityDiff = priority[a.status] - priority[b.status];
       if (priorityDiff !== 0) return priorityDiff;
 
-      // Then sort by request ID (descending - newest first)
-      return b.id - a.id;
+      // Then sort by timestamp (newest first)
+      const aTime = a.requestedAt || 0;
+      const bTime = b.requestedAt || 0;
+      return bTime - aTime;
     });
-  }, [claims]);
+  }, [allClaims]);
 
   // Pagination
   const totalClaims = sortedClaims.length;
@@ -218,11 +291,12 @@ export function useClaims() {
   const refetch = useCallback(() => {
     refetchRequests();
     refetchEvents();
-  }, [refetchRequests, refetchEvents]);
+    refetchInstantEvents();
+  }, [refetchRequests, refetchEvents, refetchInstantEvents]);
 
   // Determine loading and error states
-  const isLoading = isLoadingRequests || isLoadingEvents;
-  const error = requestsError || eventsError;
+  const isLoading = isLoadingRequests || isLoadingEvents || isLoadingInstantEvents;
+  const error = requestsError || eventsError || instantEventsError;
 
   return {
     claims: paginatedClaims,

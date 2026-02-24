@@ -109,7 +109,7 @@ export function WithdrawalCardIdle({
           <h2 className="text-[21.33px] leading-[1.16] font-medium text-black">
             Request Withdrawal
           </h2>
-          <BalanceBadge balance={balance} isConnected={isConnected} />
+          <BalanceBadge balance={balance} isConnected={isConnected} currency="stAztec" />
         </div>
 
         <div className="mb-4 flex w-full flex-col gap-[11px]">

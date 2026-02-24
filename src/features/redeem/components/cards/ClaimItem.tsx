@@ -72,17 +72,26 @@ export function ClaimItem({
         <span className="text-xs leading-[1.16] font-medium text-[#9c9c9c]">{claimedDate}</span>
       ),
     },
+    instant: {
+      bg: "bg-[#e1e1e1]",
+      dotColor: "#9c9c9c",
+      statusTextColor: "text-[#373737]",
+      statusText: "⚡ Instant redemption",
+      rightContent: (
+        <span className="text-xs leading-[1.16] font-medium text-[#9c9c9c]">{claimedDate}</span>
+      ),
+    },
   };
 
   const config = statusConfig[status];
   const amountTextColor =
-    status === "claimed"
+    status === "claimed" || status === "instant"
       ? "text-[#373737]"
       : status === "processing"
         ? "text-card-claims-foreground"
         : "text-black";
   const usdTextColor =
-    status === "claimed"
+    status === "claimed" || status === "instant"
       ? "text-[#9c9c9c]"
       : status === "processing"
         ? "text-card-claims-foreground"
