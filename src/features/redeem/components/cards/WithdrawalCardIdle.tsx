@@ -9,6 +9,7 @@ import { ProtocolInfo } from "@/components/ProtocolInfo";
 import { useCurrency } from "@/hooks/useCurrency";
 import { sanitizeNumericInput } from "@/lib/utils";
 import infoIcon from "@/assets/icons/info-icon.svg";
+import { BalanceBadge } from "@/features/staking/components";
 
 interface WithdrawalCardIdleProps {
   amount: string;
@@ -108,14 +109,7 @@ export function WithdrawalCardIdle({
           <h2 className="text-[21.33px] leading-[1.16] font-medium text-black">
             Request Withdrawal
           </h2>
-          <div className="flex items-center gap-2 rounded-full bg-[#efeee6] py-1 pr-1 pl-[17px]">
-            <span className="text-xs leading-[1.16] font-medium text-black">Balance</span>
-            <div className="bg-card flex items-center justify-center rounded-full px-[15px] py-2">
-              <span className="text-center text-xs leading-[1.16] font-medium text-black">
-                {balance} stAztec
-              </span>
-            </div>
-          </div>
+          <BalanceBadge balance={balance} isConnected={isConnected} />
         </div>
 
         <div className="mb-4 flex w-full flex-col gap-[11px]">

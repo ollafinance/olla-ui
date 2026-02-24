@@ -11,7 +11,7 @@ export function BalanceBadge({ balance, isConnected }: BalanceBadgeProps) {
       <span className="text-xs leading-[1.16] font-medium text-black">Balance</span>
       <div className="bg-card flex items-center justify-center rounded-[45px] px-[15px] py-2">
         <span className="text-center text-xs leading-[1.16] font-medium text-black">
-          {displayBalance} Aztec
+          {Number(displayBalance).toFixed(4)} Aztec
         </span>
       </div>
     </div>

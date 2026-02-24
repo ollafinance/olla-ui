@@ -23,6 +23,16 @@ export function RedeemFeature() {
     instantWithdrawFeePercent,
     canInstantRedeem,
     hash,
+    // Claims
+    claims,
+    isLoadingClaims,
+    claimsError,
+    hasMoreClaims,
+    loadMoreClaims,
+    // Claim Action
+    claim,
+    claimingRequestId,
+    claimHash,
   } = useRedeemState();
 
   return (
@@ -49,7 +59,18 @@ export function RedeemFeature() {
           hash={hash}
         />
       }
-      topCards={<ClaimsCard claims={[]} onClaim={() => console.log("claiming")} />} // Placeholder - ClaimsCard not in scope
+      topCards={
+        <ClaimsCard
+          claims={claims}
+          onClaim={(id) => claim(BigInt(id))}
+          isLoading={isLoadingClaims}
+          error={claimsError?.message || null}
+          hasMore={hasMoreClaims}
+          onLoadMore={loadMoreClaims}
+          claimingRequestId={claimingRequestId}
+          claimHash={claimHash}
+        />
+      }
       bottomCard={
         <PortfolioCard
           isConnected={isConnected}
