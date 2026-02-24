@@ -9,12 +9,6 @@ export interface ClaimItem {
   claimedDate?: string;
 }
 
-export const MOCK_BALANCES = {
-  STAKED_BALANCE: "3095.00",
-  REWARDS_EARNED: "295.00",
-  STAZTEC_BALANCE: "539.21",
-};
-
 export const REDEEM_CONSTANTS = {
   AZTEC_PRICE_USD: 2.1,
   EXCHANGE_RATE: "0.95",

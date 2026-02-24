@@ -1,24 +1,27 @@
-import { useEffect } from "react";
 import ollaLoading from "@/assets/icons/olla-loading.svg";
 
 interface WithdrawalCardPendingProps {
-  onTransition: () => void;
+  state: "signing" | "pending" | "confirming";
 }
 
-export function WithdrawalCardPending({ onTransition }: WithdrawalCardPendingProps) {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onTransition();
-    }, 2000);
+export function WithdrawalCardPending({ state }: WithdrawalCardPendingProps) {
+  const title = {
+    signing: "Signing...",
+    pending: "Transaction",
+    confirming: "Confirming",
+  }[state];
 
-    return () => clearTimeout(timer);
-  }, [onTransition]);
+  const subtitle = {
+    signing: "Please sign in your wallet",
+    pending: "Submitted...",
+    confirming: "Awaiting confirmation...",
+  }[state];
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
       <div className="text-[67px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black">
-        <p className="mb-0">Transaction</p>
-        <p>Submitted...</p>
+        <p className="mb-0">{title}</p>
+        <p>{subtitle}</p>
       </div>
 
       <div className="mt-[22px]">

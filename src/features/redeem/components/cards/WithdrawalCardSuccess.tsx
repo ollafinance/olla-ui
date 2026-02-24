@@ -4,20 +4,32 @@ import arrowRightIcon from "@/assets/icons/arrow-right.svg";
 
 interface WithdrawalCardSuccessProps {
   amount: string;
+  isInstantMode: boolean;
+  hash: `0x${string}` | undefined;
   onWithdrawMore: () => void;
-  onViewExplorer: () => void;
 }
 
 export function WithdrawalCardSuccess({
   amount,
+  isInstantMode,
+  hash,
   onWithdrawMore,
-  onViewExplorer,
 }: WithdrawalCardSuccessProps) {
+  const explorerUrl = hash
+    ? `https://explorer.example.com/tx/${hash}` // TODO: Use correct explorer URL
+    : undefined;
+
+  const title = isInstantMode ? "Instant Withdrawal" : "Withdraw Request";
+  const subtitle = isInstantMode ? "Completed!" : "Created!";
+  const message = isInstantMode
+    ? "Your Aztec tokens are now available in your wallet."
+    : "You can see the status on the right claim section.";
+
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
       <div className="text-[60px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black">
-        <p className="mb-0">Withdraw Request</p>
-        <p>Created!</p>
+        <p className="mb-0">{title}</p>
+        <p>{subtitle}</p>
       </div>
 
       <div className="mt-[22px] flex gap-4 text-black">
@@ -27,9 +39,7 @@ export function WithdrawalCardSuccess({
         </div>
       </div>
 
-      <p className="text-muted-foreground mt-4 text-sm">
-        You can see the status on the right claim section.
-      </p>
+      <p className="text-muted-foreground mt-4 text-sm">{message}</p>
 
       <div className="mt-[22px]">
         <img src={ollaLoading} alt="Success" className="h-[59px] w-[128px]" />
@@ -49,14 +59,16 @@ export function WithdrawalCardSuccess({
           Another Request
           <img src={arrowRightIcon} alt="" className="ml-2.5 inline-block h-3 w-3" />
         </Button>
-        <Button
-          variant="cyan"
-          size="xl"
-          onClick={onViewExplorer}
-          className="bg-card-secondary rounded-full px-5 py-3 text-base leading-[1.16] font-medium tracking-[-0.32px] text-black"
-        >
-          View on Explorer
-        </Button>
+        {explorerUrl && (
+          <Button
+            variant="cyan"
+            size="xl"
+            onClick={() => window.open(explorerUrl, "_blank")}
+            className="bg-card-secondary rounded-full px-5 py-3 text-base leading-[1.16] font-medium tracking-[-0.32px] text-black"
+          >
+            View on Explorer
+          </Button>
+        )}
       </div>
     </div>
   );

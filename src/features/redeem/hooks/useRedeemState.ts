@@ -1,108 +1,186 @@
-import { useState, useCallback } from "react";
-import type { ClaimItem } from "../constants";
-import { MOCK_CLAIMS } from "../constants";
+import { useState, useMemo, useCallback } from "react";
+import { useConnection } from "wagmi";
+import { formatEther, parseEther } from "viem";
+import { useRequestRedeem } from "@/hooks/protocol/useRequestRedeem";
+import { useInstantRedeem } from "@/hooks/protocol/useInstantRedeem";
+import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
+import { useStAztec } from "@/hooks/protocol/useStAztec";
 
-export type RedeemState = "idle" | "pending" | "success" | "error";
-
-interface UseRedeemStateOptions {
-  initialState?: RedeemState;
-  demoMode?: boolean;
-}
+export type RedeemState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
 interface UseRedeemStateReturn {
+  // Connection
+  isConnected: boolean;
+
+  // State Machine
   state: RedeemState;
+
+  // Amount & Mode
   amount: string;
   setAmount: (val: string) => void;
+  isInstantMode: boolean;
+  setIsInstantMode: (val: boolean) => void;
+
+  // Actions
   withdraw: () => void;
-  withdrawWithError: () => void;
   reset: () => void;
+
+  // Error
   error: string | null;
-  simulatedReceived: string;
-  claims: ClaimItem[];
-  claimItem: (id: number) => void;
-  _internal: {
-    transitionToSuccess: () => void;
-    transitionToError: (errorMessage: string) => void;
-  };
+
+  // Balances & Rates
+  stAztecBalance: string;
+  exchangeRate: string;
+
+  // Preview Values
+  grossAssets: string; // Converted assets without any fees
+  previewAssets: string; // What user actually receives (after fee in instant mode)
+  minAssetsOut: string;
+  instantWithdrawFee: string;
+  instantWithdrawFeePercent: string;
+
+  // Liquidity Check
+  canInstantRedeem: boolean;
+
+  // Transaction
+  hash: `0x${string}` | undefined;
 }
 
-export function useRedeemState(options: UseRedeemStateOptions = {}): UseRedeemStateReturn {
-  const { initialState = "idle", demoMode = true } = options;
+export function useRedeemState(): UseRedeemStateReturn {
+  const { address, isConnected } = useConnection();
+  const [amount, setAmount] = useState("");
+  const [isInstantMode, setIsInstantMode] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
 
-  const [state, setState] = useState<RedeemState>(initialState);
-  const [amount, setAmount] = useState("95.00");
-  const [error, setError] = useState<string | null>(null);
-  const [claims, setClaims] = useState<ClaimItem[]>(MOCK_CLAIMS);
+  // Protocol hooks
+  const requestRedeem = useRequestRedeem({
+    onConfirmed: () => {
+      // Refetch queries handled by wagmi cache invalidation
+    },
+  });
 
-  const simulatedReceived =
-    amount && !isNaN(Number(amount)) ? (Number(amount) * 0.95).toFixed(2) : "0.00";
+  const instantRedeem = useInstantRedeem({
+    onConfirmed: () => {},
+  });
 
+  // Reads
+  const reads = useOllaCoreReads({
+    amountToConvert: amount,
+    address: address,
+  });
+
+  const { balance: stAztecBalance } = useStAztec();
+
+  // Determine active hook based on mode
+  const activeHook = isInstantMode ? instantRedeem : requestRedeem;
+
+  // State machine
+  const state = useMemo<RedeemState>(() => {
+    if (manualError || activeHook.error) return "error";
+    if (activeHook.isConfirmed) return "success";
+    if (activeHook.isConfirming) return "confirming";
+    if (activeHook.isPending) return "pending";
+    if (activeHook.isSigning) return "signing";
+    return "idle";
+  }, [activeHook, manualError]);
+
+  // Error handling
+  const error = useMemo(() => {
+    if (manualError) return manualError;
+    if (activeHook.error) {
+      const err = activeHook.error as Error & { shortMessage?: string };
+      return err.shortMessage || err.message || "Transaction failed";
+    }
+    return null;
+  }, [activeHook.error, manualError]);
+
+  // Exchange rate (1 share = X assets)
+  const exchangeRate = reads.exchangeRate
+    ? Number(formatEther(reads.exchangeRate)).toFixed(4)
+    : "1.0000";
+
+  // Gross assets (converted without any fees)
+  const grossAssets = reads.potentialAssets
+    ? Number(formatEther(reads.potentialAssets)).toFixed(4)
+    : "0";
+
+  // Preview assets (what user actually receives)
+  // For instant mode: after instant fee (previewRedeem)
+  // For regular mode: full amount (convertToAssets)
+  const previewAssets = isInstantMode
+    ? (reads.previewRedeemAssets
+        ? Number(formatEther(reads.previewRedeemAssets)).toFixed(4)
+        : "0")
+    : grossAssets;
+
+  // Instant redemption fee calculation (actual difference between gross and net)
+  const instantWithdrawFee = useMemo(() => {
+    if (!isInstantMode || !reads.potentialAssets || !reads.previewRedeemAssets) return "0";
+    const fee = reads.potentialAssets - reads.previewRedeemAssets;
+    return Number(formatEther(fee)).toFixed(4);
+  }, [isInstantMode, reads.potentialAssets, reads.previewRedeemAssets]);
+
+  // Fee percentage for display
+  const instantRedemptionFeeBP = reads.instantRedemptionFeeBP ?? 50n; // Default 0.5%
+  const feePercent = Number(instantRedemptionFeeBP) / 100; // BP to percentage
+  const instantWithdrawFeePercent = `${feePercent.toFixed(2)}%`;
+
+  // Min assets out (with slippage)
+  const minAssetsOut = useMemo(() => {
+    if (!reads.previewRedeemAssets) return "0";
+    const preview = reads.previewRedeemAssets;
+    const slippageApplied = (preview * 9900n) / 10000n; // 1% slippage
+    return Number(formatEther(slippageApplied)).toFixed(4);
+  }, [reads.previewRedeemAssets]);
+
+  // Liquidity check for instant redemption
+  const canInstantRedeem = useMemo(() => {
+    if (!isInstantMode || !amount || !reads.availableForInstantRedemption) return true;
+    const requestedShares = parseEther(amount);
+    return reads.availableForInstantRedemption >= requestedShares;
+  }, [isInstantMode, amount, reads.availableForInstantRedemption]);
+
+  // Withdraw action
   const withdraw = useCallback(() => {
-    if (!demoMode) return;
-    setError(null);
-    setState("pending");
-  }, [demoMode]);
+    if (!isConnected) return;
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) return;
 
-  const withdrawWithError = useCallback(() => {
-    if (!demoMode) return;
-    setError(null);
-    setState("pending");
-  }, [demoMode]);
+    setManualError(null);
 
+    if (isInstantMode && !canInstantRedeem) {
+      setManualError("Insufficient liquidity for instant redemption");
+      return;
+    }
+
+    activeHook.write(amount);
+  }, [isConnected, amount, isInstantMode, canInstantRedeem, activeHook]);
+
+  // Reset
   const reset = useCallback(() => {
-    setState("idle");
-    setError(null);
-  }, []);
-
-  const transitionToSuccess = useCallback(() => {
-    setState("success");
-    const newClaim: ClaimItem = {
-      id: Date.now(),
-      amount: amount,
-      status: "processing",
-      usdValue: (Number(amount) * 2.1).toFixed(2),
-      daysLeft: 2,
-    };
-    setClaims((prev) => [newClaim, ...prev]);
-  }, [amount]);
-
-  const transitionToError = useCallback((errorMessage: string) => {
-    setState("error");
-    setError(errorMessage);
-  }, []);
-
-  const claimItem = useCallback((id: number) => {
-    setClaims((prev) =>
-      prev.map((claim) =>
-        claim.id === id
-          ? {
-              ...claim,
-              status: "claimed",
-              claimedDate: new Date().toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "short",
-                year: "numeric",
-              }),
-            }
-          : claim
-      )
-    );
-  }, []);
+    setAmount("");
+    setManualError(null);
+    requestRedeem.reset();
+    instantRedeem.reset();
+  }, [requestRedeem, instantRedeem]);
 
   return {
+    isConnected,
     state,
     amount,
     setAmount,
+    isInstantMode,
+    setIsInstantMode,
     withdraw,
-    withdrawWithError,
     reset,
     error,
-    simulatedReceived,
-    claims,
-    claimItem,
-    _internal: {
-      transitionToSuccess,
-      transitionToError,
-    },
+    stAztecBalance,
+    exchangeRate,
+    grossAssets,
+    previewAssets,
+    minAssetsOut,
+    instantWithdrawFee,
+    instantWithdrawFeePercent,
+    canInstantRedeem,
+    hash: activeHook.hash,
   };
 }

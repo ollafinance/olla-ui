@@ -1,21 +1,29 @@
 import { useRedeemState } from "./hooks";
-import { WithdrawalCard, ClaimsCard } from "./components";
+import { ClaimsCard, WithdrawalCard } from "./components";
 import { PortfolioCard } from "@/components/cards";
 import { PageLayout } from "@/components/layout/page-layout";
 
 export function RedeemFeature() {
   const {
+    isConnected,
     state,
     amount,
     setAmount,
+    isInstantMode,
+    setIsInstantMode,
     withdraw,
-    withdrawWithError,
     reset,
     error,
-    claims,
-    claimItem,
-    _internal,
-  } = useRedeemState({ demoMode: true });
+    stAztecBalance,
+    exchangeRate,
+    grossAssets,
+    previewAssets,
+    minAssetsOut,
+    instantWithdrawFee,
+    instantWithdrawFeePercent,
+    canInstantRedeem,
+    hash,
+  } = useRedeemState();
 
   return (
     <PageLayout
@@ -25,14 +33,23 @@ export function RedeemFeature() {
           amount={amount}
           onAmountChange={setAmount}
           onWithdraw={withdraw}
-          onWithdrawWithError={withdrawWithError}
-          onTransitionToSuccess={_internal.transitionToSuccess}
-          onTransitionToError={_internal.transitionToError}
           onReset={reset}
           error={error}
+          isConnected={isConnected}
+          balance={stAztecBalance}
+          exchangeRate={exchangeRate}
+          grossAssets={grossAssets}
+          previewAssets={previewAssets}
+          minAssetsOut={minAssetsOut}
+          isInstantMode={isInstantMode}
+          onInstantModeChange={setIsInstantMode}
+          instantWithdrawFee={instantWithdrawFee}
+          instantWithdrawFeePercent={instantWithdrawFeePercent}
+          canInstantRedeem={canInstantRedeem}
+          hash={hash}
         />
       }
-      topCards={<ClaimsCard claims={claims} onClaim={claimItem} />}
+      topCards={<ClaimsCard claims={[]} onClaim={() => console.log("claiming")} />} // Placeholder - ClaimsCard not in scope
       bottomCard={<PortfolioCard className="lg:h-card-portfolio-redeem" />}
     />
   );

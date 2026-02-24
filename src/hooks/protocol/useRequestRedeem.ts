@@ -14,15 +14,21 @@ import {
   PERMIT_TYPES,
   type Eip712DomainTuple,
 } from "@/lib/permit";
-import { useState } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 export interface UseRequestRedeemOptions {
   onSuccess?: () => void;
+  onConfirmed?: () => void;
 }
+
+const CONFIRMATION_TIMEOUT_MS = 30000; // 30 seconds
 
 export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
   const { address } = useConnection();
   const [isSigning, setIsSigning] = useState(false);
+  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const hasCalledConfirmed = useRef(false);
 
   const { data: stAztecDomain } = useReadContract({
     address: CONTRACTS.StAztec.address,
@@ -45,10 +51,40 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
     data: requestRedeemHash,
     isPending: isRequestRedeemPending,
     error: requestRedeemError,
+    reset: resetWriteContract,
   } = useWriteContract();
 
-  const { isLoading: isRequestRedeemConfirming, isSuccess: isRequestRedeemConfirmed } =
-    useWaitForTransactionReceipt({ hash: requestRedeemHash });
+  const {
+    isLoading: isRequestRedeemConfirming,
+    isSuccess: isRequestRedeemConfirmed,
+    error: receiptError,
+  } = useWaitForTransactionReceipt({ hash: requestRedeemHash });
+
+  // Clear timeout on success or unmount
+  useEffect(() => {
+    if (isRequestRedeemConfirmed && timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [isRequestRedeemConfirmed]);
+
+  // Handle confirmation - refetch nonce and call callback
+  useEffect(() => {
+    if (isRequestRedeemConfirmed && !hasCalledConfirmed.current) {
+      hasCalledConfirmed.current = true;
+
+      // Refetch nonce for next transaction
+      refetchStAztecNonce();
+
+      // Call user callback
+      options.onConfirmed?.();
+    }
+  }, [isRequestRedeemConfirmed, refetchStAztecNonce, options]);
 
   const requestRedeem = async (amount: string) => {
     if (!address || !stAztecDomain || stAztecNonce === undefined) return;
@@ -57,6 +93,7 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
 
     try {
       setIsSigning(true);
+      setTimeoutError(null);
 
       const { data: currentNonce } = await refetchStAztecNonce();
       if (currentNonce === undefined || currentNonce === null)
@@ -97,6 +134,14 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
         {
           onSuccess: () => {
             setIsSigning(false);
+            // Start timeout for confirmation
+            timeoutRef.current = setTimeout(() => {
+              setTimeoutError(
+                new Error(
+                  "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+                )
+              );
+            }, CONFIRMATION_TIMEOUT_MS);
             options.onSuccess?.();
           },
           onError: () => setIsSigning(false),
@@ -108,6 +153,20 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
     }
   };
 
+  const reset = useCallback(() => {
+    setIsSigning(false);
+    setTimeoutError(null);
+    hasCalledConfirmed.current = false;
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+      timeoutRef.current = null;
+    }
+    resetWriteContract();
+  }, [resetWriteContract]);
+
+  // Combine errors - prioritize timeout error if confirmation is stuck
+  const combinedError = timeoutError || receiptError || requestRedeemError;
+
   return {
     write: requestRedeem,
     isSigning,
@@ -115,6 +174,7 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
     isConfirming: isRequestRedeemConfirming,
     isConfirmed: isRequestRedeemConfirmed,
     hash: requestRedeemHash,
-    error: requestRedeemError,
+    error: combinedError,
+    reset,
   };
 }
