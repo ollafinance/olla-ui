@@ -50,7 +50,13 @@ export function RedeemFeature() {
         />
       }
       topCards={<ClaimsCard claims={[]} onClaim={() => console.log("claiming")} />} // Placeholder - ClaimsCard not in scope
-      bottomCard={<PortfolioCard className="lg:h-card-portfolio-redeem" />}
+      bottomCard={
+        <PortfolioCard
+          isConnected={isConnected}
+          totalStaked={stAztecBalance}
+          className="lg:h-card-third"
+        />
+      }
     />
   );
 }

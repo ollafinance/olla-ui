@@ -50,7 +50,7 @@ export function PortfolioCard({
             {Number(totalStaked).toFixed(4) || "0.00"}
           </span>
           <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
-            stAztec
+            Aztec
           </span>
         </div>
 
