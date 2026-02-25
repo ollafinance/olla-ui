@@ -2,7 +2,7 @@
 
 import fs from "fs";
 import path from "path";
-import { createWalletClient, createPublicClient, http, parseEther } from "viem";
+import { createWalletClient, createPublicClient, http, parseEther, type Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { foundry } from "viem/chains";
 import { CONTRACTS } from "../src/constants/contracts";
@@ -57,25 +57,61 @@ async function main() {
   console.log(`Using RPC: ${rpcUrl}`);
   console.log(`Signer: ${account.address}`);
 
+  // Retry logic for nonce issues
+  let nonce = await publicClient.getTransactionCount({
+    address: account.address,
+    blockTag: "pending",
+  });
+  let hash: Hex | null = null;
+  let attempts = 0;
+  const maxAttempts = 5;
+
+  while (attempts < maxAttempts && !hash) {
+    try {
+      console.log(`Attempt ${attempts + 1}/${maxAttempts} with nonce ${nonce}...`);
+      
+      hash = await client.writeContract({
+        address: CONTRACTS.Asset.address,
+        abi: CONTRACTS.Asset.abi,
+        functionName: "mint",
+        args: [recipient as Hex, parseEther(amount)],
+        nonce,
+      });
+
+      console.log(`Transaction sent: ${hash}`);
+      break;
+    } catch (error) {
+      const errorMessage = String(error);
+      if (errorMessage.includes("nonce too low") || errorMessage.includes("Nonce provided for the transaction")) {
+        console.log(`Nonce ${nonce} was too low, retrying with ${nonce + 1}...`);
+        nonce++;
+        attempts++;
+        // Small delay before retry
+        await new Promise(resolve => setTimeout(resolve, 100));
+      } else {
+        // Not a nonce error, rethrow
+        throw error;
+      }
+    }
+  }
+
+  if (!hash) {
+    console.error(`Failed to mint after ${maxAttempts} attempts due to nonce issues.`);
+    console.error("This usually happens when the RPC node is under heavy load or the account is being used concurrently.");
+    process.exit(1);
+  }
+
   try {
-    const hash = await client.writeContract({
-      address: CONTRACTS.Asset.address,
-      abi: CONTRACTS.Asset.abi,
-      functionName: "mint",
-      args: [recipient as `0x${string}`, parseEther(amount)],
-    });
-
-    console.log(`Transaction sent: ${hash}`);
-
     const receipt = await publicClient.waitForTransactionReceipt({ hash });
 
     if (receipt.status === "success") {
       console.log("Minting successful!");
     } else {
       console.error("Minting failed.");
+      process.exit(1);
     }
   } catch (error) {
-    console.error("Error minting tokens:", error);
+    console.error("Error waiting for transaction receipt:", error);
     process.exit(1);
   }
 }
