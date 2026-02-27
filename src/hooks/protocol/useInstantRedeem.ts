@@ -5,6 +5,7 @@ import {
   useReadContract,
   useSignTypedData,
   useConfig,
+  usePublicClient,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
 import { readContract } from "wagmi/actions";
@@ -26,6 +27,7 @@ export interface UseInstantRedeemOptions {
 export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
   const { address } = useConnection();
   const config = useConfig();
+  const publicClient = usePublicClient();
   const [isSigning, setIsSigning] = useState(false);
   const [timeoutError, setTimeoutError] = useState<Error | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -108,7 +110,8 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
         throw new Error("Could not fetch nonce");
 
       const value = parseEther(amount);
-      const deadline = BigInt(Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
+      const block = await publicClient!.getBlock();
+      const deadline = block.timestamp + BigInt(PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
 
       // Get expected assets and apply slippage
       const expectedAssets = await readContract(config, {

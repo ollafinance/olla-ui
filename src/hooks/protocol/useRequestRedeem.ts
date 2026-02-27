@@ -4,6 +4,7 @@ import {
   useConnection,
   useReadContract,
   useSignTypedData,
+  usePublicClient,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
 import { CONTRACTS } from "@/constants/contracts";
@@ -23,6 +24,7 @@ export interface UseRequestRedeemOptions {
 
 export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
   const { address } = useConnection();
+  const publicClient = usePublicClient();
   const [isSigning, setIsSigning] = useState(false);
   const [timeoutError, setTimeoutError] = useState<Error | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -105,7 +107,8 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
         throw new Error("Could not fetch nonce");
 
       const value = parseEther(amount);
-      const deadline = BigInt(Math.floor(Date.now() / 1000) + PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
+      const block = await publicClient!.getBlock();
+      const deadline = block.timestamp + BigInt(PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
 
       const signature = await mutateAsync({
         domain: {
