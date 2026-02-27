@@ -17,11 +17,11 @@ export function LayoutShell({ children }: LayoutShellProps) {
         <div className="z-10 mt-4 mb-6 w-full max-w-4xl">
           <Header />
         </div>
-        
+
         {/* Desktop: NavBar centered, ActionButtons fixed on right */}
         {/* Mobile: NavBar and ActionButtons in a row */}
         <div className="z-10 mt-4 mb-6 w-full max-w-4xl">
-          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+          <div className="flex flex-row items-center justify-center gap-4 md:flex-row">
             <NavBar />
             {/* Mobile only - ActionButtons inline with NavBar */}
             <div className="md:hidden">
@@ -34,7 +34,7 @@ export function LayoutShell({ children }: LayoutShellProps) {
         <div className="hidden md:block">
           <ActionButtons />
         </div>
-        
+
         <div className="z-10 w-full max-w-4xl flex-1 items-center justify-center">
           <main>{children}</main>
         </div>

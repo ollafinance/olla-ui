@@ -1,80 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { cn } from "@/lib/utils";
-
-interface FAQItem {
-  question: string;
-  answer: string;
-}
-
-const faqData: FAQItem[] = [
-  {
-    question: "What is olla",
-    answer:
-      "Olla is a liquid staking protocol built for Aztec. It lets you stake your tokens to help secure the network, earn staking rewards, and receive a liquid token (stAztec) in return, so your capital is never locked up. You can use stAztec across DeFi while your rewards keep accruing.",
-  },
-  {
-    question: "How does Olla work?",
-    answer:
-      "Olla allows you to stake Aztec tokens and receive stAztec in return. Your staked tokens are used to secure the network and earn rewards, while stAztec can be freely used in DeFi applications.",
-  },
-  {
-    question: "What is stAztec?",
-    answer:
-      "stAztec is a liquid staking token that represents your staked Aztec tokens. It accrues staking rewards automatically and can be traded, transferred, or used in DeFi protocols.",
-  },
-  {
-    question: "How do I get stAztec?",
-    answer:
-      "Simply stake your Aztec tokens through the Olla interface. You'll receive stAztec tokens in your wallet proportional to your staked amount.",
-  },
-  {
-    question: "How can I use stAztec?",
-    answer:
-      "stAztec can be used in various DeFi applications including lending protocols, DEXs, and yield aggregators while continuing to earn staking rewards.",
-  },
-  {
-    question: "How do I unstake?",
-    answer:
-      "You can unstake your Aztec tokens by redeeming your stAztec. The process involves a withdrawal request and may have a waiting period depending on network conditions.",
-  },
-  {
-    question: "Is there a minimum amount required to stake?",
-    answer:
-      "Yes, there is a minimum staking amount to ensure efficient validator operations. The exact amount is displayed in the staking interface.",
-  },
-  {
-    question: "How does Olla select validators?",
-    answer:
-      "Olla uses a rigorous selection process based on validator performance, uptime, and reputation to ensure optimal staking returns and network security.",
-  },
-  {
-    question: "What fee does Olla charge?",
-    answer:
-      "Olla charges a small fee on staking rewards to maintain the protocol and support ongoing development. The exact fee percentage is transparently displayed.",
-  },
-  {
-    question: "What are the risks of using Olla?",
-    answer:
-      "As with any DeFi protocol, there are smart contract risks, market risks, and slashing risks. We encourage users to understand these risks before staking.",
-  },
-  {
-    question: "What security measures does Olla have in place?",
-    answer:
-      "Olla undergoes regular security audits, uses battle-tested smart contract patterns, and implements robust monitoring and incident response procedures.",
-  },
-  {
-    question: "What is the staking APR?",
-    answer:
-      "The staking APR varies based on network conditions and validator performance. Current rates are displayed in the staking interface.",
-  },
-  {
-    question: "Where can I learn more or get involved?",
-    answer:
-      "Visit our documentation, join our community Discord, or follow us on Twitter for the latest updates and community events.",
-  },
-];
+import { createPortal } from "react-dom";
+import faqData from "@/assets/content/faq.json";
 
 interface FAQCardProps {
   onClose: () => void;
@@ -91,64 +19,70 @@ export function FAQCard({ onClose }: FAQCardProps) {
       }
     };
 
+    // Lock body scroll when modal opens
+    const originalOverflow = document.body.style.overflow;
+    const originalTouchAction = document.body.style.touchAction;
+    document.body.style.overflow = "hidden";
+    document.body.style.touchAction = "none";
+
     document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      // Restore body scroll when modal closes
+      document.body.style.overflow = originalOverflow;
+      document.body.style.touchAction = originalTouchAction;
+    };
   }, [onClose]);
 
   const handleToggle = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-auto bg-black/60 pt-[60px] pb-8 md:pt-[100px] lg:pt-[140px]">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-hidden bg-black/60 py-3 pt-[140px] md:pt-[160px] lg:pt-[180px]">
       <div
         ref={modalRef}
-        className="h-auto max-h-[80vh] w-[95vw] max-w-[938px] flex-shrink-0 overflow-hidden rounded-[30px] bg-[#1f1f1f] lg:max-h-[75vh] lg:w-[938px]"
+        className="mx-6 flex h-[calc(100vh-160px)] max-h-[85vh] w-[calc(100%-48px)] flex-shrink-0 flex-col overflow-hidden rounded-[30px] bg-[#1f1f1f] md:mx-10 md:w-[calc(100%-80px)] md:h-[calc(100vh-180px)] lg:mx-auto lg:h-[75vh] lg:w-[938px] lg:max-w-[938px] lg:flex-row"
       >
-        <div className="flex h-full flex-row">
-          {/* Left side - Title */}
-          <div className="w-[280px] flex-shrink-0 p-12">
-            <h2 className="text-[28px] leading-tight font-medium tracking-tight whitespace-nowrap text-[#f8f7f1]">
-              Frequently Asked
-              <br />
-              Questions
-            </h2>
-          </div>
+        {/* Title - Mobile: top full width, Desktop: left side */}
+        <div className="flex-shrink-0 px-6 py-8 md:px-8 md:py-10 lg:w-[280px] lg:p-12">
+          <h2 className="text-xl leading-tight font-medium tracking-tight whitespace-nowrap text-[#f8f7f1] md:text-2xl lg:text-[28px]">
+            Frequently Asked
+            <br />
+            Questions
+          </h2>
+        </div>
 
-          {/* Right side - FAQ List */}
-          <div className="h-full flex-1 overflow-y-auto py-10 pr-8">
-            <div className="flex flex-col">
-              {faqData.map((item, index) => (
-                <div key={index} className="border-t border-[#333] first:border-t-0">
-                  <button
-                    onClick={() => handleToggle(index)}
-                    className="flex w-full items-center justify-between py-3 text-left transition-opacity hover:opacity-80"
-                  >
-                    <span className="text-base font-medium tracking-tight text-[#aeada9]">
-                      {item.question}
-                    </span>
-                    <span
-                      className={cn(
-                        "text-2xl font-medium text-[#aeada9] transition-transform duration-200",
-                        expandedIndex === index && "rotate-45"
-                      )}
-                    >
-                      +
-                    </span>
-                  </button>
-                  {expandedIndex === index && (
-                    <div className="pr-12 pb-4">
-                      <p className="text-sm leading-relaxed text-[#aeada9]">{item.answer}</p>
-                    </div>
-                  )}
-                </div>
-              ))}
-              {/* Bottom border */}
-              <div className="border-t border-[#333]" />
-            </div>
+        {/* FAQ List - Mobile: full width below title, Desktop: right side */}
+        <div className="flex-1 overflow-y-auto overscroll-contain px-6 pb-6 md:px-8 lg:py-10 lg:pr-8">
+          <div className="flex flex-col">
+            {faqData.map((item, index) => (
+              <div key={index} className="border-t border-[#333] first:border-t-0">
+                <button
+                  onClick={() => handleToggle(index)}
+                  className="flex w-full items-center justify-between py-4 text-left transition-opacity hover:opacity-80 md:py-3"
+                >
+                  <span className="pr-4 text-sm font-medium tracking-tight text-[#aeada9] md:text-base">
+                    {item.question}
+                  </span>
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center text-xl font-medium text-[#aeada9]">
+                    {expandedIndex === index ? <span className="text-lg">×</span> : <span>+</span>}
+                  </span>
+                </button>
+                {expandedIndex === index && (
+                  <div className="pr-8 pb-4 md:pr-12">
+                    <p className="text-sm leading-relaxed text-[#aeada9]">{item.answer}</p>
+                  </div>
+                )}
+              </div>
+            ))}
+            {/* Bottom border */}
+            <div className="border-t border-[#333]" />
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
