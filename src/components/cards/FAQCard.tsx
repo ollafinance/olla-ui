@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import faqData from "@/assets/content/faq.json";
@@ -43,7 +41,7 @@ export function FAQCard({ onClose }: FAQCardProps) {
     <div className="fixed inset-0 z-[100] flex items-start justify-center overflow-hidden bg-black/60 py-3 pt-[140px] md:pt-[160px] lg:pt-[180px]">
       <div
         ref={modalRef}
-        className="mx-6 flex h-[calc(100vh-160px)] max-h-[85vh] w-[calc(100%-48px)] flex-shrink-0 flex-col overflow-hidden rounded-[30px] bg-[#1f1f1f] md:mx-10 md:w-[calc(100%-80px)] md:h-[calc(100vh-180px)] lg:mx-auto lg:h-[75vh] lg:w-[938px] lg:max-w-[938px] lg:flex-row"
+        className="mx-6 flex h-[calc(100vh-160px)] max-h-[85vh] w-[calc(100%-48px)] flex-shrink-0 flex-col overflow-hidden rounded-[30px] bg-[#1f1f1f] md:mx-10 md:h-[calc(100vh-180px)] md:w-[calc(100%-80px)] lg:mx-auto lg:h-[75vh] lg:w-[938px] lg:max-w-[938px] lg:flex-row"
       >
         {/* Title - Mobile: top full width, Desktop: left side */}
         <div className="flex-shrink-0 px-6 py-8 md:px-8 md:py-10 lg:w-[280px] lg:p-12">
