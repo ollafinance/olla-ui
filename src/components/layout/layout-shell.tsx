@@ -3,6 +3,7 @@ import { Header } from "./Header";
 import { NavBar } from "./nav-bar";
 import { Footer } from "./Footer";
 import { Background } from "./Background";
+import { ActionButtons } from "./ActionButtons";
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -16,9 +17,24 @@ export function LayoutShell({ children }: LayoutShellProps) {
         <div className="z-10 mt-4 mb-6 w-full max-w-4xl">
           <Header />
         </div>
-        <div className="z-10 mt-4 mb-6 w-full max-w-fit">
-          <NavBar />
+        
+        {/* Desktop: NavBar centered, ActionButtons fixed on right */}
+        {/* Mobile: NavBar and ActionButtons in a row */}
+        <div className="z-10 mt-4 mb-6 w-full max-w-4xl">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-4">
+            <NavBar />
+            {/* Mobile only - ActionButtons inline with NavBar */}
+            <div className="md:hidden">
+              <ActionButtons />
+            </div>
+          </div>
         </div>
+
+        {/* Desktop only - ActionButtons fixed position rendered here */}
+        <div className="hidden md:block">
+          <ActionButtons />
+        </div>
+        
         <div className="z-10 w-full max-w-4xl flex-1 items-center justify-center">
           <main>{children}</main>
         </div>
