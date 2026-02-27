@@ -1,0 +1,54 @@
+[
+  {
+    "question": "What is Olla?",
+    "answer": "Olla is a liquid staking protocol built for Aztec. It lets you stake your tokens to help secure the network, earn staking rewards, and receive a liquid token (stAztec) in return, so your capital is never locked up. You can use stAztec across DeFi while your rewards keep accruing."
+  },
+  {
+    "question": "How does Olla work?",
+    "answer": "When you deposit Aztec tokens into Olla, you receive stAztec, a yield-bearing token that represents your share of the Olla staking pool. Behind the scenes, Olla pools deposits together and delegates them across a curated set of validators. The protocol continuously monitors validator performance and automatically rebalances stake toward the best-performing nodes to maximize your returns. When you want to exit, you can either burn your stAztec to initiate the unstaking process, or swap it on the open market for immediate liquidity."
+  },
+  {
+    "question": "What is stAztec?",
+    "answer": "stAztec is a liquid, yield-bearing token that represents your share of the total Aztec staked through Olla. It accrues staking rewards over time, meaning its value relative to the underlying Aztec token grows as rewards are earned. You can hold it, use it as collateral, trade it, or put it to work in DeFi — all while continuing to earn staking rewards."
+  },
+  {
+    "question": "How do I get stAztec?",
+    "answer": "You can get stAztec by depositing Aztec tokens through the Olla staking interface. Once you deposit, you receive stAztec at the current exchange rate reflecting the pool's accumulated rewards."
+  },
+  {
+    "question": "How can I use stAztec?",
+    "answer": "stAztec is a fully transferable token. You can use it as collateral in lending protocols, provide liquidity on decentralized exchanges, or simply hold it to accumulate staking rewards — all without unstaking."
+  },
+  {
+    "question": "How do I unstake?",
+    "answer": "There are two ways to exit your position: 1) Burn & withdraw — Burn your stAztec through the Olla withdrawal process to receive your underlying Aztec tokens plus accrued rewards, subject to the network's unstaking period. 2) Swap on the market — Sell your stAztec on a supported DEX for immediate liquidity, with no waiting period."
+  },
+  {
+    "question": "Is there a minimum amount required to stake?",
+    "answer": "No. Olla pools user deposits together, removing the minimum staking requirements that individual validators typically impose. This makes staking accessible to everyone, regardless of the size of their position."
+  },
+  {
+    "question": "How does Olla select validators?",
+    "answer": "Olla delegates stake across multiple professional, vetted validators with diverse infrastructure setups. The protocol monitors validator performance and automatically rebalances allocations to minimize risk and maximize rewards."
+  },
+  {
+    "question": "What fee does Olla charge?",
+    "answer": "Olla applies a fee on staking rewards, which is used to cover node operator costs and fund protocol development. The remaining percentage of rewards go directly to stakers. Please check the Olla interface for current fee rates."
+  },
+  {
+    "question": "What are the risks of using Olla?",
+    "answer": "As with any DeFi protocol, there are risks to be aware of: Smart contract risk — While Olla's contracts are audited and open-sourced, there is always an inherent risk of vulnerabilities in any smart contract system. Slashing risk — Validators can be penalized for poor performance or misbehavior, which could affect staked funds. Olla mitigates this by distributing stake across multiple reputable validators. stAztec price risk — The market price of stAztec on secondary markets may temporarily trade below its underlying value due to liquidity conditions or market sentiment. Protocol & network risk — Olla depends on the security and liveness of the underlying Aztec network. Always do your own research and understand the risks before participating."
+  },
+  {
+    "question": "What security measures does Olla have in place?",
+    "answer": "Olla is designed with security as a priority: Open-source codebase available for public review. Smart contract audits by reputable security firms. Stake distributed across multiple validators to reduce single points of failure. Automated rebalancing to shift stake away from underperforming or risky validators. Bug bounty program to incentivize responsible vulnerability disclosure."
+  },
+  {
+    "question": "What is the staking APR?",
+    "answer": "Staking APR depends on the Aztec network's reward rate and validator performance. Olla displays the current estimated APR on its staking interface. Please note that APR figures are estimates and can fluctuate based on network conditions, validator performance, and other factors outside the protocol's control."
+  },
+  {
+    "question": "Where can I learn more or get involved?",
+    "answer": "Join the Olla waitlist at olla.finance to be first in line when the protocol launches. Follow along for updates as we build the future of liquid staking for private rollups."
+  }
+]
