@@ -50,7 +50,7 @@
      =========================================== */
 
   /* Colors - Primitives */
-  --color-cream: #f8f7f1;
+  --color-cream: #f8f7f0;
   --color-cream-light: #f8f6ef;
   --color-black: #1f1f1f;
   --color-black-deep: #111111;
@@ -74,10 +74,10 @@
   --color-orange-dark: #7a3100;
   --color-red: #ef4444;
   --color-red-dark: #7f1d1d;
-  
+
   /* Background Pattern Colors */
-  --color-bg-pattern-light: #DFDED8;
-  --color-bg-pattern-dark: #1B1B1B;
+  --color-bg-pattern-light: #dfded8;
+  --color-bg-pattern-dark: #1b1b1b;
 
   /* Spacing - 4px base (multiples of 4) */
   --space-0: 0px;
@@ -136,7 +136,7 @@
      =========================================== */
 
   /* Background & Foreground */
-  --background: var(--color-cream-light);
+  --background: #efeee6;
   --foreground: var(--color-black);
   --bg-pattern: var(--color-bg-pattern-light);
 
