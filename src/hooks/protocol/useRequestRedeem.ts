@@ -123,7 +123,7 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
         primaryType: "Permit",
         message: buildPermitMessage(
           address,
-          CONTRACTS.OllaCore.address,
+          CONTRACTS.OllaVault.address,
           value,
           currentNonce as bigint,
           deadline
@@ -134,8 +134,8 @@ export function useRequestRedeem(options: UseRequestRedeemOptions = {}) {
 
       requestRedeemMutate(
         {
-          address: CONTRACTS.OllaCore.address,
-          abi: CONTRACTS.OllaCore.abi,
+          address: CONTRACTS.OllaVault.address,
+          abi: CONTRACTS.OllaVault.abi,
           functionName: "requestRedeemWithPermit",
           args: [value, address, deadline, Number(v), r, s],
         },

@@ -1,4 +1,5 @@
 import OllaCoreABI from "../generated/abis/OllaCore.json";
+import OllaVaultABI from "../generated/abis/OllaVault.json";
 import MockAztecABI from "../generated/abis/MockAztec.json";
 import StAztecABI from "../generated/abis/StAztec.json";
 import deployment from "../generated/deployments/local.json";
@@ -34,6 +35,10 @@ export const CONTRACTS = {
   OllaCore: {
     address: deployment.addresses.OllaCoreProxy as `0x${string}`,
     abi: OllaCoreABI,
+  },
+  OllaVault: {
+    address: deployment.addresses.OllaVaultProxy as `0x${string}`,
+    abi: OllaVaultABI,
   },
   StAztec: {
     address: deployment.addresses.StAztec as `0x${string}`,
