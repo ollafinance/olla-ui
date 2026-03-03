@@ -7,6 +7,7 @@ import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
 import { useClaimRequest } from "@/hooks/protocol/useClaimRequest";
 import { useClaims, type ClaimItemData } from "./useClaims";
+import { getContractErrorMessage } from "@/lib/errors";
 
 export type RedeemState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -140,8 +141,7 @@ export function useRedeemState(): UseRedeemStateReturn {
   // Claim error
   const claimError = useMemo(() => {
     if (claimHook.error) {
-      const err = claimHook.error as Error & { shortMessage?: string };
-      return err.shortMessage || err.message || "Claim failed";
+      return getContractErrorMessage(claimHook.error);
     }
     return null;
   }, [claimHook.error]);
@@ -160,8 +160,7 @@ export function useRedeemState(): UseRedeemStateReturn {
   const error = useMemo(() => {
     if (manualError) return manualError;
     if (activeHook.error) {
-      const err = activeHook.error as Error & { shortMessage?: string };
-      return err.shortMessage || err.message || "Transaction failed";
+      return getContractErrorMessage(activeHook.error);
     }
     return null;
   }, [activeHook.error, manualError]);

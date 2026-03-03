@@ -493,25 +493,6 @@
   },
   {
     "type": "event",
-    "name": "AttesterRewardsClaimed",
-    "inputs": [
-      {
-        "name": "attester",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "amount",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "AttesterStateMaxAgeUpdated",
     "inputs": [
       {
@@ -581,25 +562,6 @@
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "RewardClaimFailed",
-    "inputs": [
-      {
-        "name": "attester",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "reason",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
       }
     ],
     "anonymous": false

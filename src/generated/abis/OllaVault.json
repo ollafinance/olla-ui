@@ -2064,6 +2064,17 @@
   },
   {
     "type": "error",
+    "name": "OllaVault__PermitFailed",
+    "inputs": [
+      {
+        "name": "reason",
+        "type": "bytes",
+        "internalType": "bytes"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "OllaVault__RequestNotFound",
     "inputs": [
       {
