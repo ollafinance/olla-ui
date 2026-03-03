@@ -40,8 +40,8 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
   });
 
   const { data: previewDepositShares, refetch: refetchPreviewDeposit } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
+    address: CONTRACTS.OllaVault.address,
+    abi: CONTRACTS.OllaVault.abi,
     functionName: "previewDeposit",
     args: amountToConvert ? [parseEther(amountToConvert)] : undefined,
     query: {
@@ -50,9 +50,9 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
   });
 
   const { data: previewRedeemAssets, refetch: refetchPreviewRedeem } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
-    functionName: "previewRedeem",
+    address: CONTRACTS.OllaVault.address,
+    abi: CONTRACTS.OllaVault.abi,
+    functionName: "previewInstantRedeem",
     args: amountToConvert ? [parseEther(amountToConvert)] : undefined,
     query: {
       enabled: !!amountToConvert && Number(amountToConvert) > 0,
@@ -60,8 +60,8 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
   });
 
   const { data: activeRequestIds } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
+    address: CONTRACTS.OllaVault.address,
+    abi: CONTRACTS.OllaVault.abi,
     functionName: "activeRequestIds",
     args: address ? [address] : undefined,
     query: {
@@ -71,8 +71,8 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
   });
 
   const { data: availableForInstantRedemption } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
+    address: CONTRACTS.OllaVault.address,
+    abi: CONTRACTS.OllaVault.abi,
     functionName: "availableForInstantRedemption",
     query: {
       refetchInterval: 5000,
@@ -80,8 +80,8 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
   });
 
   const { data: instantRedemptionFeeBP } = useReadContract({
-    address: CONTRACTS.OllaCore.address,
-    abi: CONTRACTS.OllaCore.abi,
+    address: CONTRACTS.OllaVault.address,
+    abi: CONTRACTS.OllaVault.abi,
     functionName: "instantRedemptionFeeBP",
     query: {
       refetchInterval: 30000, // Fee changes less frequently

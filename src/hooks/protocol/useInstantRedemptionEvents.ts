@@ -43,7 +43,7 @@ export function useInstantRedemptionEvents(address: `0x${string}` | undefined) {
     try {
       // Fetch InstantRedemption events for the user
       const redemptionLogs = await publicClient.getLogs({
-        address: CONTRACTS.OllaCore.address,
+        address: CONTRACTS.OllaVault.address,
         event: INSTANT_REDEMPTION_EVENT,
         args: {
           owner: address,

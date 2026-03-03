@@ -29,7 +29,7 @@ export function useAztecToken() {
     address: CONTRACTS.Asset.address,
     abi: CONTRACTS.Asset.abi,
     functionName: "allowance",
-    args: address ? [address, CONTRACTS.OllaCore.address] : undefined,
+    args: address ? [address, CONTRACTS.OllaVault.address] : undefined,
     query: { enabled: !!address },
   });
 
@@ -96,7 +96,7 @@ export function useAztecToken() {
         address: CONTRACTS.Asset.address,
         abi: CONTRACTS.Asset.abi,
         functionName: "approve",
-        args: [CONTRACTS.OllaCore.address, parseEther(amount)],
+        args: [CONTRACTS.OllaVault.address, parseEther(amount)],
       },
       {
         onSuccess: () => {

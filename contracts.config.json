@@ -5,5 +5,5 @@
   "output": {
     "dir": "src/generated"
   },
-  "contracts": ["OllaCore", "StAztec", "MockAztec", "MockStakingManager"]
+  "contracts": ["OllaCore", "OllaVault", "StAztec", "MockAztec", "MockStakingManager"]
 }

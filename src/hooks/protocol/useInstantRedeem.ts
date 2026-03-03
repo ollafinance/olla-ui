@@ -115,9 +115,9 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
 
       // Get expected assets and apply slippage
       const expectedAssets = await readContract(config, {
-        address: CONTRACTS.OllaCore.address,
-        abi: CONTRACTS.OllaCore.abi,
-        functionName: "previewRedeem",
+        address: CONTRACTS.OllaVault.address,
+        abi: CONTRACTS.OllaVault.abi,
+        functionName: "previewInstantRedeem",
         args: [value],
       });
       if (expectedAssets === undefined || expectedAssets === null)
@@ -141,7 +141,7 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
         primaryType: "Permit",
         message: buildPermitMessage(
           address,
-          CONTRACTS.OllaCore.address,
+          CONTRACTS.OllaVault.address,
           value,
           currentNonce as bigint,
           deadline
@@ -152,9 +152,9 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
 
       instantRedeemMutate(
         {
-          address: CONTRACTS.OllaCore.address,
-          abi: CONTRACTS.OllaCore.abi,
-          functionName: "redeemWithPermit",
+          address: CONTRACTS.OllaVault.address,
+          abi: CONTRACTS.OllaVault.abi,
+          functionName: "instantRedeemWithPermit",
           args: [value, address, minAssetsOut, deadline, Number(v), r, s],
         },
         {
