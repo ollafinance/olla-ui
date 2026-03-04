@@ -80,7 +80,7 @@ export function StakingCardIdle({
         <h2 className="text-text-display text-lg leading-[1.16] font-medium text-black">
           You Stake
         </h2>
-        <BalanceBadge balance={balance} isConnected={isConnected} currency="aztec" />
+        <BalanceBadge balance={balance} isConnected={isConnected} currency="Aztec" />
       </div>
 
       <div className="flex w-full flex-1 flex-col justify-center gap-3">
@@ -99,6 +99,7 @@ export function StakingCardIdle({
             <input
               type="text"
               inputMode="decimal"
+              placeholder="0.00"
               value={displayValue}
               onChange={handleInputChange}
               className="text-text-display w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] outline-none"
