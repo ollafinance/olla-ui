@@ -1,7 +1,7 @@
 import { useContext, createContext, useCallback } from "react";
 
 const AZTEC_PRICE_USD = 2.1;
-const TOKEN_DECIMALS = 4;
+const TOKEN_DECIMALS = 2;
 const USD_DECIMALS = 2;
 
 interface CurrencyContextValue {

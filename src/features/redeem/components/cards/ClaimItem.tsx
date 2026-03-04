@@ -110,7 +110,7 @@ export function ClaimItem({
       </div>
       <div className="flex w-full items-center justify-between">
         <span className={`text-base ${amountTextColor} leading-[1.16] font-medium`}>
-          {Number(amount).toFixed(4)} Aztec
+          {Number(amount).toFixed(2)} Aztec
         </span>
         {status === "ready" ? null : (
           <span className={`text-xs ${usdTextColor} leading-[1.16] font-medium`}>

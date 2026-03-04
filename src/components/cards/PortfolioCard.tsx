@@ -47,7 +47,7 @@ export function PortfolioCard({
           </span>
           <div className="bg-secondary-accent h-px w-[123px]" />
           <span className="text-[21.3px] leading-[1.16] font-medium text-black">
-            {Number(totalStaked).toFixed(4) || "0.00"}
+            {Number(totalStaked).toFixed(2) || "0.00"}
           </span>
           <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
             Aztec

@@ -167,12 +167,12 @@ export function useRedeemState(): UseRedeemStateReturn {
 
   // Exchange rate (1 share = X assets)
   const exchangeRate = reads.exchangeRate
-    ? Number(formatEther(reads.exchangeRate)).toFixed(4)
-    : "1.0000";
+    ? Number(formatEther(reads.exchangeRate)).toFixed(2)
+    : "1.00";
 
   // Gross assets (converted without any fees)
   const grossAssets = reads.potentialAssets
-    ? Number(formatEther(reads.potentialAssets)).toFixed(4)
+    ? Number(formatEther(reads.potentialAssets)).toFixed(2)
     : "0";
 
   // Preview assets (what user actually receives)
@@ -180,7 +180,7 @@ export function useRedeemState(): UseRedeemStateReturn {
   // For regular mode: full amount (convertToAssets)
   const previewAssets = isInstantMode
     ? reads.previewRedeemAssets
-      ? Number(formatEther(reads.previewRedeemAssets)).toFixed(4)
+      ? Number(formatEther(reads.previewRedeemAssets)).toFixed(2)
       : "0"
     : grossAssets;
 
@@ -188,7 +188,7 @@ export function useRedeemState(): UseRedeemStateReturn {
   const instantWithdrawFee = useMemo(() => {
     if (!isInstantMode || !reads.potentialAssets || !reads.previewRedeemAssets) return "0";
     const fee = reads.potentialAssets - reads.previewRedeemAssets;
-    return Number(formatEther(fee)).toFixed(4);
+    return Number(formatEther(fee)).toFixed(2);
   }, [isInstantMode, reads.potentialAssets, reads.previewRedeemAssets]);
 
   // Fee percentage for display
@@ -201,7 +201,7 @@ export function useRedeemState(): UseRedeemStateReturn {
     if (!reads.previewRedeemAssets) return "0";
     const preview = reads.previewRedeemAssets;
     const slippageApplied = (preview * 9900n) / 10000n; // 1% slippage
-    return Number(formatEther(slippageApplied)).toFixed(4);
+    return Number(formatEther(slippageApplied)).toFixed(2);
   }, [reads.previewRedeemAssets]);
 
   // Liquidity check for instant redemption
