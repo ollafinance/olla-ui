@@ -40,11 +40,7 @@ export function StakingFeature() {
       topCards={
         <>
           <ReceiveCard shares={previewShares} exchangeRate={exchangeRate} />
-          <ReturnsCard
-            shares={previewShares}
-            apy={STAKING_CONSTANTS.APY}
-            exchangeRate={exchangeRate}
-          />
+          <ReturnsCard amount={amount} apy={STAKING_CONSTANTS.APY} exchangeRate={exchangeRate} />
         </>
       }
       bottomCard={

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useCurrency } from "@/hooks/useCurrency";
 
 interface ReturnsCardProps {
-  shares: string;
+  amount: string;
   apy: string;
   exchangeRate: string;
 }
@@ -16,21 +16,19 @@ const periodMultiplier: Record<Period, number> = {
 };
 
 /**
- * Calculates ONLY the profit earned over a period.
+ * Calculates the total projected value (Principal + Earnings) over a period.
  * Uses the standard compounding APY formula.
  */
-function calculateProfit(shares: string, days: number, apyStr: string): string {
+function calculateReturn(shares: string, days: number, apyStr: string): string {
   const principal = parseFloat(shares) || 0;
   const apy = parseFloat(apyStr) / 100;
 
-  if (principal === 0) return "0.0000";
+  if (principal === 0) return "0.00";
 
   // Total = P * (1 + r)^(t/365)
   const totalValue = principal * Math.pow(1 + apy, days / 365);
-  const profit = totalValue - principal;
 
-  // We use 4 decimals so Daily/Monthly aren't just "0.00"
-  return profit.toFixed(4);
+  return totalValue.toFixed(2);
 }
 
 function PeriodButton({
@@ -56,32 +54,32 @@ function PeriodButton({
     </button>
   );
 }
-export function ReturnsCard({ shares, apy, exchangeRate }: ReturnsCardProps) {
+export function ReturnsCard({ amount, apy, exchangeRate }: ReturnsCardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<Period>("daily");
   const { isUsdMode, stAztecToAztec, aztecToUsd } = useCurrency({
     exchangeRate: parseFloat(exchangeRate) || null,
   });
 
-  // Calculate profit in stAztec tokens
-  const stAztecProfit = calculateProfit(shares, periodMultiplier[selectedPeriod], apy);
+  // Calculate total return in stAztec tokens (Principal + Earnings)
+  const stAztecReturn = calculateReturn(amount, periodMultiplier[selectedPeriod], apy);
 
   // Convert to Aztec
-  const aztecProfit = stAztecToAztec(stAztecProfit);
+  const aztecReturn = stAztecToAztec(stAztecReturn);
 
   // Convert to USD
-  const usdProfit = aztecToUsd(aztecProfit);
+  const usdReturn = aztecToUsd(aztecReturn);
 
   // Determine display values based on currency mode
-  const primaryValue = isUsdMode ? usdProfit : stAztecProfit;
-  const primaryLabel = isUsdMode ? "USD" : "stAztec";
-  const secondaryValue = isUsdMode ? stAztecProfit : usdProfit;
-  const secondaryLabel = isUsdMode ? "stAztec" : "USD";
+  const primaryValue = isUsdMode ? usdReturn : stAztecReturn;
+  const primaryLabel = isUsdMode ? "USD" : "Aztec";
+  const secondaryValue = isUsdMode ? stAztecReturn : usdReturn;
+  const secondaryLabel = isUsdMode ? "Aztec" : "USD";
   const showSecondaryPrefix = !isUsdMode;
 
   return (
     <div className="bg-card-returns rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
       <p className="text-card-returns-foreground text-lg leading-[1.16] font-medium">
-        Estimated Profit
+        Estimated Return
       </p>
 
       <div className="flex-1" />
