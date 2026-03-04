@@ -1,38 +1,125 @@
-import { RETURN_PERIODS, STAKING_CONSTANTS } from "../../constants";
+import { useState } from "react";
+import { useCurrency } from "@/hooks/useCurrency";
 
 interface ReturnsCardProps {
-  shares?: string;
+  amount: string;
+  apy: string;
+  exchangeRate: string;
 }
 
-function calculateReturn(shares: string, days: number): string {
-  const value = parseFloat(shares);
-  const apy = parseFloat(STAKING_CONSTANTS.APY) / 100;
-  const dailyRate = apy / 365;
-  const returnValue = value * (1 + dailyRate * days);
-  return returnValue.toFixed(2);
+type Period = "daily" | "monthly" | "yearly";
+
+const periodMultiplier: Record<Period, number> = {
+  daily: 1,
+  monthly: 30,
+  yearly: 365,
+};
+
+/**
+ * Calculates the total projected value (Principal + Earnings) over a period.
+ * Uses the standard compounding APY formula.
+ */
+function calculateReturn(shares: string, days: number, apyStr: string): string {
+  const principal = parseFloat(shares) || 0;
+  const apy = parseFloat(apyStr) / 100;
+
+  if (principal === 0) return "0.00";
+
+  // Total = P * (1 + r)^(t/365)
+  const totalValue = principal * Math.pow(1 + apy, days / 365);
+
+  return totalValue.toFixed(2);
 }
 
-export function ReturnsCard({ shares = "95.00" }: ReturnsCardProps) {
+function PeriodButton({
+  label,
+  isActive,
+  onClick,
+}: {
+  label: string;
+  isActive: boolean;
+  onClick: () => void;
+}) {
   return (
-    <div className="bg-card-secondary rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
-      <p className="text-card-secondary-foreground text-lg leading-[1.16] font-medium">
-        Estimated Aztec Return
+    <button
+      type="button"
+      onClick={onClick}
+      className={`rounded-[28px] px-[10px] py-[2px] text-xs leading-[1.8] font-medium transition-colors ${
+        isActive
+          ? "bg-card-returns-foreground text-[#ffe7fb]"
+          : "text-card-returns-foreground bg-white/50"
+      }`}
+    >
+      {label}
+    </button>
+  );
+}
+export function ReturnsCard({ amount, apy, exchangeRate }: ReturnsCardProps) {
+  const [selectedPeriod, setSelectedPeriod] = useState<Period>("daily");
+  const { isUsdMode, stAztecToAztec, aztecToUsd } = useCurrency({
+    exchangeRate: parseFloat(exchangeRate) || null,
+  });
+
+  // Calculate total return in stAztec tokens (Principal + Earnings)
+  const stAztecReturn = calculateReturn(amount, periodMultiplier[selectedPeriod], apy);
+
+  // Convert to Aztec
+  const aztecReturn = stAztecToAztec(stAztecReturn);
+
+  // Convert to USD
+  const usdReturn = aztecToUsd(aztecReturn);
+
+  // Determine display values based on currency mode
+  const primaryValue = isUsdMode ? usdReturn : stAztecReturn;
+  const primaryLabel = isUsdMode ? "USD" : "Aztec";
+  const secondaryValue = isUsdMode ? stAztecReturn : usdReturn;
+  const secondaryLabel = isUsdMode ? "Aztec" : "USD";
+  const showSecondaryPrefix = !isUsdMode;
+
+  return (
+    <div className="bg-card-returns rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
+      <p className="text-card-returns-foreground text-lg leading-[1.16] font-medium">
+        Estimated Return
       </p>
 
       <div className="flex-1" />
 
-      <div className="flex w-full gap-3">
-        {RETURN_PERIODS.map((period) => (
-          <div key={period.label} className="flex flex-1 flex-col gap-2">
-            <span className="text-center text-[21.3px] leading-none font-medium tracking-[-0.43px] text-black">
-              {calculateReturn(shares, period.multiplier)}
-            </span>
-            <div className="bg-primary-line h-px w-full" />
-            <span className="text-card-secondary-foreground text-center text-xs leading-[1.8]">
-              {period.label}
-            </span>
+      <div className="flex w-full flex-col gap-2">
+        {/* Secondary Row (small) */}
+        <div className="flex w-full items-start justify-between text-[9px] tracking-[-0.18px]">
+          <span className="text-text-display">
+            {showSecondaryPrefix && "~ $"}
+            {secondaryValue}
+          </span>
+          <span className="text-text-display">{secondaryLabel}</span>
+        </div>
+
+        {/* Primary Row (large) */}
+        <div className="flex w-full items-start justify-between">
+          <span className="text-text-display text-[28.43px] leading-none font-medium tracking-[-0.57px]">
+            {isUsdMode && "$"}
+            {primaryValue}
+          </span>
+          <span className="text-text-display text-base leading-[1.8]">{primaryLabel}</span>
+        </div>
+
+        <div className="bg-primary-line h-px w-full" />
+
+        <div className="flex w-full items-center justify-between">
+          <div className="flex items-center gap-2">
+            {(["daily", "monthly", "yearly"] as Period[]).map((p) => (
+              <PeriodButton
+                key={p}
+                label={p.charAt(0).toUpperCase() + p.slice(1)}
+                isActive={selectedPeriod === p}
+                onClick={() => setSelectedPeriod(p)}
+              />
+            ))}
           </div>
-        ))}
+          <span className="text-card-returns-foreground text-xs tracking-[0.36px]">
+            APY <span className="font-medium tracking-[0.48px]">{apy}%</span>
+          </span>
+        </div>
       </div>
     </div>
   );

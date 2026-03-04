@@ -92,10 +92,10 @@ export function useStakingState(): UseStakingStateReturn {
     deposit.reset();
   }, [deposit]);
 
-  const exchangeRate = exchangeRateNum?.toFixed(4) ?? "1.0000";
+  const exchangeRate = exchangeRateNum?.toFixed(2) ?? "1.00";
 
   const previewShares = reads.previewDepositShares
-    ? Number(formatEther(reads.previewDepositShares)).toFixed(4)
+    ? Number(formatEther(reads.previewDepositShares)).toFixed(2)
     : "0";
 
   const previewSharesUsd = stAztecToUsd(previewShares);

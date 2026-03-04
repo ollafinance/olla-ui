@@ -98,40 +98,41 @@ export function ClaimItem({
         : "text-black";
 
   return (
-    <div className={`${config.bg} flex flex-col gap-3 rounded-[16px] p-4`}>
-      <div className="flex w-full items-center justify-between">
+    <div className={`${config.bg} flex w-full items-start justify-between rounded-[16px] p-4`}>
+      <div className="flex flex-col gap-3">
         <div className="flex items-center gap-2">
           <StatusDot color={config.dotColor} />
-          <span className={`text-xs ${config.statusTextColor} leading-[1.16] font-medium`}>
+          <span className={`text-xs ${config.statusTextColor} leading-[1.16]`}>
             {config.statusText}
           </span>
         </div>
-        {config.rightContent}
-      </div>
-      <div className="flex w-full items-center justify-between">
         <span className={`text-base ${amountTextColor} leading-[1.16] font-medium`}>
-          {Number(amount).toFixed(4)} Aztec
+          {Number(amount).toFixed(2)} Aztec
         </span>
-        {status === "ready" ? null : (
+      </div>
+
+      <div className="flex flex-col items-end gap-1">
+        {config.rightContent}
+        {status !== "ready" && usdValue && (
           <span className={`text-xs ${usdTextColor} leading-[1.16] font-medium`}>
             ~ $ {usdValue}
           </span>
         )}
+        {/* Transaction hash link for claiming */}
+        {isClaiming && claimHash && (
+          <div className="flex items-center gap-1 text-xs">
+            <span className="text-muted-foreground">Tx:</span>
+            <a
+              href={`https://etherscan.io/tx/${claimHash}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-secondary-accent max-w-[100px] truncate hover:underline"
+            >
+              {claimHash.slice(0, 6)}...
+            </a>
+          </div>
+        )}
       </div>
-      {/* Transaction hash link for claiming */}
-      {isClaiming && claimHash && (
-        <div className="mt-1 flex items-center gap-1 text-xs">
-          <span className="text-muted-foreground">Tx:</span>
-          <a
-            href={`https://etherscan.io/tx/${claimHash}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-secondary-accent max-w-[200px] truncate hover:underline"
-          >
-            {claimHash.slice(0, 6)}...{claimHash.slice(-4)}
-          </a>
-        </div>
-      )}
     </div>
   );
 }

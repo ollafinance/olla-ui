@@ -3,14 +3,12 @@ import { cn } from "@/lib/utils";
 interface ProtocolInfoProps {
   exchangeRate: string;
   transactionFee?: string;
-  apy?: string;
   className?: string;
 }
 
 export function ProtocolInfo({
   exchangeRate,
   transactionFee = "0.0001",
-  apy = "5.2%",
   className,
 }: ProtocolInfoProps) {
   return (
@@ -27,10 +25,6 @@ export function ProtocolInfo({
       <div className="flex flex-col">
         <span className="font-normal">Transaction Fee</span>
         <span className="font-medium tracking-[0.48px]">~{transactionFee} ETH</span>
-      </div>
-      <div className="flex flex-col">
-        <span className="font-normal">APY</span>
-        <span className="font-medium tracking-[0.48px]">{apy}</span>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 export const STAKING_CONSTANTS = {
-  APY: "5.2%",
+  APY: "5.2",
   TRANSACTION_FEE: "0.0001",
   EXCHANGE_RATE: 0.95,
 } as const;

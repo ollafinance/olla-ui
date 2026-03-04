@@ -30,6 +30,39 @@ export function StakingCardIdle({
   const { isUsdMode, aztecToUsd, usdToAztec } = useCurrency();
   const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
 
+  // Local input state to prevent cursor jumping and formatting issues while typing
+  const [inputValue, setInputValue] = useState("");
+
+  // Sync local input when amount changes externally (e.g. percentage buttons)
+  // or when currency mode changes
+  const [lastSyncedAmount, setLastSyncedAmount] = useState(amount);
+  const [lastMode, setLastMode] = useState(isUsdMode);
+
+  if (amount !== lastSyncedAmount || isUsdMode !== lastMode) {
+    const shouldUpdate = (() => {
+      // Always update on mode switch
+      if (isUsdMode !== lastMode) return true;
+
+      // For external amount changes, check if it matches our current input
+      // to avoid overwriting while typing (approximate check)
+      const currentValInAztec = isUsdMode ? usdToAztec(inputValue) : inputValue;
+
+      // If input is empty/invalid, update it
+      if (!currentValInAztec || isNaN(parseFloat(currentValInAztec))) return true;
+
+      // If amount is drastically different (e.g. percentage button clicked), update it
+      return Math.abs(parseFloat(currentValInAztec) - parseFloat(amount || "0")) > 0.000001;
+    })();
+
+    if (shouldUpdate) {
+      const newValue = isUsdMode ? aztecToUsd(amount) : amount;
+      setInputValue(newValue === "0" ? "" : newValue);
+    }
+
+    setLastSyncedAmount(amount);
+    setLastMode(isUsdMode);
+  }
+
   const handlePercentageSelect = (percentage: number) => {
     setSelectedPercentage(percentage);
     const parsedBalance = parseFloat(balance);
@@ -55,21 +88,26 @@ export function StakingCardIdle({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPercentage(undefined);
-    const inputValue = sanitizeNumericInput(e.target.value);
+    const rawValue = e.target.value;
+
+    // Allow digits and one decimal point
+    if (!/^\d*\.?\d*$/.test(rawValue)) return;
+
+    setInputValue(rawValue);
+    const sanitizedValue = sanitizeNumericInput(rawValue);
 
     if (isUsdMode) {
-      const usdAmount = parseFloat(inputValue);
+      const usdAmount = parseFloat(sanitizedValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
         onAmountChange(usdToAztec(usdAmount));
       } else {
         onAmountChange("0");
       }
     } else {
-      onAmountChange(inputValue);
+      onAmountChange(sanitizedValue);
     }
   };
 
-  const displayValue = isUsdMode ? usdValue : amount;
   const primaryLabel = isUsdMode ? "USD" : "Aztec";
   const secondaryValue = isUsdMode ? amount : usdValue;
   const secondaryLabel = isUsdMode ? "Aztec" : "$";
@@ -77,8 +115,10 @@ export function StakingCardIdle({
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col items-center justify-between p-6">
       <div className="flex w-full items-center justify-between">
-        <h2 className="text-lg leading-[1.16] font-medium text-black">You Stake</h2>
-        <BalanceBadge balance={balance} isConnected={isConnected} currency="aztec" />
+        <h2 className="text-text-display text-lg leading-[1.16] font-medium text-black">
+          You Stake
+        </h2>
+        <BalanceBadge balance={balance} isConnected={isConnected} currency="Aztec" />
       </div>
 
       <div className="flex w-full flex-1 flex-col justify-center gap-3">
@@ -90,7 +130,7 @@ export function StakingCardIdle({
         <div className="flex w-full items-end justify-between">
           <div className="flex max-w-[70%] items-end">
             {isUsdMode && (
-              <span className="pr-2 text-[67px] leading-[1.16] font-medium tracking-[-1.35px] text-black">
+              <span className="text-text-display pr-2 text-[67px] leading-[1.16] font-medium tracking-[-1.35px]">
                 $
               </span>
             )}
@@ -98,12 +138,12 @@ export function StakingCardIdle({
               type="text"
               inputMode="decimal"
               placeholder="0.00"
-              value={displayValue}
+              value={inputValue}
               onChange={handleInputChange}
-              className="w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] text-black outline-none"
+              className="text-text-display w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] outline-none"
             />
           </div>
-          <span className="shrink-0 text-base leading-[1.8] font-medium text-black">
+          <span className="text-text-display shrink-0 text-base leading-[1.8] font-medium text-black">
             {primaryLabel}
           </span>
         </div>

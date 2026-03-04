@@ -36,34 +36,30 @@ export function PortfolioCard({
         className
       )}
     >
-      <p className="text-card-tertiary-foreground text-lg leading-[1.16] font-medium">Portfolio</p>
+      <p className="text-card-tertiary-foreground text-lg leading-[1.16] font-medium">
+        Portfolio in Aztec
+      </p>
 
       <div className="flex-1" />
 
       <div className="flex w-full justify-between gap-4">
         <div className="flex flex-col gap-2">
-          <span className="text-card-tertiary-foreground text-xs leading-[1.16]">
-            Total Staked Balance
+          <span className="text-[21.3px] leading-[1.16] font-medium text-black">
+            {Number(totalStaked).toFixed(2) || "0.00"}
           </span>
           <div className="bg-secondary-accent h-px w-[123px]" />
-          <span className="text-[21.3px] leading-[1.16] font-medium text-black">
-            {Number(totalStaked).toFixed(4) || "0.00"}
-          </span>
-          <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
-            Aztec
+          <span className="text-card-tertiary-foreground text-xs leading-[1.16]">
+            Total Staked Balance
           </span>
         </div>
 
         <div className="flex flex-col gap-2">
-          <span className="text-card-tertiary-foreground text-xs leading-[1.16]">
-            Total Rewards Earned
+          <span className="text-[21.3px] leading-[1.16] font-medium text-black">
+            {rewardsEarned ? Number(rewardsEarned).toFixed(2) : "0.00"}
           </span>
           <div className="bg-secondary-accent h-px w-[123px]" />
-          <span className="text-[21.3px] leading-[1.16] font-medium text-black">
-            {rewardsEarned || "0.00"}
-          </span>
-          <span className="text-card-tertiary-foreground text-xs leading-[1.16] tracking-[0.18px]">
-            Aztec
+          <span className="text-card-tertiary-foreground text-xs leading-[1.16]">
+            Total Rewards Earned
           </span>
         </div>
       </div>

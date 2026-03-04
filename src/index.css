@@ -50,7 +50,7 @@
      =========================================== */
 
   /* Colors - Primitives */
-  --color-cream: #f8f7f1;
+  --color-cream: #f8f7f0;
   --color-cream-light: #f8f6ef;
   --color-black: #1f1f1f;
   --color-black-deep: #111111;
@@ -58,12 +58,15 @@
   --color-gray: #6c6c6c;
   --color-gray-light: #71717a;
   --color-gray-soft: #dfded9;
+  --color-badge-surface: #ecebe5;
+  --color-badge-text: #3e3e3c;
   --color-pink: #ffcef8;
+  --color-pink-lightest: #ffd8f8;
   --color-pink-light: #ffb0f1;
   --color-pink-muted: #fae5f1;
   --color-pink-dark: #78175c;
   --color-pink-accent: #fe74e2;
-  --color-cyan: #b1ecf2;
+  --color-cyan: #c8f2f6;
   --color-cyan-light: #d2f5f9;
   --color-cyan-pale: #f0feff;
   --color-cyan-dark: #1e596d;
@@ -74,10 +77,11 @@
   --color-orange-dark: #7a3100;
   --color-red: #ef4444;
   --color-red-dark: #7f1d1d;
-  
+  --color-deep-purple: #440034;
+
   /* Background Pattern Colors */
-  --color-bg-pattern-light: #DFDED8;
-  --color-bg-pattern-dark: #1B1B1B;
+  --color-bg-pattern-light: #dfded8;
+  --color-bg-pattern-dark: #1b1b1b;
 
   /* Spacing - 4px base (multiples of 4) */
   --space-0: 0px;
@@ -136,7 +140,7 @@
      =========================================== */
 
   /* Background & Foreground */
-  --background: var(--color-cream-light);
+  --background: #efeee6;
   --foreground: var(--color-black);
   --bg-pattern: var(--color-bg-pattern-light);
 
@@ -144,6 +148,12 @@
   --surface: var(--color-black);
   --surface-foreground: var(--color-cream);
   --surface-border: var(--color-gray-dark);
+
+  /* Navbar Specific */
+  --nav-bg: var(--color-cream);
+  --nav-border: var(--color-gray-soft);
+  --nav-bg-active: var(--color-gray-soft);
+  --nav-text-inactive: var(--color-black);
 
   /* Cards */
   --card: var(--color-cream);
@@ -177,6 +187,17 @@
   --accent: var(--color-orange);
   --accent-foreground: #ffffff;
 
+  /* Display text (large numbers) */
+  --text-display: var(--color-deep-purple);
+
+  /* Badge */
+  --badge-bg: var(--color-badge-surface);
+  --badge-text: var(--color-badge-text);
+
+  /* Returns card */
+  --card-returns: var(--color-pink-lightest);
+  --card-returns-foreground: var(--color-pink-dark);
+
   /* Destructive */
   --destructive: var(--color-red);
   --destructive-foreground: #fafafa;
@@ -203,9 +224,15 @@
   --bg-pattern: var(--color-bg-pattern-dark);
 
   /* Surface (Header, NavBar) - same in dark */
-  --surface: var(--color-black);
+  --surface: #1f1f1f;
   --surface-foreground: var(--color-cream);
-  --surface-border: var(--color-gray-dark);
+  --surface-border: #313131;
+
+  /* Navbar Specific */
+  --nav-bg: #1f1f1f;
+  --nav-border: #313131;
+  --nav-bg-active: var(--color-cream);
+  --nav-text-inactive: #aeada9;
 
   /* Cards - same colors per Figma design */
   --card: var(--color-cream);
@@ -232,12 +259,23 @@
 
   /* Muted */
   --muted: var(--color-gray);
-  --muted-foreground: #a1a1aa;
+  --muted-foreground: #aeada9;
   --muted-soft: var(--color-gray-soft);
 
   /* Accent */
   --accent: var(--color-orange);
   --accent-foreground: #ffffff;
+
+  /* Display text (large numbers) */
+  --text-display: var(--color-deep-purple);
+
+  /* Badge */
+  --badge-bg: var(--color-badge-surface);
+  --badge-text: var(--color-badge-text);
+
+  /* Returns card */
+  --card-returns: var(--color-pink-lightest);
+  --card-returns-foreground: var(--color-pink-dark);
 
   /* Destructive */
   --destructive: var(--color-red-dark);
@@ -266,6 +304,12 @@
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
   --color-surface-border: var(--surface-border);
+
+  /* Navbar */
+  --color-nav-bg: var(--nav-bg);
+  --color-nav-border: var(--nav-border);
+  --color-nav-bg-active: var(--nav-bg-active);
+  --color-nav-text-inactive: var(--nav-text-inactive);
 
   /* Cards */
   --color-card: var(--card);
@@ -298,6 +342,17 @@
   /* Accent */
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  /* Display text */
+  --color-text-display: var(--text-display);
+
+  /* Badge */
+  --color-badge-bg: var(--badge-bg);
+  --color-badge-text: var(--badge-text);
+
+  /* Returns card */
+  --color-card-returns: var(--card-returns);
+  --color-card-returns-foreground: var(--card-returns-foreground);
 
   /* Destructive */
   --color-destructive: var(--destructive);
