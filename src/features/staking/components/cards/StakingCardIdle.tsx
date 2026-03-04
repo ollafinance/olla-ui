@@ -30,39 +30,6 @@ export function StakingCardIdle({
   const { isUsdMode, aztecToUsd, usdToAztec } = useCurrency();
   const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
 
-  // Local input state to prevent cursor jumping and formatting issues while typing
-  const [inputValue, setInputValue] = useState("");
-
-  // Sync local input when amount changes externally (e.g. percentage buttons)
-  // or when currency mode changes
-  const [lastSyncedAmount, setLastSyncedAmount] = useState(amount);
-  const [lastMode, setLastMode] = useState(isUsdMode);
-
-  if (amount !== lastSyncedAmount || isUsdMode !== lastMode) {
-    const shouldUpdate = (() => {
-      // Always update on mode switch
-      if (isUsdMode !== lastMode) return true;
-
-      // For external amount changes, check if it matches our current input
-      // to avoid overwriting while typing (approximate check)
-      const currentValInAztec = isUsdMode ? usdToAztec(inputValue) : inputValue;
-
-      // If input is empty/invalid, update it
-      if (!currentValInAztec || isNaN(parseFloat(currentValInAztec))) return true;
-
-      // If amount is drastically different (e.g. percentage button clicked), update it
-      return Math.abs(parseFloat(currentValInAztec) - parseFloat(amount || "0")) > 0.000001;
-    })();
-
-    if (shouldUpdate) {
-      const newValue = isUsdMode ? aztecToUsd(amount) : amount;
-      setInputValue(newValue === "0" ? "" : newValue);
-    }
-
-    setLastSyncedAmount(amount);
-    setLastMode(isUsdMode);
-  }
-
   const handlePercentageSelect = (percentage: number) => {
     setSelectedPercentage(percentage);
     const parsedBalance = parseFloat(balance);
@@ -88,26 +55,21 @@ export function StakingCardIdle({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPercentage(undefined);
-    const rawValue = e.target.value;
-
-    // Allow digits and one decimal point
-    if (!/^\d*\.?\d*$/.test(rawValue)) return;
-
-    setInputValue(rawValue);
-    const sanitizedValue = sanitizeNumericInput(rawValue);
+    const inputValue = sanitizeNumericInput(e.target.value);
 
     if (isUsdMode) {
-      const usdAmount = parseFloat(sanitizedValue);
+      const usdAmount = parseFloat(inputValue);
       if (!isNaN(usdAmount) && usdAmount > 0) {
         onAmountChange(usdToAztec(usdAmount));
       } else {
         onAmountChange("0");
       }
     } else {
-      onAmountChange(sanitizedValue);
+      onAmountChange(inputValue);
     }
   };
 
+  const displayValue = isUsdMode ? usdValue : amount;
   const primaryLabel = isUsdMode ? "USD" : "Aztec";
   const secondaryValue = isUsdMode ? amount : usdValue;
   const secondaryLabel = isUsdMode ? "Aztec" : "$";
@@ -138,7 +100,7 @@ export function StakingCardIdle({
               type="text"
               inputMode="decimal"
               placeholder="0.00"
-              value={inputValue}
+              value={displayValue}
               onChange={handleInputChange}
               className="text-text-display w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] outline-none"
             />
@@ -162,7 +124,6 @@ export function StakingCardIdle({
         <ProtocolInfo
           exchangeRate={exchangeRate}
           transactionFee={STAKING_CONSTANTS.TRANSACTION_FEE}
-          apy={STAKING_CONSTANTS.APY}
         />
         <div className="flex items-center gap-2">
           {isConnected ? (
