@@ -149,6 +149,12 @@
   --surface-foreground: var(--color-cream);
   --surface-border: var(--color-gray-dark);
 
+  /* Navbar Specific */
+  --nav-bg: var(--color-cream);
+  --nav-border: var(--color-gray-soft);
+  --nav-bg-active: var(--color-gray-soft);
+  --nav-text-inactive: var(--color-black);
+
   /* Cards */
   --card: var(--color-cream);
   --card-foreground: var(--color-black);
@@ -218,9 +224,15 @@
   --bg-pattern: var(--color-bg-pattern-dark);
 
   /* Surface (Header, NavBar) - same in dark */
-  --surface: var(--color-black);
+  --surface: #1f1f1f;
   --surface-foreground: var(--color-cream);
-  --surface-border: var(--color-gray-dark);
+  --surface-border: #313131;
+
+  /* Navbar Specific */
+  --nav-bg: #1f1f1f;
+  --nav-border: #313131;
+  --nav-bg-active: var(--color-cream);
+  --nav-text-inactive: #aeada9;
 
   /* Cards - same colors per Figma design */
   --card: var(--color-cream);
@@ -247,7 +259,7 @@
 
   /* Muted */
   --muted: var(--color-gray);
-  --muted-foreground: #a1a1aa;
+  --muted-foreground: #aeada9;
   --muted-soft: var(--color-gray-soft);
 
   /* Accent */
@@ -292,6 +304,12 @@
   --color-surface: var(--surface);
   --color-surface-foreground: var(--surface-foreground);
   --color-surface-border: var(--surface-border);
+
+  /* Navbar */
+  --color-nav-bg: var(--nav-bg);
+  --color-nav-border: var(--nav-border);
+  --color-nav-bg-active: var(--nav-bg-active);
+  --color-nav-text-inactive: var(--nav-text-inactive);
 
   /* Cards */
   --color-card: var(--card);
