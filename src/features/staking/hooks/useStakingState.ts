@@ -6,6 +6,7 @@ import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
 import { useCurrency } from "@/hooks/useCurrency";
+import { getContractErrorMessage } from "@/lib/errors";
 
 export type StakingState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -73,8 +74,7 @@ export function useStakingState(): UseStakingStateReturn {
   const error = useMemo(() => {
     if (manualError) return manualError;
     if (deposit.error) {
-      const err = deposit.error as Error & { shortMessage?: string };
-      return err.shortMessage || err.message || "Transaction failed";
+      return getContractErrorMessage(deposit.error);
     }
     return null;
   }, [deposit.error, manualError]);

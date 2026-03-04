@@ -59,8 +59,8 @@ export function useClaimRequest(options: UseClaimRequestOptions = {}) {
     setTimeoutError(null);
     claimMutate(
       {
-        address: CONTRACTS.OllaCore.address,
-        abi: CONTRACTS.OllaCore.abi,
+        address: CONTRACTS.OllaVault.address,
+        abi: CONTRACTS.OllaVault.abi,
         functionName: "claimRequestById",
         args: [requestId],
       },

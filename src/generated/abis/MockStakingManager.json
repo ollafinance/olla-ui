@@ -45,6 +45,19 @@
   },
   {
     "type": "function",
+    "name": "finalizeExits",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "finalized",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "pure"
+  },
+  {
+    "type": "function",
     "name": "getActivatedAttesterCount",
     "inputs": [],
     "outputs": [
@@ -202,6 +215,11 @@
         "internalType": "uint256"
       },
       {
+        "name": "exitAmount",
+        "type": "uint256",
+        "internalType": "uint256"
+      },
+      {
         "name": "hasRemainingExits",
         "type": "bool",
         "internalType": "bool"
@@ -250,7 +268,7 @@
         "internalType": "address"
       },
       {
-        "name": "rewardsVault",
+        "name": "rewardsAccumulator",
         "type": "address",
         "internalType": "address"
       },
@@ -462,19 +480,13 @@
   },
   {
     "type": "event",
-    "name": "AttesterRewardsClaimed",
+    "name": "AttesterRemoved",
     "inputs": [
       {
         "name": "attester",
         "type": "address",
         "indexed": true,
         "internalType": "address"
-      },
-      {
-        "name": "amount",
-        "type": "uint256",
-        "indexed": true,
-        "internalType": "uint256"
       }
     ],
     "anonymous": false
@@ -550,25 +562,6 @@
         "type": "uint256",
         "indexed": true,
         "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
-    "name": "RewardClaimFailed",
-    "inputs": [
-      {
-        "name": "attester",
-        "type": "address",
-        "indexed": true,
-        "internalType": "address"
-      },
-      {
-        "name": "reason",
-        "type": "string",
-        "indexed": false,
-        "internalType": "string"
       }
     ],
     "anonymous": false
@@ -696,17 +689,6 @@
     "type": "error",
     "name": "StakingManager__InvalidParameter",
     "inputs": []
-  },
-  {
-    "type": "error",
-    "name": "StakingManager__Unauthorized",
-    "inputs": [
-      {
-        "name": "caller",
-        "type": "address",
-        "internalType": "address"
-      }
-    ]
   },
   {
     "type": "error",

@@ -29,7 +29,7 @@ export function useStAztec() {
     address: CONTRACTS.StAztec.address,
     abi: CONTRACTS.StAztec.abi,
     functionName: "allowance",
-    args: address ? [address, CONTRACTS.OllaCore.address] : undefined,
+    args: address ? [address, CONTRACTS.OllaVault.address] : undefined,
     query: { enabled: !!address },
   });
 
@@ -103,7 +103,7 @@ export function useStAztec() {
         address: CONTRACTS.StAztec.address,
         abi: CONTRACTS.StAztec.abi,
         functionName: "approve",
-        args: [CONTRACTS.OllaCore.address, parseEther(amount)],
+        args: [CONTRACTS.OllaVault.address, parseEther(amount)],
       },
       {
         onSuccess: () => {

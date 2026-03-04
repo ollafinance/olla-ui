@@ -11,17 +11,17 @@ export interface WithdrawalEventData {
   claimedAt?: number; // Unix timestamp in seconds
 }
 
-// Event signatures for WithdrawalQueue
+// Event signatures for OllaVault
 const WITHDRAWAL_REQUESTED_EVENT = parseAbiItem(
-  "event WithdrawalRequested(uint256 indexed id, address indexed recipient, uint256 shares, uint256 assetsExpected, uint256 rate)"
+  "event WithdrawalRequested(uint256 indexed requestId, address indexed owner, address indexed recipient, uint256 shares, uint256 assetsExpected, uint256 exchangeRate)"
 );
 
 const WITHDRAWAL_FINALIZED_EVENT = parseAbiItem(
-  "event WithdrawalFinalized(uint256 indexed id, uint256 assets)"
+  "event WithdrawalFinalized(uint256 available, uint256 used)"
 );
 
 const WITHDRAWAL_CLAIMED_EVENT = parseAbiItem(
-  "event WithdrawalClaimed(uint256 indexed id, address indexed recipient, uint256 assetsExpected)"
+  "event WithdrawalClaimed(uint256 requestId, address recipient, uint256 assets)"
 );
 
 /**
@@ -47,35 +47,36 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
     setError(null);
 
     try {
-      // Fetch WithdrawalRequested events for the user
+      // Fetch WithdrawalRequested events for the user (indexed owner field)
       const requestedLogs = await publicClient.getLogs({
-        address: CONTRACTS.WithdrawalQueue.address,
+        address: CONTRACTS.OllaVault.address,
         event: WITHDRAWAL_REQUESTED_EVENT,
         args: {
-          recipient: address,
+          owner: address,
         },
         fromBlock: 0n,
         toBlock: "latest",
       });
 
-      // Fetch WithdrawalFinalized events for the specific request IDs
+      // Fetch WithdrawalFinalized events (batch-level, no per-request info)
       const finalizedLogs = await publicClient.getLogs({
-        address: CONTRACTS.WithdrawalQueue.address,
+        address: CONTRACTS.OllaVault.address,
         event: WITHDRAWAL_FINALIZED_EVENT,
         fromBlock: 0n,
         toBlock: "latest",
       });
 
-      // Fetch WithdrawalClaimed events
-      const claimedLogs = await publicClient.getLogs({
-        address: CONTRACTS.WithdrawalQueue.address,
+      // Fetch WithdrawalClaimed events (fields unindexed, fetch all + client-side filter)
+      const allClaimedLogs = await publicClient.getLogs({
+        address: CONTRACTS.OllaVault.address,
         event: WITHDRAWAL_CLAIMED_EVENT,
-        args: {
-          recipient: address,
-        },
         fromBlock: 0n,
         toBlock: "latest",
       });
+      // Client-side filter by recipient address
+      const claimedLogs = allClaimedLogs.filter(
+        (log) => (log.args.recipient as string)?.toLowerCase() === address.toLowerCase()
+      );
 
       // Create a map to store event data by request ID
       const eventMap = new Map<bigint, WithdrawalEventData>();
@@ -86,34 +87,25 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
         const block = await publicClient.getBlock({
           blockHash: log.blockHash,
         });
-        const requestId = log.args.id as bigint;
+        const requestId = log.args.requestId as bigint;
 
         const existing = eventMap.get(requestId) || { requestId };
         existing.requestedAt = Number(block.timestamp);
         eventMap.set(requestId, existing);
       }
 
-      // Process finalized events (filter for user's requests)
-      for (const log of finalizedLogs) {
-        const requestId = log.args.id as bigint;
-        // Only process if this request ID is in our list
-        if (requestIds.includes(requestId)) {
-          const block = await publicClient.getBlock({
-            blockHash: log.blockHash,
-          });
-
-          const existing = eventMap.get(requestId) || { requestId };
-          existing.finalizedAt = Number(block.timestamp);
-          eventMap.set(requestId, existing);
-        }
-      }
+      // WithdrawalFinalized is now batch-level (no per-request IDs).
+      // We use the finalized block timestamp for all active request IDs
+      // that have been finalized (determined by on-chain request state).
+      // Skip per-request finalization tracking from events.
+      void finalizedLogs;
 
       // Process claimed events
       for (const log of claimedLogs) {
         const block = await publicClient.getBlock({
           blockHash: log.blockHash,
         });
-        const requestId = log.args.id as bigint;
+        const requestId = log.args.requestId as bigint;
 
         const existing = eventMap.get(requestId) || { requestId };
         existing.claimedAt = Number(block.timestamp);

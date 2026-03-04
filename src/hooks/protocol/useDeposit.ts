@@ -116,8 +116,8 @@ export function useDeposit(options: UseDepositOptions = {}) {
       const deadline = block.timestamp + BigInt(PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
 
       const expectedShares = await readContract(config, {
-        address: CONTRACTS.OllaCore.address,
-        abi: CONTRACTS.OllaCore.abi,
+        address: CONTRACTS.OllaVault.address,
+        abi: CONTRACTS.OllaVault.abi,
         functionName: "previewDeposit",
         args: [value],
       });
@@ -141,7 +141,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
         primaryType: "Permit",
         message: buildPermitMessage(
           address,
-          CONTRACTS.OllaCore.address,
+          CONTRACTS.OllaVault.address,
           value,
           currentNonce as bigint,
           deadline
@@ -154,8 +154,8 @@ export function useDeposit(options: UseDepositOptions = {}) {
 
       depositMutate(
         {
-          address: CONTRACTS.OllaCore.address,
-          abi: CONTRACTS.OllaCore.abi,
+          address: CONTRACTS.OllaVault.address,
+          abi: CONTRACTS.OllaVault.abi,
           functionName: "depositWithPermit",
           args: args as [
             bigint,
