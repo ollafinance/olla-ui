@@ -74,6 +74,7 @@
   --color-orange-dark: #7a3100;
   --color-red: #ef4444;
   --color-red-dark: #7f1d1d;
+  --color-deep-purple: #440034;
 
   /* Background Pattern Colors */
   --color-bg-pattern-light: #dfded8;
@@ -177,6 +178,9 @@
   --accent: var(--color-orange);
   --accent-foreground: #ffffff;
 
+  /* Display text (large numbers) */
+  --text-display: var(--color-deep-purple);
+
   /* Destructive */
   --destructive: var(--color-red);
   --destructive-foreground: #fafafa;
@@ -239,6 +243,9 @@
   --accent: var(--color-orange);
   --accent-foreground: #ffffff;
 
+  /* Display text (large numbers) */
+  --text-display: var(--color-deep-purple);
+
   /* Destructive */
   --destructive: var(--color-red-dark);
   --destructive-foreground: #fef2f2;
@@ -298,6 +305,9 @@
   /* Accent */
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
+
+  /* Display text */
+  --color-text-display: var(--text-display);
 
   /* Destructive */
   --color-destructive: var(--destructive);

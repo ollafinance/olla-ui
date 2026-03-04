@@ -77,7 +77,9 @@ export function StakingCardIdle({
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col items-center justify-between p-6">
       <div className="flex w-full items-center justify-between">
-        <h2 className="text-lg leading-[1.16] font-medium text-black">You Stake</h2>
+        <h2 className="text-text-display text-lg leading-[1.16] font-medium text-black">
+          You Stake
+        </h2>
         <BalanceBadge balance={balance} isConnected={isConnected} currency="aztec" />
       </div>
 
@@ -90,20 +92,19 @@ export function StakingCardIdle({
         <div className="flex w-full items-end justify-between">
           <div className="flex max-w-[70%] items-end">
             {isUsdMode && (
-              <span className="pr-2 text-[67px] leading-[1.16] font-medium tracking-[-1.35px] text-black">
+              <span className="text-text-display pr-2 text-[67px] leading-[1.16] font-medium tracking-[-1.35px]">
                 $
               </span>
             )}
             <input
               type="text"
               inputMode="decimal"
-              placeholder="0.00"
               value={displayValue}
               onChange={handleInputChange}
-              className="w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] text-black outline-none"
+              className="text-text-display w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] outline-none"
             />
           </div>
-          <span className="shrink-0 text-base leading-[1.8] font-medium text-black">
+          <span className="text-text-display shrink-0 text-base leading-[1.8] font-medium text-black">
             {primaryLabel}
           </span>
         </div>
