@@ -7,6 +7,8 @@ export { useStAztec } from "./useStAztec";
 export { useAztecToken } from "./useAztecToken";
 export { useWithdrawalRequest } from "./useWithdrawalQueue";
 export { useBlockWatcher } from "./useBlockWatcher";
+export { useProtocolApy } from "./useProtocolApy";
+export { useAztecApr } from "./useAztecApr";
 export { useWithdrawalEvents, type WithdrawalEventData } from "./useWithdrawalEvents";
 export {
   useInstantRedemptionEvents,

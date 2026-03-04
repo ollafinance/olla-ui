@@ -12,7 +12,7 @@ export interface ClaimItem {
 export const REDEEM_CONSTANTS = {
   EXCHANGE_RATE: "0.95",
   TRANSACTION_FEE: "0.0001",
-  APY: "5.2%",
+  APY: "0.0%",
   INSTANT_WITHDRAW_FEE_PERCENT: 0.005,
   WITHDRAWAL_TIME_ESTIMATE: "~7 days",
 };

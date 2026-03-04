@@ -48,6 +48,9 @@ export const CONTRACTS = {
     address: deployment.addresses.WithdrawalQueueProxy as `0x${string}`,
     abi: WithdrawalQueueABI,
   },
+  AztecRollup: {
+    address: deployment.addresses.MockAztecRollup as `0x${string}`,
+  },
 } as const;
 
 export const ST_AZTEC_CONFIG = {

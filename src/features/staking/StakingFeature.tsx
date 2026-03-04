@@ -2,7 +2,7 @@ import { useStakingState } from "./hooks";
 import { StakingCard, ReceiveCard, ReturnsCard } from "./components";
 import { PortfolioCard } from "@/components/cards";
 import { PageLayout } from "@/components/layout/page-layout";
-import { STAKING_CONSTANTS } from "./constants";
+import { useProtocolApy } from "@/hooks/protocol";
 
 export function StakingFeature() {
   const {
@@ -19,6 +19,7 @@ export function StakingFeature() {
     previewShares,
     hash,
   } = useStakingState();
+  const { apy } = useProtocolApy();
 
   return (
     <PageLayout
@@ -40,7 +41,7 @@ export function StakingFeature() {
       topCards={
         <>
           <ReceiveCard shares={previewShares} exchangeRate={exchangeRate} />
-          <ReturnsCard amount={amount} apy={STAKING_CONSTANTS.APY} exchangeRate={exchangeRate} />
+          <ReturnsCard amount={amount} apy={apy} exchangeRate={exchangeRate} />
         </>
       }
       bottomCard={
