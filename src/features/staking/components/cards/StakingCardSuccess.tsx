@@ -22,8 +22,8 @@ export function StakingCardSuccess({
         <p>Successful!</p>
       </div>
 
-      <div className="mt-[89px]">
-        <img src={ollaLoading} alt="Success" className="h-[59px] w-[128px]" />
+      <div className="mt-[70px]">
+        <img src={ollaLoading} alt="Success" className="h-[72px] w-[160px]" />
       </div>
 
       <div className="bg-primary-line mt-[8px] h-px w-full max-w-[487px]" />

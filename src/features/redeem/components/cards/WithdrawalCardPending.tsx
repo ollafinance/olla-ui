@@ -1,4 +1,4 @@
-import ollaLoading from "@/assets/icons/olla-loading.svg";
+import { OllaLoadingAnimation } from "@/components/ui/OllaLoadingAnimation";
 
 interface WithdrawalCardPendingProps {
   state: "signing" | "pending" | "confirming";
@@ -32,11 +32,11 @@ export function WithdrawalCardPending({ state }: WithdrawalCardPendingProps) {
         {content}
       </div>
 
-      <div className="mt-[89px]">
-        <img src={ollaLoading} alt="Loading" className="h-[59px] w-[128px] animate-pulse" />
+      <div className="mt-[10px] self-start">
+        <OllaLoadingAnimation loop={true} />
       </div>
 
-      <div className="bg-primary-line mt-[-0.5px] h-px w-full max-w-[487px]" />
+      <div className="bg-primary-line mt-[8px] h-[2px] w-full max-w-[487px]" />
 
       <div className="flex-1" />
     </div>

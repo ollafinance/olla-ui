@@ -41,11 +41,11 @@ export function WithdrawalCardSuccess({
 
       <p className="text-muted-foreground mt-4 text-sm">{message}</p>
 
-      <div className="mt-[22px]">
-        <img src={ollaLoading} alt="Success" className="h-[59px] w-[128px]" />
+      <div className="mt-[10px]">
+        <img src={ollaLoading} alt="Success" className="h-[72px] w-[160px]" />
       </div>
 
-      <div className="bg-secondary-accent mt-[31px] h-px w-full max-w-[487px]" />
+      <div className="bg-secondary-accent mt-[8px] h-px w-full max-w-[487px]" />
 
       <div className="flex-1" />
 

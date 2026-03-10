@@ -1,4 +1,4 @@
-import ollaLoading from "@/assets/icons/olla-loading.svg";
+import { OllaLoadingAnimation } from "@/components/ui/OllaLoadingAnimation";
 
 interface StakingCardPendingProps {
   state: "signing" | "pending" | "confirming";
@@ -21,11 +21,11 @@ export function StakingCardPending({ state }: StakingCardPendingProps) {
         <p>{line2}</p>
       </div>
 
-      <div className="mt-[22px]">
-        <img src={ollaLoading} alt="Loading" className="h-[59px] w-[128px] animate-pulse" />
+      <div className="mt-[70px] self-start">
+        <OllaLoadingAnimation loop={true} />
       </div>
 
-      <div className="bg-primary-line mt-[31px] h-px w-full max-w-[487px]" />
+      <div className="bg-primary-line mt-[8px] h-[2px] w-full max-w-[487px]" />
 
       <div className="flex-1" />
     </div>
