@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "sync:contracts": "npx tsx scripts/sync-contracts.ts",
     "sync:contracts:local": "npx tsx scripts/sync-contracts.ts local",
-    "sync:contracts:testnet": "npx tsx scripts/sync-contracts.ts testnet",
+    "sync:contracts:sepolia": "npx tsx scripts/sync-contracts.ts sepolia",
     "mint": "npx tsx scripts/mint-mock-aztec-tokens.ts"
   },
   "dependencies": {

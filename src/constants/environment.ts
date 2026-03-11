@@ -8,6 +8,7 @@ const walletConnectProjectIdSchema = z.preprocess((value) => {
 
 const envSchema = z.object({
   VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
+  VITE_CONTRACTS_ENV: z.enum(["local", "sepolia"]).default("local"),
   VITE_RPC_URL_FOUNDRY: z
     .string()
     .url("VITE_RPC_URL_FOUNDRY must be a valid URL")
@@ -21,6 +22,7 @@ function validateEnv() {
   const isDev = import.meta.env.DEV;
   const result = envSchema.safeParse({
     VITE_APP_ENV: import.meta.env.VITE_APP_ENV,
+    VITE_CONTRACTS_ENV: import.meta.env.VITE_CONTRACTS_ENV,
     VITE_RPC_URL_FOUNDRY: import.meta.env.VITE_RPC_URL_FOUNDRY,
     VITE_RPC_URL_MAINNET: import.meta.env.VITE_RPC_URL_MAINNET,
     VITE_RPC_URL_SEPOLIA: import.meta.env.VITE_RPC_URL_SEPOLIA,
@@ -46,6 +48,7 @@ function validateEnv() {
 const env = validateEnv();
 
 export const APP_ENV = env.VITE_APP_ENV;
+export const CONTRACTS_ENV = env.VITE_CONTRACTS_ENV;
 export const RPC_URL_FOUNDRY = env.VITE_RPC_URL_FOUNDRY;
 export const RPC_URL_MAINNET = env.VITE_RPC_URL_MAINNET;
 export const RPC_URL_SEPOLIA = env.VITE_RPC_URL_SEPOLIA;

@@ -2,7 +2,37 @@ import OllaCoreABI from "../generated/abis/OllaCore.json";
 import OllaVaultABI from "../generated/abis/OllaVault.json";
 import MockAztecABI from "../generated/abis/MockAztec.json";
 import StAztecABI from "../generated/abis/StAztec.json";
-import deployment from "../generated/deployments/local.json";
+import { CONTRACTS_ENV } from "./environment";
+
+interface DeploymentJson {
+  addresses: Record<string, string>;
+  stAztecName: string;
+  stAztecVersion: string;
+}
+
+const deploymentModules = import.meta.glob<{ default: DeploymentJson }>(
+  "../generated/deployments/*.json",
+  { eager: true }
+);
+
+const localDeployment = deploymentModules["../generated/deployments/local.json"]?.default;
+
+if (!localDeployment) {
+  throw new Error(
+    "Missing src/generated/deployments/local.json. Run `yarn sync:contracts:local` first."
+  );
+}
+
+const selectedDeployment =
+  deploymentModules[`../generated/deployments/${CONTRACTS_ENV}.json`]?.default;
+
+if (!selectedDeployment) {
+  throw new Error(
+    `Missing src/generated/deployments/${CONTRACTS_ENV}.json. Run \`yarn sync:contracts:${CONTRACTS_ENV}\` first.`
+  );
+}
+
+const deployment = selectedDeployment;
 
 const WithdrawalQueueABI = [
   {
