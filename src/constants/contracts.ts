@@ -15,14 +15,6 @@ const deploymentModules = import.meta.glob<{ default: DeploymentJson }>(
   { eager: true }
 );
 
-const localDeployment = deploymentModules["../generated/deployments/local.json"]?.default;
-
-if (!localDeployment) {
-  throw new Error(
-    "Missing src/generated/deployments/local.json. Run `yarn sync:contracts:local` first."
-  );
-}
-
 const selectedDeployment =
   deploymentModules[`../generated/deployments/${CONTRACTS_ENV}.json`]?.default;
 
