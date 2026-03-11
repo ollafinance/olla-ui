@@ -120,7 +120,7 @@ src/generated/
     └── sepolia.json
 ```
 
-These files are gitignored and must be regenerated after cloning.
+The local deployment file (`src/generated/deployments/local.json`) is gitignored and must be regenerated after cloning; the ABIs and committed network deployment files (e.g. `sepolia.json`) are versioned in git and kept in sync via the sync commands above.
 
 ### Local Frontend with Sepolia Contracts
 
