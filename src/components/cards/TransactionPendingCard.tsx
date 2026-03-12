@@ -1,11 +1,12 @@
 import { OllaLoadingAnimation } from "@/components/ui/OllaLoadingAnimation";
 
-interface StakingCardPendingProps {
+interface TransactionPendingCardProps {
   state: "signing" | "pending" | "confirming";
+  variant: "staking" | "withdrawal";
   hash?: `0x${string}`;
 }
 
-export function StakingCardPending({ state }: StakingCardPendingProps) {
+export function TransactionPendingCard({ state, variant }: TransactionPendingCardProps) {
   const titles: Record<"signing" | "pending" | "confirming", [string, string]> = {
     signing: ["Sign", "Transaction..."],
     pending: ["Transaction", "Submitted..."],
@@ -14,9 +15,14 @@ export function StakingCardPending({ state }: StakingCardPendingProps) {
 
   const [line1, line2] = titles[state];
 
+  const typographyClasses =
+    variant === "staking" ? "text-[67px] text-black" : "text-[67.43px] text-text-display";
+
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
-      <div className="text-[67px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black">
+      <div
+        className={`${typographyClasses} leading-none font-medium tracking-[-1.35px] whitespace-nowrap`}
+      >
         <p className="mb-0">{line1}</p>
         <p>{line2}</p>
       </div>

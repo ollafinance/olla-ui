@@ -1,8 +1,10 @@
 import type { RedeemState } from "../../hooks/useRedeemState";
 import { WithdrawalCardIdle } from "./WithdrawalCardIdle";
-import { WithdrawalCardPending } from "./WithdrawalCardPending";
-import { WithdrawalCardSuccess } from "./WithdrawalCardSuccess";
-import { TransactionErrorCard } from "@/components/cards";
+import {
+  TransactionPendingCard,
+  TransactionSuccessCard,
+  TransactionErrorCard,
+} from "@/components/cards";
 
 interface WithdrawalCardProps {
   state: RedeemState;
@@ -68,14 +70,15 @@ export function WithdrawalCard({
     case "signing":
     case "pending":
     case "confirming":
-      return <WithdrawalCardPending state={state} />;
+      return <TransactionPendingCard state={state} variant="withdrawal" />;
     case "success":
       return (
-        <WithdrawalCardSuccess
+        <TransactionSuccessCard
+          variant="withdrawal"
           amount={amount}
           isInstantMode={isInstantMode}
           hash={hash}
-          onWithdrawMore={onReset}
+          onPrimaryAction={onReset}
         />
       );
     case "error":
