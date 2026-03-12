@@ -57,8 +57,7 @@ function parseLatestReport(data: unknown): LatestReport {
  */
 async function apyFromEvents(client: PublicClient): Promise<number | null> {
   const currentBlock = await client.getBlockNumber();
-  const fromBlock =
-    currentBlock > LOOKBACK_BLOCKS ? currentBlock - LOOKBACK_BLOCKS : 0n;
+  const fromBlock = currentBlock > LOOKBACK_BLOCKS ? currentBlock - LOOKBACK_BLOCKS : 0n;
 
   const logs = await client.getLogs({
     address: CONTRACTS.OllaCore.address,
@@ -72,12 +71,8 @@ async function apyFromEvents(client: PublicClient): Promise<number | null> {
   const earliest = logs[0];
   const latest = logs[logs.length - 1];
 
-  const earliestRate = Number(
-    formatEther(earliest.args.exchangeRate as bigint)
-  );
-  const latestRate = Number(
-    formatEther(latest.args.exchangeRate as bigint)
-  );
+  const earliestRate = Number(formatEther(earliest.args.exchangeRate as bigint));
+  const latestRate = Number(formatEther(latest.args.exchangeRate as bigint));
 
   if (earliestRate <= 0 || latestRate <= 0) return null;
 
@@ -86,14 +81,12 @@ async function apyFromEvents(client: PublicClient): Promise<number | null> {
     client.getBlock({ blockHash: latest.blockHash }),
   ]);
 
-  const elapsedSeconds =
-    Number(latestBlock.timestamp) - Number(earliestBlock.timestamp);
+  const elapsedSeconds = Number(latestBlock.timestamp) - Number(earliestBlock.timestamp);
 
   if (elapsedSeconds < MIN_PERIOD_SECONDS) return null;
 
   const rateRatio = latestRate / earliestRate;
-  const annualized =
-    Math.pow(rateRatio, SECONDS_PER_YEAR / elapsedSeconds) - 1;
+  const annualized = Math.pow(rateRatio, SECONDS_PER_YEAR / elapsedSeconds) - 1;
 
   return annualized * 100;
 }
@@ -107,8 +100,7 @@ function apyFromReport(report: LatestReport): number | null {
   const grossRewards = Number(formatEther(report.grossRewards));
   const reportTimestamp = Number(report.timestamp);
 
-  if (totalAssets <= 0 || grossRewards <= 0 || reportTimestamp <= 0)
-    return null;
+  if (totalAssets <= 0 || grossRewards <= 0 || reportTimestamp <= 0) return null;
 
   const now = Date.now() / 1000;
   const elapsed = now - reportTimestamp;
@@ -140,12 +132,9 @@ function apyFromReport(report: LatestReport): number | null {
 export function useProtocolApy(): UseProtocolApyReturn {
   const publicClient = usePublicClient();
   const [ollaApy, setOllaApy] = useState<string | null>(null);
-  const [isLive, setIsLive] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  const { apr: aztecApr, isLoading: aztecLoading } = useAztecApr(
-    CONTRACTS.AztecRollup.address
-  );
+  const { apr: aztecApr, isLoading: aztecLoading } = useAztecApr(CONTRACTS.AztecRollup.address);
 
   const { data: latestReportData } = useReadContract({
     address: CONTRACTS.OllaCore.address,
@@ -165,7 +154,6 @@ export function useProtocolApy(): UseProtocolApyReturn {
       const eventApy = await apyFromEvents(publicClient);
       if (isValidApy(eventApy)) {
         setOllaApy(eventApy.toFixed(2));
-        setIsLive(true);
         return;
       }
 
@@ -175,7 +163,6 @@ export function useProtocolApy(): UseProtocolApyReturn {
         const reportApy = apyFromReport(report);
         if (isValidApy(reportApy)) {
           setOllaApy(reportApy.toFixed(2));
-          setIsLive(true);
           return;
         }
       }

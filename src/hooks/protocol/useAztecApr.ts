@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePublicClient } from "wagmi";
-import { type Address, formatEther } from "viem";
+import { type Address } from "viem";
 
 /**
  * Minimal ABI for the Aztec Rollup contract functions needed to calculate APR.
@@ -133,13 +133,10 @@ export function useAztecApr(rollupAddress: Address | null): UseAztecAprReturn {
       const totalAnnualRewards = sequencerBlockReward * slotsPerYear;
 
       const rewardsPerValidator =
-        totalAttesterCount > 0n
-          ? totalAnnualRewards / totalAttesterCount
-          : totalAnnualRewards;
+        totalAttesterCount > 0n ? totalAnnualRewards / totalAttesterCount : totalAnnualRewards;
 
       // Use basis points for precision before converting to percentage
-      const aprBasisPoints =
-        (rewardsPerValidator * 10_000n) / stakingRequirement;
+      const aprBasisPoints = (rewardsPerValidator * 10_000n) / stakingRequirement;
       const aprPercent = Number(aprBasisPoints) / 100;
 
       if (aprPercent > 0 && isFinite(aprPercent)) {

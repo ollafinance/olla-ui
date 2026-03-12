@@ -1,7 +1,6 @@
 import { type StakingState } from "../../hooks/useStakingState";
 import { StakingCardIdle } from "./StakingCardIdle";
-import { StakingCardPending } from "./StakingCardPending";
-import { StakingCardSuccess } from "./StakingCardSuccess";
+import { TransactionPendingCard, TransactionSuccessCard } from "@/components/cards";
 import { TransactionErrorCard } from "@/components/cards";
 
 interface StakingCardProps {
@@ -46,13 +45,14 @@ export function StakingCard({
     case "signing":
     case "pending":
     case "confirming":
-      return <StakingCardPending state={state} hash={hash} />;
+      return <TransactionPendingCard state={state} variant="staking" hash={hash} />;
     case "success":
       return (
-        <StakingCardSuccess
+        <TransactionSuccessCard
+          variant="staking"
           amount={amount}
           shares={previewShares}
-          onStakeMore={onReset}
+          onPrimaryAction={onReset}
           onViewExplorer={() => console.log("View on Explorer clicked")}
         />
       );
