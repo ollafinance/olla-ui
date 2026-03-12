@@ -6,6 +6,7 @@ interface ClaimsCardProps {
   claims: ClaimItemData[];
   onClaim: (id: number) => void;
   isLoading?: boolean;
+  hasInitiallyLoaded?: boolean;
   error?: string | null;
   hasMore?: boolean;
   onLoadMore?: () => void;
@@ -17,6 +18,7 @@ export function ClaimsCard({
   claims,
   onClaim,
   isLoading = false,
+  hasInitiallyLoaded = false,
   error = null,
   hasMore = false,
   onLoadMore,
@@ -30,8 +32,8 @@ export function ClaimsCard({
       </p>
 
       <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
-        {/* Loading state */}
-        {isLoading && claims.length === 0 && (
+        {/* Loading state - only show during initial load */}
+        {!hasInitiallyLoaded && isLoading && (
           <div className="flex flex-1 items-center justify-center">
             <div className="flex flex-col items-center gap-2">
               <div className="border-primary-accent h-6 w-6 animate-spin rounded-full border-2 border-t-transparent" />
@@ -40,8 +42,8 @@ export function ClaimsCard({
           </div>
         )}
 
-        {/* Error state */}
-        {error && claims.length === 0 && (
+        {/* Error state - only show if initial load failed */}
+        {!hasInitiallyLoaded && error && (
           <div className="flex flex-1 flex-col items-center justify-center gap-3">
             <p className="text-destructive text-sm">Failed to load claims</p>
             <p className="text-muted-foreground text-xs">{error}</p>
@@ -64,10 +66,10 @@ export function ClaimsCard({
           />
         ))}
 
-        {/* Empty state */}
-        {claims.length === 0 && !isLoading && !error && (
+        {/* Empty state - show after initial load completes */}
+        {hasInitiallyLoaded && claims.length === 0 && (
           <div className="flex flex-1 items-center justify-center">
-            <p className="text-muted-foreground text-sm">No claims available</p>
+            <p className="text-muted-foreground text-sm">Currently no claims</p>
           </div>
         )}
 

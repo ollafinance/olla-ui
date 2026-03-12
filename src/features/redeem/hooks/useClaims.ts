@@ -5,7 +5,7 @@ import { useWithdrawalEvents } from "@/hooks/protocol/useWithdrawalEvents";
 import { useInstantRedemptionEvents } from "@/hooks/protocol/useInstantRedemptionEvents";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { formatEther } from "viem";
 
 export type ClaimStatus = "ready" | "processing" | "claimed" | "instant";
@@ -295,10 +295,23 @@ export function useClaims() {
   const isLoading = isLoadingRequests || isLoadingEvents || isLoadingInstantEvents;
   const error = requestsError || eventsError || instantEventsError;
 
+  // Track when initial load completes (regardless of success/error)
+  // Once loading finishes for the first time, we consider it "initially loaded"
+  const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
+
+  useEffect(() => {
+    // Only set to true once, when loading transitions from true to false
+    if (!isLoading) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setHasInitiallyLoaded(true);
+    }
+  }, [isLoading]);
+
   return {
     claims: paginatedClaims,
     allClaims: sortedClaims,
     isLoading,
+    hasInitiallyLoaded,
     error,
     hasMore,
     loadMore,
