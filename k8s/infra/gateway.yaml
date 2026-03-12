@@ -1,0 +1,29 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: Gateway
+metadata:
+  name: olla-gateway
+  namespace: olla-prod
+  labels:
+    app.kubernetes.io/name: olla-gateway
+    app.kubernetes.io/part-of: olla
+spec:
+  gatewayClassName: envoy-gateway
+  listeners:
+    - name: olla-http
+      hostname: demo.olla.finance
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: olla-https
+      hostname: demo.olla.finance
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: olla-ui-tls
+      allowedRoutes:
+        namespaces:
+          from: Same

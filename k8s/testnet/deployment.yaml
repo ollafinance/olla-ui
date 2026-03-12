@@ -1,0 +1,48 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: olla-ui
+  namespace: olla-prod
+  labels:
+    app: olla-ui
+    app.kubernetes.io/name: olla-ui
+    app.kubernetes.io/part-of: olla
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: olla-ui
+  template:
+    metadata:
+      labels:
+        app: olla-ui
+    spec:
+      imagePullSecrets:
+        - name: olla-containers
+      containers:
+        - name: olla-ui
+          image: registry.digitalocean.com/olla-containers/olla-ui:testnet-latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+          resources:
+            limits:
+              memory: 256Mi
+              cpu: 200m
+            requests:
+              memory: 128Mi
+              cpu: 100m
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5
