@@ -136,8 +136,11 @@ jobs:
 
       - name: Deploy to cluster
         run: |
-          echo "Applying Kubernetes manifests..."
-          kubectl apply -k k8s/olla-prod/
+          echo "Applying infrastructure manifests..."
+          kubectl apply -k k8s/infra/
+
+          echo "Applying testnet manifests..."
+          kubectl apply -k k8s/testnet/
 
           echo "Restarting deployment to pick up new image..."
           kubectl rollout restart deployment/olla-ui -n olla-prod

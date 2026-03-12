@@ -7,7 +7,3 @@ resources:
   - namespace.yaml
   - gateway.yaml
   - cluster-issuer.yaml
-  - certificate.yaml
-  - deployment.yaml
-  - service.yaml
-  - httproute.yaml

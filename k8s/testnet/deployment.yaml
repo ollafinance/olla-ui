@@ -18,7 +18,7 @@ spec:
         app: olla-ui
     spec:
       imagePullSecrets:
-        - name: registry-olla-containers
+        - name: olla-containers
       containers:
         - name: olla-ui
           image: registry.digitalocean.com/olla-containers/olla-ui:testnet-latest
