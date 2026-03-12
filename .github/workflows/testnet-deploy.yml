@@ -7,7 +7,7 @@ on:
 env:
   REGISTRY: registry.digitalocean.com/olla-containers
   IMAGE_NAME: olla-ui
-  CLUSTER_NAME: do-ams3-aztecscan-prod
+  CLUSTER_NAME: aztecscan-prod
 
 jobs:
   set-up:
