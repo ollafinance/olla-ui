@@ -33,5 +33,6 @@ dist-ssr
 
 # Generated contracts (ABIs and deployments)
 # src/generated/
+src/generated/deployments/local.json
 
 .env

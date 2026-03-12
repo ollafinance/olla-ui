@@ -11,7 +11,7 @@
  * Examples:
  *   npx tsx scripts/sync-contracts.ts         # defaults to "local"
  *   npx tsx scripts/sync-contracts.ts local
- *   npx tsx scripts/sync-contracts.ts testnet
+ *   npx tsx scripts/sync-contracts.ts sepolia
  */
 
 import * as fs from "fs";
@@ -53,9 +53,7 @@ function loadConfig(): Config {
 
   if (!fs.existsSync(configPath)) {
     console.error(colors.red("Error: contracts.config.json not found."));
-    console.error(
-      colors.gray("Create a contracts.config.json file in the project root."),
-    );
+    console.error(colors.gray("Create a contracts.config.json file in the project root."));
     process.exit(1);
   }
 
@@ -66,9 +64,7 @@ function validateCorePath(corePath: string): string {
   const resolvedPath = path.resolve(process.cwd(), corePath);
 
   if (!fs.existsSync(resolvedPath)) {
-    console.error(
-      colors.red(`Error: Core repo not found at "${resolvedPath}".`),
-    );
+    console.error(colors.red(`Error: Core repo not found at "${resolvedPath}".`));
     console.error(colors.gray("Check the corePath in contracts.config.json."));
     process.exit(1);
   }
@@ -87,29 +83,18 @@ function validateContractsBuilt(corePath: string): void {
 }
 
 function validateDeployment(corePath: string, env: string): string {
-  const deploymentPath = path.join(
-    corePath,
-    "contracts",
-    "deployments",
-    `${env}.json`,
-  );
+  const deploymentPath = path.join(corePath, "contracts", "deployments", `${env}.json`);
 
   if (!fs.existsSync(deploymentPath)) {
     console.error(colors.red(`Error: Deployment for "${env}" not found.`));
-    console.error(
-      colors.gray(`Run "yarn deploy:${env}" in the core repo first.`),
-    );
+    console.error(colors.gray(`Run "yarn deploy:${env}" in the core repo first.`));
     process.exit(1);
   }
 
   return deploymentPath;
 }
 
-function extractAbis(
-  corePath: string,
-  contracts: string[],
-  outputDir: string,
-): void {
+function extractAbis(corePath: string, contracts: string[], outputDir: string): void {
   const abisDir = path.join(outputDir, "abis");
   fs.mkdirSync(abisDir, { recursive: true });
 
@@ -121,20 +106,16 @@ function extractAbis(
       "contracts",
       "out",
       `${contractName}.sol`,
-      `${contractName}.json`,
+      `${contractName}.json`
     );
 
     if (!fs.existsSync(artifactPath)) {
-      console.log(
-        colors.yellow(`  [SKIP] ${contractName} - artifact not found`),
-      );
+      console.log(colors.yellow(`  [SKIP] ${contractName} - artifact not found`));
       continue;
     }
 
     try {
-      const artifact: ForgeArtifact = JSON.parse(
-        fs.readFileSync(artifactPath, "utf8"),
-      );
+      const artifact: ForgeArtifact = JSON.parse(fs.readFileSync(artifactPath, "utf8"));
 
       if (!artifact.abi) {
         console.log(colors.yellow(`  [SKIP] ${contractName} - no ABI found`));
@@ -151,20 +132,14 @@ function extractAbis(
   }
 }
 
-function copyDeployment(
-  deploymentPath: string,
-  outputDir: string,
-  env: string,
-): void {
+function copyDeployment(deploymentPath: string, outputDir: string, env: string): void {
   const deploymentsDir = path.join(outputDir, "deployments");
   fs.mkdirSync(deploymentsDir, { recursive: true });
 
   console.log(colors.blue("\nCopying deployment..."));
 
   // Read deployment JSON
-  const deployment: DeploymentJson = JSON.parse(
-    fs.readFileSync(deploymentPath, "utf8"),
-  );
+  const deployment: DeploymentJson = JSON.parse(fs.readFileSync(deploymentPath, "utf8"));
 
   // Copy full deployment file
   const fullDeploymentPath = path.join(deploymentsDir, `${env}.json`);
@@ -175,7 +150,7 @@ function copyDeployment(
 function main(): void {
   // Parse environment argument (default to "local")
   const env = process.argv[2] || "local";
-  const validEnvs = ["local", "testnet"];
+  const validEnvs = ["local", "sepolia"];
 
   if (!validEnvs.includes(env)) {
     console.error(colors.red(`Error: Invalid environment "${env}".`));
