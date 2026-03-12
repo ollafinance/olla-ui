@@ -38,10 +38,11 @@ export function StakingCardIdle({
     if (isUsdMode) {
       const usdBalance = aztecToUsd(parsedBalance);
       const newUsdAmount = (parseFloat(usdBalance) * percentage).toFixed(2);
-      onAmountChange(usdToAztec(newUsdAmount));
+      const convertedAztecAmount = usdToAztec(newUsdAmount);
+      onAmountChange(Number(convertedAztecAmount) > parsedBalance ? balance : convertedAztecAmount);
     } else {
       const newAmount = (parsedBalance * percentage).toFixed(2);
-      onAmountChange(newAmount);
+      onAmountChange(Number(newAmount) > parsedBalance ? balance : newAmount);
     }
   };
 
