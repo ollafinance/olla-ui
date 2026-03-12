@@ -51,6 +51,7 @@ interface UseRedeemStateReturn {
   // Claims
   claims: ClaimItemData[];
   isLoadingClaims: boolean;
+  hasInitiallyLoadedClaims: boolean;
   claimsError: Error | null;
   hasMoreClaims: boolean;
   loadMoreClaims: () => void;
@@ -77,6 +78,7 @@ export function useRedeemState(): UseRedeemStateReturn {
   const {
     claims,
     isLoading: isLoadingClaims,
+    hasInitiallyLoaded: hasInitiallyLoadedClaims,
     error: claimsError,
     hasMore: hasMoreClaims,
     loadMore: loadMoreClaims,
@@ -258,6 +260,7 @@ export function useRedeemState(): UseRedeemStateReturn {
     // Claims
     claims,
     isLoadingClaims,
+    hasInitiallyLoadedClaims,
     claimsError,
     hasMoreClaims,
     loadMoreClaims,

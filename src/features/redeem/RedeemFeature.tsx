@@ -26,6 +26,7 @@ export function RedeemFeature() {
     // Claims
     claims,
     isLoadingClaims,
+    hasInitiallyLoadedClaims,
     claimsError,
     hasMoreClaims,
     loadMoreClaims,
@@ -64,6 +65,7 @@ export function RedeemFeature() {
           claims={claims}
           onClaim={(id) => claim(BigInt(id))}
           isLoading={isLoadingClaims}
+          hasInitiallyLoaded={hasInitiallyLoadedClaims}
           error={claimsError?.message || null}
           hasMore={hasMoreClaims}
           onLoadMore={loadMoreClaims}
