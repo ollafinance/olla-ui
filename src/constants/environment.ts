@@ -9,7 +9,7 @@ const walletConnectProjectIdSchema = z.preprocess((value) => {
 const envSchema = z.object({
   VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
   VITE_CONTRACTS_ENV: z.enum(["local", "sepolia"]).default("local"),
-  VITE_RPC_URL_FOUNDRY: z.string().url("VITE_RPC_URL_FOUNDRY must be a valid URL").optional(),
+  VITE_RPC_URL_FOUNDRY: z.string().optional(),
   VITE_RPC_URL_MAINNET: z.string().optional(),
   VITE_RPC_URL_SEPOLIA: z.string().optional(),
   VITE_WALLET_CONNECT_PROJECT_ID: walletConnectProjectIdSchema,
