@@ -10,7 +10,7 @@ export interface UseClaimRequestOptions {
 
 export function useClaimRequest(options: UseClaimRequestOptions = {}) {
   const [timeoutError, setTimeoutError] = useState<Error | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasCalledConfirmed = useRef(false);
 
   const {

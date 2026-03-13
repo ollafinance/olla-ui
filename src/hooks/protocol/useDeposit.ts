@@ -30,7 +30,7 @@ export function useDeposit(options: UseDepositOptions = {}) {
   const publicClient = usePublicClient();
   const [isSigning, setIsSigning] = useState(false);
   const [timeoutError, setTimeoutError] = useState<Error | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasCalledConfirmed = useRef(false);
 
   const { data: assetDomain } = useReadContract({
