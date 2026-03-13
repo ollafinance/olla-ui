@@ -22,8 +22,13 @@ const INSTANT_REDEMPTION_EVENT = parseAbiItem(
 
 /**
  * Fetches InstantRedemption events from OllaCore to track instant redemptions.
- * @note Fetches events from block 0. For mainnet, this could be slow/expensive.
- * Consider using an indexer (The Graph, Goldsky) or limiting block range for production.
+ *
+ * TODO: For mainnet, implement one of these solutions:
+ * - Use an indexer (The Graph, Goldsky) for event queries
+ * - Use Alchemy PAYG tier for larger block ranges
+ * - Track last queried block and only fetch new blocks incrementally
+ *
+ * @note Currently limited to 10 blocks for Alchemy free tier compatibility.
  */
 export function useInstantRedemptionEvents(address: `0x${string}` | undefined) {
   const publicClient = usePublicClient();
@@ -41,6 +46,11 @@ export function useInstantRedemptionEvents(address: `0x${string}` | undefined) {
     setError(null);
 
     try {
+      // TODO: For mainnet, use an indexer or larger block range
+      // Alchemy free tier limits eth_getLogs to 10 blocks
+      const latestBlock = await publicClient.getBlockNumber();
+      const fromBlock = latestBlock > 10n ? latestBlock - 10n : 0n;
+
       // Fetch InstantRedemption events for the user
       const redemptionLogs = await publicClient.getLogs({
         address: CONTRACTS.OllaVault.address,
@@ -48,7 +58,7 @@ export function useInstantRedemptionEvents(address: `0x${string}` | undefined) {
         args: {
           owner: address,
         },
-        fromBlock: 0n,
+        fromBlock,
         toBlock: "latest",
       });
 

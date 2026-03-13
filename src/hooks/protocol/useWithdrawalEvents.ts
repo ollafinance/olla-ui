@@ -26,8 +26,14 @@ const WITHDRAWAL_CLAIMED_EVENT = parseAbiItem(
 
 /**
  * Fetches withdrawal event logs to get timestamps for requests.
- * @note Fetches events from block 0. For mainnet, this could be slow/expensive.
- * Consider using an indexer (The Graph, Goldsky) or limiting block range for production.
+ *
+ * TODO: For mainnet, implement one of these solutions:
+ * - Use an indexer (The Graph, Goldsky) for event queries
+ * - Use Alchemy PAYG tier for larger block ranges
+ * - Track last queried block and only fetch new blocks incrementally
+ * - Use a backend service to index events
+ *
+ * @note Currently limited to 10 blocks for Alchemy free tier compatibility.
  */
 export function useWithdrawalEvents(address: `0x${string}` | undefined, requestIds: bigint[]) {
   const publicClient = usePublicClient();
@@ -47,6 +53,11 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
     setError(null);
 
     try {
+      // TODO: For mainnet, use an indexer or larger block range
+      // Alchemy free tier limits eth_getLogs to 10 blocks
+      const latestBlock = await publicClient.getBlockNumber();
+      const fromBlock = latestBlock > 10n ? latestBlock - 10n : 0n;
+
       // Fetch WithdrawalRequested events for the user (indexed owner field)
       const requestedLogs = await publicClient.getLogs({
         address: CONTRACTS.OllaVault.address,
@@ -54,7 +65,7 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
         args: {
           owner: address,
         },
-        fromBlock: 0n,
+        fromBlock,
         toBlock: "latest",
       });
 
@@ -62,7 +73,7 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
       const finalizedLogs = await publicClient.getLogs({
         address: CONTRACTS.OllaVault.address,
         event: WITHDRAWAL_FINALIZED_EVENT,
-        fromBlock: 0n,
+        fromBlock,
         toBlock: "latest",
       });
 
@@ -70,7 +81,7 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
       const allClaimedLogs = await publicClient.getLogs({
         address: CONTRACTS.OllaVault.address,
         event: WITHDRAWAL_CLAIMED_EVENT,
-        fromBlock: 0n,
+        fromBlock,
         toBlock: "latest",
       });
       // Client-side filter by recipient address

@@ -9,7 +9,9 @@ const ACCOUNTING_UPDATED_EVENT = parseAbiItem(
 );
 
 /** How far back (in blocks) to look for exchange rate history. */
-const LOOKBACK_BLOCKS = 50_000n;
+// TODO: For mainnet, increase this value and use an indexer or Alchemy PAYG tier
+// Alchemy free tier limits eth_getLogs to 10 blocks
+const LOOKBACK_BLOCKS = 10n;
 
 /** Minimum time between two data points to produce a meaningful APY (1 hour). */
 const MIN_PERIOD_SECONDS = 3600;
