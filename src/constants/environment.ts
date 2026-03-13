@@ -9,10 +9,7 @@ const walletConnectProjectIdSchema = z.preprocess((value) => {
 const envSchema = z.object({
   VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
   VITE_CONTRACTS_ENV: z.enum(["local", "sepolia"]).default("local"),
-  VITE_RPC_URL_FOUNDRY: z
-    .string()
-    .url("VITE_RPC_URL_FOUNDRY must be a valid URL")
-    .default("http://127.0.0.1:8545"),
+  VITE_RPC_URL_FOUNDRY: z.string().url("VITE_RPC_URL_FOUNDRY must be a valid URL").optional(),
   VITE_RPC_URL_MAINNET: z.string().optional(),
   VITE_RPC_URL_SEPOLIA: z.string().optional(),
   VITE_WALLET_CONNECT_PROJECT_ID: walletConnectProjectIdSchema,
@@ -39,6 +36,16 @@ function validateEnv() {
   if (!isDev && !result.data.VITE_WALLET_CONNECT_PROJECT_ID) {
     throw new Error(
       "Environment validation failed:\n  - VITE_WALLET_CONNECT_PROJECT_ID: VITE_WALLET_CONNECT_PROJECT_ID is required"
+    );
+  }
+
+  if (result.data.VITE_CONTRACTS_ENV === "local" && !result.data.VITE_RPC_URL_FOUNDRY) {
+    result.data.VITE_RPC_URL_FOUNDRY = "http://127.0.0.1:8545";
+  }
+
+  if (result.data.VITE_CONTRACTS_ENV === "sepolia" && !result.data.VITE_RPC_URL_SEPOLIA) {
+    throw new Error(
+      "Environment validation failed:\n  - VITE_RPC_URL_SEPOLIA: VITE_RPC_URL_SEPOLIA is required when VITE_CONTRACTS_ENV=sepolia"
     );
   }
 
