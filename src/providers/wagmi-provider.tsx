@@ -1,5 +1,5 @@
 import {
-  APP_ENV,
+  CONTRACTS_ENV,
   RPC_URL_FOUNDRY,
   RPC_URL_MAINNET,
   RPC_URL_SEPOLIA,
@@ -13,33 +13,34 @@ import {
   trustWallet,
   walletConnectWallet,
 } from "@rainbow-me/rainbowkit/wallets";
+import type { Chain } from "viem";
 import { foundry, mainnet, sepolia } from "viem/chains";
 import { createConfig, http, WagmiProvider as WagmiProviderLib } from "wagmi";
 import { injected } from "wagmi/connectors";
 
-const isProduction = APP_ENV === "production";
+const transports: Record<number, ReturnType<typeof http>> = {};
 
-// Build transports only for chains with configured RPC URLs
-const transports: Record<number, ReturnType<typeof http>> = {
-  [foundry.id]: http(RPC_URL_FOUNDRY),
-};
-
+if (RPC_URL_FOUNDRY) {
+  transports[foundry.id] = http(RPC_URL_FOUNDRY);
+}
 if (RPC_URL_MAINNET) {
   transports[mainnet.id] = http(RPC_URL_MAINNET);
 }
-
 if (RPC_URL_SEPOLIA) {
   transports[sepolia.id] = http(RPC_URL_SEPOLIA);
 }
 
-// Build chains array based on configured transports
-const chains = isProduction
-  ? ([mainnet] as const)
-  : ([
-      foundry,
-      ...(RPC_URL_SEPOLIA ? [sepolia] : []),
-      ...(RPC_URL_MAINNET ? [mainnet] : []),
-    ] as const);
+const chains: readonly [Chain, ...Chain[]] = (() => {
+  switch (CONTRACTS_ENV) {
+    case "mainnet":
+      return [mainnet];
+    case "sepolia":
+      return [sepolia];
+    case "local":
+    default:
+      return [foundry];
+  }
+})();
 
 const config = WALLET_CONNECT_PROJECT_ID
   ? getDefaultConfig({

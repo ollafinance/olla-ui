@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+const optionalUrlSchema = z.preprocess((value) => {
+  if (typeof value !== "string") return value;
+  const trimmed = value.trim();
+  return trimmed.length === 0 ? undefined : trimmed;
+}, z.string().url("must be a valid URL").optional());
+
 const walletConnectProjectIdSchema = z.preprocess((value) => {
   if (typeof value !== "string") return value;
   const trimmed = value.trim();
@@ -8,10 +14,10 @@ const walletConnectProjectIdSchema = z.preprocess((value) => {
 
 const envSchema = z.object({
   VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
-  VITE_CONTRACTS_ENV: z.enum(["local", "sepolia"]).default("local"),
-  VITE_RPC_URL_FOUNDRY: z.string().optional(),
-  VITE_RPC_URL_MAINNET: z.string().optional(),
-  VITE_RPC_URL_SEPOLIA: z.string().optional(),
+  VITE_CONTRACTS_ENV: z.enum(["local", "sepolia", "mainnet"]).default("local"),
+  VITE_RPC_URL_FOUNDRY: optionalUrlSchema,
+  VITE_RPC_URL_MAINNET: optionalUrlSchema,
+  VITE_RPC_URL_SEPOLIA: optionalUrlSchema,
   VITE_WALLET_CONNECT_PROJECT_ID: walletConnectProjectIdSchema,
 });
 
@@ -46,6 +52,12 @@ function validateEnv() {
   if (result.data.VITE_CONTRACTS_ENV === "sepolia" && !result.data.VITE_RPC_URL_SEPOLIA) {
     throw new Error(
       "Environment validation failed:\n  - VITE_RPC_URL_SEPOLIA: VITE_RPC_URL_SEPOLIA is required when VITE_CONTRACTS_ENV=sepolia"
+    );
+  }
+
+  if (result.data.VITE_CONTRACTS_ENV === "mainnet" && !result.data.VITE_RPC_URL_MAINNET) {
+    throw new Error(
+      "Environment validation failed:\n  - VITE_RPC_URL_MAINNET: VITE_RPC_URL_MAINNET is required when VITE_CONTRACTS_ENV=mainnet"
     );
   }
 
