@@ -26,6 +26,7 @@ WORKDIR /app
 
 # Copy package files
 COPY package.json yarn.lock .yarnrc.yml ./
+COPY local-packages/ ./local-packages/
 
 # Install dependencies
 RUN yarn install --immutable
