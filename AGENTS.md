@@ -1,12 +1,32 @@
-# AGENTS.md - Olla UI
+# AGENTS.md - Olla UI Monorepo
 
 > Guidelines for AI coding agents working in this repository.
 
 ## Project Overview
 
-This is a **Web3 frontend** for the Olla liquid staking protocol on Aztec. Built with React 19, TypeScript 5.9, Vite 7, and Tailwind CSS 4.
+This is a **Web3 monorepo** for the Olla liquid staking protocol on Aztec. Contains:
+
+- **Frontend** (`services/frontend/`): React 19, TypeScript 5.9, Vite 7, Tailwind CSS 4
+- **Backend** (`services/backend/`): Go indexer and API service (skeleton only for now)
+- **Shared Types** (`packages/types/`): Generated TypeScript types from Go OpenAPI
+
+## Monorepo Structure
+
+```
+olla-ui/
+├── services/
+│   ├── frontend/          # React frontend
+│   └── backend/           # Go indexer (skeleton)
+├── packages/
+│   └── types/             # Shared TypeScript types
+├── k8s/
+│   └── infra/             # Shared K8s infrastructure
+└── docker-compose.yml     # Dev environment
+```
 
 ## Tech Stack & Versions
+
+### Frontend
 
 | Technology | Version | Notes |
 |------------|---------|-------|
@@ -21,12 +41,51 @@ This is a **Web3 frontend** for the Olla liquid staking protocol on Aztec. Built
 | TanStack Query | 5.90.19 | Server state management |
 | ESLint | 9.39.1 | Flat config format |
 | Prettier | 3.8.1 | Code formatter |
+
+### Indexer
+
+| Technology | Version | Notes |
+|------------|---------|-------|
+| Go | 1.22 | Backend language |
+| Gin | 1.9.1 | HTTP router |
+| pgx | 5.5.5 | PostgreSQL driver |
+| Tern | 2.1.1 | Database migrations |
+| Zap | 1.27.0 | Structured logging |
+| go-ethereum | 1.13.14 | Ethereum client |
+
+### Tooling
+
+| Technology | Version | Notes |
+|------------|---------|-------|
 | Node.js | 18+ | Required runtime |
 | Yarn | 4.12.0 | Package manager (Berry) |
+| Docker | - | Dev environment |
+| Kubernetes | - | Deployment |
 
-## Commands
+## Root Commands
 
 ```bash
+# Development (starts postgres + frontend)
+make dev              # Start dev environment
+
+# Build
+yarn build            # Build all packages
+
+# Linting
+yarn lint             # Run ESLint on all files
+
+# Indexer
+make migrate-up       # Run database migrations (from services/backend)
+make migrate-down     # Rollback migrations (from services/backend)
+make swagger          # Generate OpenAPI docs (from services/backend)
+```
+
+## Frontend Commands
+
+```bash
+# From root
+cd services/frontend
+
 # Development
 yarn dev              # Start dev server (Vite)
 
@@ -43,82 +102,106 @@ yarn pretty           # Format code with Prettier
 yarn preview          # Preview production build locally
 ```
 
-### Testing
+## Indexer Commands
 
-**No test framework is currently configured.** If tests are added, they should use Vitest (compatible with Vite).
+```bash
+# From root
+# cd services/backend
+
+# Development
+make run              # Run Go server locally
+
+# Build
+make build            # Build binary to bin/server
+
+# Database
+make migrate-up       # Run migrations
+make migrate-down     # Rollback migrations (from services/backend)
+make migrate-create   # Create new migration
+
+# Swagger
+make swagger          # Generate OpenAPI docs (from services/backend)
+
+# Tests
+make test             # Run Go tests
+```
 
 ## Project Structure
 
-This project follows a **Feature-First Architecture** with a **Shared Kernel** for protocol logic.
-
-### Directory Layout
+### Frontend (`services/frontend/`)
 
 ```
-src/
-├── components/          # GLOBAL SHARED UI
-│   ├── ui/              # Generic "Atoms" (Button, Card, Input) - No business logic
-│   └── layout/          # Structural templates (LayoutShell, Header)
-│
-├── features/            # VERTICAL SLICES (Business Logic)
-│   ├── staking/         # "Staking" feature
-│   │   ├── components/  # Domain-specific UI (StatusPanel)
-│   │   └── StakingFeature.tsx # Feature container
-│   └── withdraw/        # Future "Withdraw" feature
-│
-├── hooks/               # SHARED KERNEL
-│   ├── protocol/        # Global Protocol Hooks (wraps contracts)
-│   └── useTheme.ts      # Theme management hook
-│
-├── providers/           # GLOBAL PROVIDERS
-│   ├── theme-provider.tsx     # Theme context provider
-│   ├── wagmi-provider.tsx     # Wagmi context provider
-│   └── rainbowkit-provider.tsx # RainbowKit provider & config
-│
-├── routes/              # ROUTING (TanStack Router)
-│   ├── __root.tsx       # Global layout wrapper
-│   └── index.tsx        # Route definitions
-│
-├── lib/                 # UTILITIES
-│   └── utils.ts         # cn() helper
-│
-└── ... (config, constants, generated)
+services/frontend/
+├── src/
+│   ├── components/      # Global shared UI
+│   │   ├── ui/          # Generic "Atoms"
+│   │   └── layout/      # Structural templates
+│   ├── features/        # Vertical slices
+│   ├── hooks/           # Shared protocol hooks
+│   ├── providers/       # Global providers
+│   ├── routes/          # TanStack Router
+│   └── lib/             # Utilities
+├── k8s/                 # Frontend K8s manifests
+├── package.json
+└── ... (config files)
 ```
 
-### Architectural Principles
+### Indexer (`services/backend/`)
 
-1.  **Feature Isolation:**
-    *   Features (e.g., `src/features/staking`) should NOT import from other features.
-    *   Shared logic must move to `src/hooks/protocol/` or `src/components/ui/`.
+```
+services/backend/
+├── cmd/
+│   └── main.go          # Application entry point
+├── internal/
+│   ├── config/          # Configuration management
+│   ├── database/        # Database connection
+│   ├── handlers/        # HTTP handlers
+│   ├── middleware/      # Gin middleware
+│   ├── models/          # Data models
+│   └── indexer/         # ETH event listener
+├── migrations/          # Tern migration files
+├── docs/                # Swagger docs (generated)
+├── k8s/                 # Backend K8s manifests
+├── Dockerfile
+├── Makefile
+└── go.mod
+```
 
-2.  **Protocol Layer (`src/hooks/protocol/`):**
-    *   Contains "canonical" hooks for smart contract interaction.
-    *   Hooks must be generic (e.g., accept `amount` as arg, not hardcoded).
-    *   Accessible by ALL features.
+### Shared Types (`packages/types/`)
 
-3.  **UI Atoms (`src/components/ui/`):**
-    *   "Dumb" components styled with Tailwind.
-    *   Must NOT contain business logic or imports from `features/`.
+```
+packages/types/
+├── src/
+│   └── generated/       # Generated from OpenAPI
+│       └── schema.ts
+└── package.json
+```
 
-4.  **Feature Hooks (`src/features/*/hooks/`):**
-    *   Manage UI-specific state (forms, wizards, validation) for that feature.
-    *   Private to the feature (not shared).
-    *   Can compose Protocol Hooks to build complex interactions.
+## Type Generation Workflow
 
-5.  **Routing:**
-    *   Uses **TanStack Router**.
-    *   Routes are code-based in `src/routes/` to preserve the folder structure.
+Types are generated from backend OpenAPI spec:
 
-### Code Style Guidelines
+1. Backend defines handlers with swagger annotations
+2. Run `make swagger` in `services/backend/` to generate `docs/swagger.yaml`
+3. Run `yarn types:generate` in root to generate TypeScript types
+4. Frontend imports types from `@olla-ui/types`
+
+Example:
+```typescript
+import { components } from "@olla-ui/types/src/generated/schema";
+
+type Stake = components["schemas"]["Stake"];
+```
+
+## Frontend Code Style Guidelines
 
 ### TypeScript
 
 - **Strict mode** is enabled - no implicit `any`, unused variables, or parameters
 - Use `verbatimModuleSyntax` - explicit `type` imports required for type-only imports
 - Use `interface` for component props, `type` for unions/utilities
-- Prefer type inference where obvious; explicit types for function params/returns
 
 ```typescript
-// Props interface pattern
 interface ButtonProps {
   label: string;
   onClick: () => void;
@@ -130,27 +213,21 @@ interface ButtonProps {
 
 - Use **function declarations** (not arrow functions) for components
 - Use **named exports** for components (except App which uses default)
-- Keep components in `src/components/` with PascalCase filenames
 
 ```typescript
 // Correct
 export function MyComponent({ prop }: MyComponentProps) {
   return <div>{prop}</div>;
 }
-
-// Avoid
-export const MyComponent = ({ prop }) => <div>{prop}</div>;
 ```
 
 ### Hooks
 
-- Custom hooks go in `src/hooks/` with `use` prefix (camelCase)
+- Custom hooks go in `services/frontend/src/hooks/` with `use` prefix
 - Return structured objects with data and actions
-- Handle loading/error states internally
 
 ```typescript
 export function useMyHook() {
-  // logic...
   return {
     data: formattedData,
     action: { write: doAction, isPending, isConfirmed },
@@ -161,10 +238,10 @@ export function useMyHook() {
 ### Imports
 
 Order imports as follows:
-1. CSS imports (`import "styles.css"`)
+1. CSS imports
 2. React imports
-3. External libraries (wagmi, viem, etc.)
-4. Local imports (components, hooks, constants)
+3. External libraries
+4. Local imports
 
 ```typescript
 import "@rainbow-me/rainbowkit/styles.css";
@@ -176,122 +253,53 @@ import { Header } from "./components/Header";
 import { CONTRACTS } from "./constants/contracts";
 ```
 
-### Naming Conventions
-
-| Element | Convention | Example |
-|---------|------------|---------|
-| Components | PascalCase | `StatusPanel.tsx` |
-| Hooks | camelCase with `use` prefix | `useAztecToken.ts` |
-| Functions | camelCase | `mintTokens`, `approveSpender` |
-| Constants | SCREAMING_SNAKE_CASE | `CONTRACTS`, `MAX_AMOUNT` |
-| Booleans | `is`/`has` prefix | `isConnected`, `isPending` |
-| Files | PascalCase (components), camelCase (others) | |
-
-### Styling
-
-- Use **Tailwind CSS v4** utility classes directly in JSX
-- Custom theme values in `index.css` using `@theme` directive
-- No CSS modules or styled-components
-
-```typescript
-<div className="flex items-center gap-4 p-4 bg-white rounded-lg shadow">
-```
-
-### Error Handling
-
-- Use wagmi's built-in error states (`error`, `isPending`, `isError`)
-- Guard clauses with early returns for missing data
-- Display errors with proper styling
-
-```typescript
-const doAction = () => {
-  if (!address) return; // Guard clause
-  mutate({ ... });
-};
-
-// Error display
-{error && (
-  <div className="text-red-600 bg-red-50 p-2 rounded">
-    {(error as any).shortMessage || error.message}
-  </div>
-)}
-```
-
 ### Web3 Patterns
 
 - Use `useConnection` for wallet address and connection status
 - Use `useReadContract` for reading blockchain state
 - Use `useWriteContract` for transactions
-- Use `useWaitForTransactionReceipt` for confirmation
 - Addresses are typed as `` `0x${string}` ``
-- Use `parseEther`/`formatEther` from viem for ETH values
-
-```typescript
-const { data, refetch } = useReadContract({
-  address: CONTRACTS.TOKEN.address,
-  abi: CONTRACTS.TOKEN.abi,
-  functionName: "balanceOf",
-  args: address ? [address] : undefined,
-  query: { enabled: !!address },
-});
-```
-
-### Zod Validation
-
-Use **Zod v4** for runtime validation and type inference. Key patterns:
-
-```typescript
-import { z } from "zod";
-
-// Define schema
-const userSchema = z.object({
-  address: z.string().startsWith("0x"),
-  amount: z.string().min(1),
-});
-
-// Infer TypeScript type from schema
-type User = z.infer<typeof userSchema>;
-
-// Validate with safeParse (recommended)
-const result = userSchema.safeParse(data);
-if (!result.success) {
-  // Access errors via result.error.issues (Zod v4)
-  result.error.issues.forEach((issue) => {
-    console.error(`${issue.path.join(".")}: ${issue.message}`);
-  });
-}
-```
-
-**Environment Variables:** Validated at startup via `src/config/environment.ts` using Zod schemas.
-
-## Configuration Files
-
-| File | Purpose |
-|------|---------|
-| `tsconfig.json` | TypeScript root config (references app/node configs) |
-| `tsconfig.app.json` | App TypeScript settings (ES2022, strict, react-jsx) |
-| `eslint.config.js` | ESLint flat config with TS + React rules |
-| `.prettierrc` | Prettier config |
-| `vite.config.ts` | Vite config with React, Tailwind, Node polyfills |
-| `.yarnrc.yml` | Yarn 4 config (node-modules linker) |
 
 ## Environment Variables
 
-Required in `.env` (see `env.example`):
+### Frontend (`services/frontend/.env`)
 
 ```
 VITE_RPC_URL_FOUNDRY=http://localhost:8545
 VITE_WALLET_CONNECT_PROJECT_ID=your_project_id
 ```
 
+### Indexer (`services/backend/.env`)
+
+```
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB_NAME=olla_indexer
+POSTGRES_USER=olla
+POSTGRES_PASSWORD=password
+POSTGRES_SSL_ENABLED=disable
+
+RPC_URL=http://localhost:8545
+PORT=8080
+LOG_LEVEL=info
+```
+
+## Development Workflow
+
+1. Start PostgreSQL: `docker-compose up -d`
+2. Run frontend: `yarn dev` (from root)
+3. Run backend: `# cd services/backend && make run`
+4. Generate types after backend changes: `yarn types:generate`
+
 ## Related Repositories
 
 - **olla-core**: Smart contracts (https://github.com/ollafinance/core)
-- ABIs are generated from olla-core and placed in `src/abis/`
+- ABIs are generated from olla-core and placed in `services/frontend/src/abis/`
 
 ## Common Pitfalls
 
 1. **Don't commit ABIs** - `src/abis/` is gitignored (generated files)
 2. **Use Yarn 4** - Run `yarn` not `npm install`
-3. **Tailwind v4 syntax** - Uses `@import "tailwindcss"` not `@tailwind` directives
-4. **React 19** - Be aware of new features and potential breaking changes
+3. **Install deps from root** - Yarn workspaces handle dependencies
+4. **Don't commit Go modules** - Only commit `go.mod` and `go.sum`, not `vendor/`
+5. **Run migrations** - Database changes require `make migrate-up`

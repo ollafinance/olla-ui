@@ -1,0 +1,46 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: olla-postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/postgres-init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d olla_indexer_testnet"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  indexer:
+    build:
+      context: ./services/backend
+      dockerfile: Dockerfile
+    container_name: olla-indexer
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB_NAME: olla_indexer_testnet
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_SSL_ENABLED: disable
+      RPC_URL: ${RPC_URL:-http://localhost:8545}
+      PORT: 8080
+      LOG_LEVEL: info
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./services/backend/migrations:/app/migrations
+
+volumes:
+  postgres_data:

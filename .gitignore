@@ -36,3 +36,33 @@ dist-ssr
 src/generated/deployments/local.json
 
 .env
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Backend binaries
+services/backend/bin/
+
+# IDE
+*.swp
+*.swo
+
+# Environment files
+.env.local
+.env.*.local
+
+# PostgreSQL
+*.db
+postgres_data/
+
+# Backend generated docs (except swagger.yaml for type generation)
+services/backend/docs/docs.go
+services/backend/docs/swagger.json
