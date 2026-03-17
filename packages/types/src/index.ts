@@ -10,4 +10,3 @@ export * from "./generated/deployments";
 
 // Export contract constants
 export * from "./constants/contracts";
-export * from "./constants/environment";

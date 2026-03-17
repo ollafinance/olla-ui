@@ -1,6 +1,6 @@
 import { useReadContract } from "wagmi";
 import { parseEther } from "viem";
-import { CONTRACTS } from "@olla-ui/types";
+import { CONTRACTS } from "@/constants/contracts";
 
 export interface UseOllaCoreReadsOptions {
   amountToConvert?: string;

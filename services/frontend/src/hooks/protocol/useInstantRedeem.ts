@@ -9,7 +9,7 @@ import {
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
 import { readContract } from "wagmi/actions";
-import { CONTRACTS } from "@olla-ui/types";
+import { CONTRACTS } from "@/constants/contracts";
 import { PROTOCOL_CONSTANTS, applySlippage, CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import {
   extractDomainParams,

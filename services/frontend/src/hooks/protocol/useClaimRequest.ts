@@ -1,5 +1,5 @@
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
-import { CONTRACTS } from "@olla-ui/types";
+import { CONTRACTS } from "@/constants/contracts";
 import { CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import { useState, useEffect, useRef, useCallback } from "react";
 

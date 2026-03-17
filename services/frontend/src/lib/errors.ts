@@ -6,7 +6,7 @@ import {
   formatEther,
 } from "viem";
 import type { Abi, Hex } from "viem";
-import { CONTRACTS } from "@olla-ui/types";
+import { CONTRACTS } from "@/constants/contracts";
 
 /** Safe formatEther that handles non-bigint gracefully */
 function fmtEth(value: unknown): string {

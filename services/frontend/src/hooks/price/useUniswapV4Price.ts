@@ -9,7 +9,7 @@ import {
   UNISWAP_REFETCH_MS,
   CHAINLINK_REFETCH_MS,
 } from "@/constants/price-feeds";
-import { RPC_URL_MAINNET } from "@olla-ui/types";
+import { RPC_URL_MAINNET } from "@/constants/environment";
 
 // Compute poolId = keccak256(abi.encode(currency0, currency1, fee, tickSpacing, hooks))
 const poolId = keccak256(
