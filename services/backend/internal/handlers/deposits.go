@@ -1,66 +1,45 @@
 package handlers
 
 import (
-	"net/http"
-	"strconv"
+	"context"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/ollafinance/ui/services/backend/internal/database"
+	"github.com/ollafinance/ui/services/backend/internal/models"
 )
 
-type DepositsHandler struct {
-	store *database.Store
+// DepositsInput represents the input parameters for the deposits endpoint
+type DepositsInput struct {
+	Address string `path:"address" maxLength:"42" example:"0x..." doc:"Recipient address"`
+	Limit   int    `query:"limit" minimum:"1" maximum:"1000" default:"100" doc:"Maximum number of results to return"`
+	Offset  int    `query:"offset" minimum:"0" default:"0" doc:"Number of results to skip"`
 }
 
-func NewDepositsHandler(store *database.Store) *DepositsHandler {
-	return &DepositsHandler{store: store}
+// DepositsOutput represents the response from the deposits endpoint
+type DepositsOutput struct {
+	Body models.DepositList
 }
 
-// GetDeposits godoc
-// @Summary Get deposits by address
-// @Description Returns all deposits for a given recipient address
-// @Tags deposits
-// @Accept json
-// @Produce json
-// @Param address path string true "Recipient address"
-// @Param limit query int false "Limit" default(100)
-// @Param offset query int false "Offset" default(0)
-// @Success 200 {object} models.DepositList
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /deposits/{address} [get]
-func (h *DepositsHandler) GetDeposits(c *gin.Context) {
-	address := c.Param("address")
-	if address == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "address parameter is required"})
-		return
-	}
+// RegisterDeposits registers the deposits endpoints
+func RegisterDeposits(api huma.API, store *database.Store) {
+	huma.Register(api, huma.Operation{
+		OperationID: "get-deposits",
+		Method:      "GET",
+		Path:        "/deposits/{address}",
+		Summary:     "Get deposits by address",
+		Description: "Returns all deposits for a given recipient address",
+		Tags:        []string{"deposits"},
+	}, func(ctx context.Context, input *DepositsInput) (*DepositsOutput, error) {
+		deposits, total, err := store.Deposits.GetByRecipient(ctx, input.Address, input.Limit, input.Offset)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("Failed to fetch deposits", err)
+		}
 
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "100"))
-	if err != nil || limit < 1 {
-		limit = 100
-	}
-	if limit > 1000 {
-		limit = 1000
-	}
-
-	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	if err != nil || offset < 0 {
-		offset = 0
-	}
-
-	deposits, total, err := h.store.Deposits.GetByRecipient(c.Request.Context(), address, limit, offset)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"deposits": deposits,
-		"total":    total,
+		return &DepositsOutput{
+			Body: models.DepositList{
+				Deposits: deposits,
+				Total:    total,
+			},
+		}, nil
 	})
-}
-
-type ErrorResponse struct {
-	Error string `json:"error"`
 }

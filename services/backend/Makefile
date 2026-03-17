@@ -1,4 +1,4 @@
-.PHONY: run build migrate-up migrate-down migrate-create swagger clean test
+.PHONY: run build migrate-up migrate-down migrate-create clean test
 
 run:
 	go run ./cmd/main.go
@@ -32,9 +32,6 @@ migrate-down:
 migrate-create:
 	@read -p "Migration name: " name; \
 	tern migrate --config tern.conf --migrations ./migrations create $$name
-
-swagger:
-	swag init -g cmd/main.go -o docs
 
 clean:
 	rm -rf bin/

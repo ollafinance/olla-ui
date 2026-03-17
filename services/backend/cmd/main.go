@@ -4,9 +4,9 @@ import (
 	"context"
 	"log"
 
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humagin"
 	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 
 	"github.com/ollafinance/ui/services/backend/internal/config"
 	"github.com/ollafinance/ui/services/backend/internal/database"
@@ -15,11 +15,6 @@ import (
 	"github.com/ollafinance/ui/services/backend/internal/server"
 )
 
-// @title Olla Indexer API
-// @version 1.0
-// @description API for the Olla liquid staking indexer service
-// @host localhost:8080
-// @BasePath /api/v1
 func main() {
 	ctx := context.Background()
 
@@ -73,8 +68,12 @@ func main() {
 		}
 	}()
 
-	// Setup router
+	// Setup router and Huma API
 	router := setupRouter(store)
+
+	// Log OpenAPI info
+	log.Printf("API documentation available at /docs")
+	log.Printf("OpenAPI spec available at /openapi.json and /openapi.yaml")
 
 	// Create and start server
 	srv := server.NewServer(router, cfg.Port)
@@ -87,24 +86,24 @@ func main() {
 func setupRouter(store *database.Store) *gin.Engine {
 	router := gin.Default()
 
-	// Health check
-	router.GET("/health", handlers.Health)
-
-	// Swagger docs
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-
-	// API v1
-	v1 := router.Group("/api/v1")
-	{
-		// Deposits
-		depositsHandler := handlers.NewDepositsHandler(store)
-		v1.GET("/deposits/:address", depositsHandler.GetDeposits)
-
-		// Withdrawals
-		withdrawalsHandler := handlers.NewWithdrawalsHandler(store)
-		v1.GET("/withdrawals/:address", withdrawalsHandler.GetWithdrawals)
-		v1.GET("/withdrawals/:address/pending", withdrawalsHandler.GetPendingWithdrawals)
+	// Create main Huma API
+	apiConfig := huma.DefaultConfig("Olla Indexer API", "1.0.0")
+	apiConfig.OpenAPI.Info.Description = "API for the Olla liquid staking indexer service"
+	apiConfig.Servers = []*huma.Server{
+		{URL: "http://localhost:8080"},
 	}
+	api := humagin.New(router, apiConfig)
+
+	// Register health at root level
+	handlers.RegisterHealth(api)
+
+	// Create API group for /api/v1 routes
+	// This groups operations under /api/v1 while keeping them in the same OpenAPI spec
+	v1Group := huma.NewGroup(api, "/api/v1")
+
+	// Register deposits and withdrawals under the /api/v1 group
+	handlers.RegisterDeposits(v1Group, store)
+	handlers.RegisterWithdrawals(v1Group, store)
 
 	return router
 }

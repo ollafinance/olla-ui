@@ -1,114 +1,80 @@
 package handlers
 
 import (
-	"net/http"
-	"strconv"
+	"context"
 
-	"github.com/gin-gonic/gin"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/ollafinance/ui/services/backend/internal/database"
 	"github.com/ollafinance/ui/services/backend/internal/models"
 )
 
-type WithdrawalsHandler struct {
-	store *database.Store
+// WithdrawalsInput represents the input parameters for the withdrawals endpoint
+type WithdrawalsInput struct {
+	Address string `path:"address" maxLength:"42" example:"0x..." doc:"Owner address"`
+	Status  string `query:"status" enum:"pending,completed" doc:"Filter by status"`
+	Limit   int    `query:"limit" minimum:"1" maximum:"1000" default:"100" doc:"Maximum number of results to return"`
+	Offset  int    `query:"offset" minimum:"0" default:"0" doc:"Number of results to skip"`
 }
 
-func NewWithdrawalsHandler(store *database.Store) *WithdrawalsHandler {
-	return &WithdrawalsHandler{store: store}
+// WithdrawalsOutput represents the response from the withdrawals endpoint
+type WithdrawalsOutput struct {
+	Body models.WithdrawalList
 }
 
-// GetWithdrawals godoc
-// @Summary Get withdrawals by address
-// @Description Returns all withdrawal requests for a given owner address
-// @Tags withdrawals
-// @Accept json
-// @Produce json
-// @Param address path string true "Owner address"
-// @Param status query string false "Filter by status (pending/completed)"
-// @Param limit query int false "Limit" default(100)
-// @Param offset query int false "Offset" default(0)
-// @Success 200 {object} models.WithdrawalList
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /withdrawals/{address} [get]
-func (h *WithdrawalsHandler) GetWithdrawals(c *gin.Context) {
-	address := c.Param("address")
-	if address == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "address parameter is required"})
-		return
-	}
+// RegisterWithdrawals registers the withdrawals endpoints
+func RegisterWithdrawals(api huma.API, store *database.Store) {
+	// Get withdrawals by address (with optional status filter)
+	huma.Register(api, huma.Operation{
+		OperationID: "get-withdrawals",
+		Method:      "GET",
+		Path:        "/withdrawals/{address}",
+		Summary:     "Get withdrawals by address",
+		Description: "Returns all withdrawal requests for a given owner address",
+		Tags:        []string{"withdrawals"},
+	}, func(ctx context.Context, input *WithdrawalsInput) (*WithdrawalsOutput, error) {
+		var status *models.WithdrawalStatus
+		if input.Status != "" {
+			s := models.WithdrawalStatus(input.Status)
+			status = &s
+		}
 
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "100"))
-	if err != nil || limit < 1 {
-		limit = 100
-	}
-	if limit > 1000 {
-		limit = 1000
-	}
+		withdrawals, total, err := store.Withdrawals.GetByOwner(ctx, input.Address, status, input.Limit, input.Offset)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("Failed to fetch withdrawals", err)
+		}
 
-	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	if err != nil || offset < 0 {
-		offset = 0
-	}
-
-	var status *models.WithdrawalStatus
-	statusStr := c.Query("status")
-	if statusStr != "" {
-		s := models.WithdrawalStatus(statusStr)
-		status = &s
-	}
-
-	withdrawals, total, err := h.store.Withdrawals.GetByOwner(c.Request.Context(), address, status, limit, offset)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"withdrawals": withdrawals,
-		"total":       total,
+		return &WithdrawalsOutput{
+			Body: models.WithdrawalList{
+				Withdrawals: withdrawals,
+				Total:       total,
+			},
+		}, nil
 	})
-}
 
-// GetPendingWithdrawals godoc
-// @Summary Get pending withdrawals by address
-// @Description Returns all pending withdrawal requests for a given owner address
-// @Tags withdrawals
-// @Accept json
-// @Produce json
-// @Param address path string true "Owner address"
-// @Param limit query int false "Limit" default(100)
-// @Param offset query int false "Offset" default(0)
-// @Success 200 {object} models.WithdrawalList
-// @Failure 400 {object} ErrorResponse
-// @Failure 500 {object} ErrorResponse
-// @Router /withdrawals/{address}/pending [get]
-func (h *WithdrawalsHandler) GetPendingWithdrawals(c *gin.Context) {
-	address := c.Param("address")
-	if address == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "address parameter is required"})
-		return
-	}
+	// Get pending withdrawals by address
+	huma.Register(api, huma.Operation{
+		OperationID: "get-pending-withdrawals",
+		Method:      "GET",
+		Path:        "/withdrawals/{address}/pending",
+		Summary:     "Get pending withdrawals by address",
+		Description: "Returns all pending withdrawal requests for a given owner address",
+		Tags:        []string{"withdrawals"},
+	}, func(ctx context.Context, input *struct {
+		Address string `path:"address" maxLength:"42" example:"0x..." doc:"Owner address"`
+		Limit   int    `query:"limit" minimum:"1" maximum:"1000" default:"100" doc:"Maximum number of results to return"`
+		Offset  int    `query:"offset" minimum:"0" default:"0" doc:"Number of results to skip"`
+	}) (*WithdrawalsOutput, error) {
+		status := models.StatusPending
+		withdrawals, total, err := store.Withdrawals.GetByOwner(ctx, input.Address, &status, input.Limit, input.Offset)
+		if err != nil {
+			return nil, huma.Error500InternalServerError("Failed to fetch pending withdrawals", err)
+		}
 
-	limit, err := strconv.Atoi(c.DefaultQuery("limit", "100"))
-	if err != nil || limit < 1 {
-		limit = 100
-	}
-
-	offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
-	if err != nil || offset < 0 {
-		offset = 0
-	}
-
-	status := models.StatusPending
-	withdrawals, total, err := h.store.Withdrawals.GetByOwner(c.Request.Context(), address, &status, limit, offset)
-	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"withdrawals": withdrawals,
-		"total":       total,
+		return &WithdrawalsOutput{
+			Body: models.WithdrawalList{
+				Withdrawals: withdrawals,
+				Total:       total,
+			},
+		}, nil
 	})
 }

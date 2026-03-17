@@ -28,12 +28,12 @@
     }
   },
   "scripts": {
-    "generate": "openapi-typescript ../../services/backend/docs/swagger.yaml -o src/generated/schema.ts",
+    "generate": "curl -s http://localhost:8080/openapi.json -o src/generated/openapi.json && openapi-typescript src/generated/openapi.json -o src/generated/schema.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "openapi-typescript": "^6.7.0",
+    "openapi-typescript": "^7.13.0",
     "typescript": "~5.9.3"
   }
 }
