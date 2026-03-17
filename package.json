@@ -12,6 +12,11 @@
     "dev": "yarn workspace @olla-ui/frontend dev",
     "build": "yarn workspaces foreach -A run build",
     "lint": "yarn workspaces foreach -A run lint",
-    "types:generate": "yarn workspace @olla-ui/types generate"
+    "types:generate": "yarn workspace @olla-ui/types generate",
+    "sync:contracts": "npx tsx scripts/sync-contracts.ts",
+    "sync:contracts:local": "npx tsx scripts/sync-contracts.ts local",
+    "sync:contracts:sepolia": "npx tsx scripts/sync-contracts.ts sepolia",
+    "sync:abis:backend": "./scripts/copy-abis-to-backend.sh",
+    "mint": "npx tsx scripts/mint-mock-aztec-tokens.ts"
   }
 }

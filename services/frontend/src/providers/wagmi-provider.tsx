@@ -4,7 +4,7 @@ import {
   RPC_URL_MAINNET,
   RPC_URL_SEPOLIA,
   WALLET_CONNECT_PROJECT_ID,
-} from "@/constants/environment";
+} from "@olla-ui/types";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
   ledgerWallet,

@@ -9,6 +9,22 @@
     ".": {
       "types": "./src/index.ts",
       "default": "./src/index.ts"
+    },
+    "./abis": {
+      "types": "./src/generated/abis/index.ts",
+      "default": "./src/generated/abis/index.ts"
+    },
+    "./abis/*.json": {
+      "types": "./src/generated/abis/*.json",
+      "default": "./src/generated/abis/*.json"
+    },
+    "./deployments": {
+      "types": "./src/generated/deployments/index.ts",
+      "default": "./src/generated/deployments/index.ts"
+    },
+    "./contracts": {
+      "types": "./src/constants/contracts.ts",
+      "default": "./src/constants/contracts.ts"
     }
   },
   "scripts": {

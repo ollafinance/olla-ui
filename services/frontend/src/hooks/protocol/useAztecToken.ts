@@ -5,7 +5,7 @@ import {
   useConnection,
 } from "wagmi";
 import { parseEther, formatEther } from "viem";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS } from "@olla-ui/types";
 import { useBlockWatcher } from "./useBlockWatcher";
 import { CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import { useState, useEffect, useRef, useCallback } from "react";

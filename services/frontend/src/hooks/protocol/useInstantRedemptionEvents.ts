@@ -1,5 +1,5 @@
 import { usePublicClient } from "wagmi";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS } from "@olla-ui/types";
 import { CLAIMS_REFRESH_INTERVAL_MS } from "@/constants/protocol";
 import { useState, useEffect, useCallback } from "react";
 import { parseAbiItem } from "viem";

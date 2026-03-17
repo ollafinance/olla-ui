@@ -1,5 +1,5 @@
 import { useReadContract } from "wagmi";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS } from "@olla-ui/types";
 
 export function useWithdrawalRequest(requestId: bigint) {
   const { data: request, refetch } = useReadContract({

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { usePublicClient, useReadContract } from "wagmi";
 import { parseAbiItem, formatEther, type PublicClient } from "viem";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS } from "@olla-ui/types";
 import { useAztecApr } from "./useAztecApr";
 
 const ACCOUNTING_UPDATED_EVENT = parseAbiItem(

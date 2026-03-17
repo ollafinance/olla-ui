@@ -7,7 +7,7 @@ import {
   usePublicClient,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS } from "@olla-ui/types";
 import { PROTOCOL_CONSTANTS, CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import {
   extractDomainParams,

@@ -1,5 +1,5 @@
 import { useReadContracts, useConnection } from "wagmi";
-import { CONTRACTS } from "@/constants/contracts";
+import { CONTRACTS } from "@olla-ui/types";
 import { PROTOCOL_CONSTANTS, CLAIMS_REFRESH_INTERVAL_MS } from "@/constants/protocol";
 import { useWithdrawalEvents } from "@/hooks/protocol/useWithdrawalEvents";
 import { useInstantRedemptionEvents } from "@/hooks/protocol/useInstantRedemptionEvents";
