@@ -4,7 +4,7 @@ port = {{ env "POSTGRES_PORT" }}
 database = {{ env "POSTGRES_DB_NAME" }}
 user = {{ env "POSTGRES_USER" }}
 password = {{ env "POSTGRES_PASSWORD" }}
-sslmode = {{ env "POSTGRES_SSL_ENABLED"}}
+sslmode = {{env "POSTGRES_SSL_ENABLED"}}
 
 [data]
 loadSampleData = false

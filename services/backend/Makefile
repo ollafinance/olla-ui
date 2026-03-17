@@ -7,10 +7,27 @@ build:
 	go build -o bin/server ./cmd/main.go
 
 migrate-up:
-	tern migrate --config tern.conf --migrations ./migrations
+	@if [ ! -f .env ]; then echo "Error: .env file not found"; exit 1; fi
+	@set -a && . ./.env && set +a && tern migrate \
+		--host "$${POSTGRES_HOST}" \
+		--port "$${POSTGRES_PORT}" \
+		--database "$${POSTGRES_DB_NAME}" \
+		--user "$${POSTGRES_USER}" \
+		--password "$${POSTGRES_PASSWORD}" \
+		--sslmode disable \
+		--migrations ./migrations
 
 migrate-down:
-	tern migrate --config tern.conf --migrations ./migrations --down
+	@if [ ! -f .env ]; then echo "Error: .env file not found"; exit 1; fi
+	@set -a && . ./.env && set +a && tern migrate \
+		--destination -1 \
+		--host "$${POSTGRES_HOST}" \
+		--port "$${POSTGRES_PORT}" \
+		--database "$${POSTGRES_DB_NAME}" \
+		--user "$${POSTGRES_USER}" \
+		--password "$${POSTGRES_PASSWORD}" \
+		--sslmode disable \
+		--migrations ./migrations
 
 migrate-create:
 	@read -p "Migration name: " name; \

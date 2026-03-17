@@ -1,2 +1,0 @@
--- Rollback for initial schema
--- Placeholder for future rollbacks
