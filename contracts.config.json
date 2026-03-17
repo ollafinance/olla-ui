@@ -1,9 +1,9 @@
 {
   "source": {
-    "corePath": "../olla-core"
+    "corePath": "../core"
   },
   "output": {
-    "dir": "src/generated"
+    "dir": "packages/types/src/generated"
   },
   "contracts": [
     "OllaCore",

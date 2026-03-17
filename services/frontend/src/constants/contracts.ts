@@ -1,7 +1,10 @@
-import OllaCoreABI from "../generated/abis/OllaCore.json";
-import OllaVaultABI from "../generated/abis/OllaVault.json";
-import MockAztecABI from "../generated/abis/MockAztec.json";
-import StAztecABI from "../generated/abis/StAztec.json";
+import {
+  OllaCoreABI,
+  OllaVaultABI,
+  MockAztecABI,
+  StAztecABI,
+} from "@olla-ui/types";
+import { local, sepolia } from "@olla-ui/types/deployments";
 import { CONTRACTS_ENV } from "./environment";
 
 interface DeploymentJson {
@@ -10,21 +13,18 @@ interface DeploymentJson {
   stAztecVersion: string;
 }
 
-const deploymentModules = import.meta.glob<{ default: DeploymentJson }>(
-  "../generated/deployments/*.json",
-  { eager: true }
-);
+const deployments: Record<string, DeploymentJson> = {
+  local,
+  sepolia,
+};
 
-const selectedDeployment =
-  deploymentModules[`../generated/deployments/${CONTRACTS_ENV}.json`]?.default;
+const deployment = deployments[CONTRACTS_ENV];
 
-if (!selectedDeployment) {
+if (!deployment) {
   throw new Error(
-    `Missing src/generated/deployments/${CONTRACTS_ENV}.json. Run \`yarn sync:contracts:${CONTRACTS_ENV}\` first.`
+    `Missing deployment for environment "${CONTRACTS_ENV}". Run \`yarn sync:contracts:${CONTRACTS_ENV}\` first.`
   );
 }
-
-const deployment = selectedDeployment;
 
 const WithdrawalQueueABI = [
   {

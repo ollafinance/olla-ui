@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: olla-indexer
+  namespace: olla-prod
+  labels:
+    app: olla-indexer
+    app.kubernetes.io/name: olla-indexer
+    app.kubernetes.io/part-of: olla
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: olla-indexer
+  template:
+    metadata:
+      labels:
+        app: olla-indexer
+    spec:
+      imagePullSecrets:
+        - name: olla-containers
+      containers:
+        - name: olla-indexer
+          image: registry.digitalocean.com/olla-containers/olla-indexer:testnet-latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          env:
+            - name: POSTGRES_HOST
+              value: "postgresql"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB_NAME
+              value: "olla_indexer_testnet"
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: password
+            - name: POSTGRES_SSL_ENABLED
+              value: "disable"
+            - name: RPC_URL
+              valueFrom:
+                secretKeyRef:
+                  name: olla-secrets
+                  key: rpc-url
+            - name: PORT
+              value: "8080"
+            - name: LOG_LEVEL
+              value: "info"
+          resources:
+            limits:
+              memory: 512Mi
+              cpu: 500m
+            requests:
+              memory: 256Mi
+              cpu: 250m
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 5

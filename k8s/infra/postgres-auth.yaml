@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: postgres-auth
+  namespace: olla-prod
+type: Opaque
+stringData:
+  password: "secret-local-password"
