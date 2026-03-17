@@ -1,6 +1,6 @@
 {
   "source": {
-    "corePath": "../olla-core"
+    "corePath": "../core"
   },
   "output": {
     "dir": "packages/types/src/generated"

@@ -1,4 +1,5 @@
-// Export OpenAPI generated types
+// Export OpenAPI generated types (when available)
+// Run `yarn types:generate` to create schema.ts from backend OpenAPI
 export * from "./generated/schema";
 
 // Export contract ABIs
