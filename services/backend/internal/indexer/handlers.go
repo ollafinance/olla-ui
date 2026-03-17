@@ -23,9 +23,17 @@ func NewEventHandler(contractABI *abi.ABI) *EventHandler {
 	}
 }
 
+func bigIntToStringPtr(val *big.Int) *string {
+	if val == nil {
+		return nil
+	}
+	s := val.String()
+	return &s
+}
+
 func (h *EventHandler) ParseDeposit(log types.Log) (*models.Deposit, error) {
 	if len(log.Topics) < 3 {
-		return nil, fmt.Errorf("invalid Deposit event: expected at least 3 topics")
+		return nil, fmt.Errorf("invalid Deposit event: expected at least 3 topics, got %d", len(log.Topics))
 	}
 
 	caller := common.BytesToAddress(log.Topics[1].Bytes())
@@ -36,13 +44,23 @@ func (h *EventHandler) ParseDeposit(log types.Log) (*models.Deposit, error) {
 		return nil, fmt.Errorf("Deposit event not found in ABI")
 	}
 
-	var data struct {
-		Assets *big.Int
-		Shares *big.Int
+	unpacked, err := event.Inputs.Unpack(log.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack Deposit event: %w", err)
 	}
 
-	if err := UnpackEventData(event, log.Data, &data); err != nil {
-		return nil, fmt.Errorf("failed to unpack Deposit event: %w", err)
+	if len(unpacked) < 2 {
+		return nil, fmt.Errorf("invalid Deposit event: expected 2 non-indexed fields, got %d", len(unpacked))
+	}
+
+	assets, ok := unpacked[0].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid Deposit event: assets is not *big.Int")
+	}
+
+	shares, ok := unpacked[1].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid Deposit event: shares is not *big.Int")
 	}
 
 	return &models.Deposit{
@@ -51,14 +69,14 @@ func (h *EventHandler) ParseDeposit(log types.Log) (*models.Deposit, error) {
 		LogIndex:    int(log.Index),
 		Caller:      caller.Hex(),
 		Recipient:   recipient.Hex(),
-		Assets:      data.Assets.String(),
-		Shares:      data.Shares.String(),
+		Assets:      assets.String(),
+		Shares:      shares.String(),
 	}, nil
 }
 
 func (h *EventHandler) ParseWithdrawalRequested(log types.Log) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 4 {
-		return nil, fmt.Errorf("invalid WithdrawalRequested event: expected at least 4 topics")
+		return nil, fmt.Errorf("invalid WithdrawalRequested event: expected at least 4 topics, got %d", len(log.Topics))
 	}
 
 	requestID := new(big.Int).SetBytes(log.Topics[1].Bytes())
@@ -70,14 +88,28 @@ func (h *EventHandler) ParseWithdrawalRequested(log types.Log) (*models.Withdraw
 		return nil, fmt.Errorf("WithdrawalRequested event not found in ABI")
 	}
 
-	var data struct {
-		Shares         *big.Int
-		AssetsExpected *big.Int
-		ExchangeRate   *big.Int
+	unpacked, err := event.Inputs.Unpack(log.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack WithdrawalRequested event: %w", err)
 	}
 
-	if err := UnpackEventData(event, log.Data, &data); err != nil {
-		return nil, fmt.Errorf("failed to unpack WithdrawalRequested event: %w", err)
+	if len(unpacked) < 3 {
+		return nil, fmt.Errorf("invalid WithdrawalRequested event: expected 3 non-indexed fields, got %d", len(unpacked))
+	}
+
+	shares, ok := unpacked[0].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid WithdrawalRequested event: shares is %T, expected *big.Int", unpacked[0])
+	}
+
+	assetsExpected, ok := unpacked[1].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid WithdrawalRequested event: assetsExpected is %T, expected *big.Int", unpacked[1])
+	}
+
+	exchangeRate, ok := unpacked[2].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid WithdrawalRequested event: exchangeRate is %T, expected *big.Int", unpacked[2])
 	}
 
 	reqID := requestID.Int64()
@@ -89,9 +121,9 @@ func (h *EventHandler) ParseWithdrawalRequested(log types.Log) (*models.Withdraw
 		EventType:      models.EventTypeWithdrawalRequested,
 		Owner:          owner.Hex(),
 		Recipient:      recipient.Hex(),
-		Shares:         data.Shares.String(),
-		AssetsExpected: data.AssetsExpected.String(),
-		ExchangeRate:   data.ExchangeRate.String(),
+		Shares:         bigIntToStringPtr(shares),
+		AssetsExpected: bigIntToStringPtr(assetsExpected),
+		ExchangeRate:   bigIntToStringPtr(exchangeRate),
 		Status:         models.StatusPending,
 	}, nil
 }
@@ -102,32 +134,46 @@ func (h *EventHandler) ParseWithdrawalClaimed(log types.Log) (*models.Withdrawal
 		return nil, fmt.Errorf("WithdrawalClaimed event not found in ABI")
 	}
 
-	var data struct {
-		RequestID *big.Int
-		Recipient common.Address
-		Assets    *big.Int
-	}
-
-	if err := UnpackEventData(event, log.Data, &data); err != nil {
+	unpacked, err := event.Inputs.Unpack(log.Data)
+	if err != nil {
 		return nil, fmt.Errorf("failed to unpack WithdrawalClaimed event: %w", err)
 	}
 
-	requestID := data.RequestID.Int64()
+	if len(unpacked) < 3 {
+		return nil, fmt.Errorf("invalid WithdrawalClaimed event: expected 3 fields, got %d", len(unpacked))
+	}
+
+	requestID, ok := unpacked[0].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid WithdrawalClaimed event: requestID is not *big.Int")
+	}
+
+	recipient, ok := unpacked[1].(common.Address)
+	if !ok {
+		return nil, fmt.Errorf("invalid WithdrawalClaimed event: recipient is not common.Address")
+	}
+
+	assets, ok := unpacked[2].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid WithdrawalClaimed event: assets is not *big.Int")
+	}
+
+	reqID := requestID.Int64()
 	return &models.WithdrawalRequest{
-		RequestID:     &requestID,
+		RequestID:     &reqID,
 		TxHash:        log.TxHash.Hex(),
 		BlockNumber:   int64(log.BlockNumber),
 		LogIndex:      int(log.Index),
 		EventType:     models.EventTypeWithdrawalClaimed,
-		Recipient:     data.Recipient.Hex(),
-		AssetsClaimed: data.Assets.String(),
+		Recipient:     recipient.Hex(),
+		AssetsClaimed: bigIntToStringPtr(assets),
 		Status:        models.StatusCompleted,
 	}, nil
 }
 
 func (h *EventHandler) ParseInstantRedemption(log types.Log) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 3 {
-		return nil, fmt.Errorf("invalid InstantRedemption event: expected at least 3 topics")
+		return nil, fmt.Errorf("invalid InstantRedemption event: expected at least 3 topics, got %d", len(log.Topics))
 	}
 
 	owner := common.BytesToAddress(log.Topics[1].Bytes())
@@ -138,16 +184,38 @@ func (h *EventHandler) ParseInstantRedemption(log types.Log) (*models.Withdrawal
 		return nil, fmt.Errorf("InstantRedemption event not found in ABI")
 	}
 
-	var data struct {
-		Shares       *big.Int
-		GrossAssets  *big.Int
-		Fee          *big.Int
-		NetAssets    *big.Int
-		ExchangeRate *big.Int
+	unpacked, err := event.Inputs.Unpack(log.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack InstantRedemption event: %w", err)
 	}
 
-	if err := UnpackEventData(event, log.Data, &data); err != nil {
-		return nil, fmt.Errorf("failed to unpack InstantRedemption event: %w", err)
+	if len(unpacked) < 5 {
+		return nil, fmt.Errorf("invalid InstantRedemption event: expected 5 non-indexed fields, got %d", len(unpacked))
+	}
+
+	shares, ok := unpacked[0].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid InstantRedemption event: shares is not *big.Int")
+	}
+
+	grossAssets, ok := unpacked[1].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid InstantRedemption event: grossAssets is not *big.Int")
+	}
+
+	fee, ok := unpacked[2].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid InstantRedemption event: fee is not *big.Int")
+	}
+
+	netAssets, ok := unpacked[3].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid InstantRedemption event: netAssets is not *big.Int")
+	}
+
+	exchangeRate, ok := unpacked[4].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid InstantRedemption event: exchangeRate is not *big.Int")
 	}
 
 	return &models.WithdrawalRequest{
@@ -157,18 +225,18 @@ func (h *EventHandler) ParseInstantRedemption(log types.Log) (*models.Withdrawal
 		EventType:    models.EventTypeInstantRedemption,
 		Owner:        owner.Hex(),
 		Recipient:    recipient.Hex(),
-		Shares:       data.Shares.String(),
-		GrossAssets:  data.GrossAssets.String(),
-		Fee:          data.Fee.String(),
-		NetAssets:    data.NetAssets.String(),
-		ExchangeRate: data.ExchangeRate.String(),
+		Shares:       bigIntToStringPtr(shares),
+		GrossAssets:  bigIntToStringPtr(grossAssets),
+		Fee:          bigIntToStringPtr(fee),
+		NetAssets:    bigIntToStringPtr(netAssets),
+		ExchangeRate: bigIntToStringPtr(exchangeRate),
 		Status:       models.StatusCompleted,
 	}, nil
 }
 
 func (h *EventHandler) ParseRedeemRequest(log types.Log) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 4 {
-		return nil, fmt.Errorf("invalid RedeemRequest event: expected at least 4 topics")
+		return nil, fmt.Errorf("invalid RedeemRequest event: expected at least 4 topics, got %d", len(log.Topics))
 	}
 
 	controller := common.BytesToAddress(log.Topics[1].Bytes())
@@ -180,13 +248,18 @@ func (h *EventHandler) ParseRedeemRequest(log types.Log) (*models.WithdrawalRequ
 		return nil, fmt.Errorf("RedeemRequest event not found in ABI")
 	}
 
-	var data struct {
-		Sender common.Address
-		Assets *big.Int
+	unpacked, err := event.Inputs.Unpack(log.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack RedeemRequest event: %w", err)
 	}
 
-	if err := UnpackEventData(event, log.Data, &data); err != nil {
-		return nil, fmt.Errorf("failed to unpack RedeemRequest event: %w", err)
+	if len(unpacked) < 2 {
+		return nil, fmt.Errorf("invalid RedeemRequest event: expected 2 non-indexed fields, got %d", len(unpacked))
+	}
+
+	assets, ok := unpacked[1].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid RedeemRequest event: assets is not *big.Int")
 	}
 
 	reqID := requestID.Int64()
@@ -198,7 +271,7 @@ func (h *EventHandler) ParseRedeemRequest(log types.Log) (*models.WithdrawalRequ
 		EventType:      models.EventTypeRedeemRequest,
 		Owner:          owner.Hex(),
 		Recipient:      controller.Hex(),
-		AssetsExpected: data.Assets.String(),
+		AssetsExpected: bigIntToStringPtr(assets),
 		Status:         models.StatusPending,
 	}, nil
 }
@@ -227,13 +300,4 @@ func (h *EventHandler) IdentifyEventType(log types.Log) string {
 
 func (h *EventHandler) HandleLog(ctx context.Context, log types.Log) error {
 	return nil
-}
-
-// UnpackEventData unpacks the non-indexed data portion of an event log
-func UnpackEventData(event abi.Event, data []byte, v interface{}) error {
-	unpacked, err := event.Inputs.Unpack(data)
-	if err != nil {
-		return err
-	}
-	return event.Inputs.Copy(v, unpacked)
 }

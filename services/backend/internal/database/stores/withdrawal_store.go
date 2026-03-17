@@ -85,7 +85,7 @@ func (s *WithdrawalStore) GetByRequestID(ctx context.Context, requestID int64) (
 	return &wr, nil
 }
 
-func (s *WithdrawalStore) UpdateToCompleted(ctx context.Context, requestID int64, txHash string, assetsClaimed string, blockNumber int64, logIndex int) error {
+func (s *WithdrawalStore) UpdateToCompleted(ctx context.Context, requestID int64, txHash string, assetsClaimed *string, blockNumber int64, logIndex int) error {
 	query := `
 		UPDATE withdrawal_requests
 		SET 
@@ -160,6 +160,67 @@ func (s *WithdrawalStore) GetByOwner(ctx context.Context, owner string, status *
 		err = s.db.QueryRow(ctx, countBaseQuery, owner, string(*status)).Scan(&total)
 	} else {
 		err = s.db.QueryRow(ctx, countBaseQuery, owner).Scan(&total)
+	}
+	if err != nil {
+		return nil, 0, models.NewDatabaseError("count", "withdrawal_requests", err)
+	}
+
+	return withdrawals, total, nil
+}
+
+func (s *WithdrawalStore) GetByRecipient(ctx context.Context, recipient string, status *models.WithdrawalStatus, limit, offset int) ([]models.WithdrawalRequest, int64, error) {
+	baseQuery := `
+		SELECT id, request_id, tx_hash, block_number, log_index, event_type,
+			owner, recipient, shares, assets_expected, assets_claimed,
+			fee, gross_assets, net_assets, exchange_rate, status, created_at, completed_at
+		FROM withdrawal_requests
+		WHERE recipient = $1
+	`
+	countBaseQuery := `SELECT COUNT(*) FROM withdrawal_requests WHERE recipient = $1`
+
+	args := []interface{}{recipient}
+	argIndex := 2
+
+	if status != nil {
+		baseQuery += fmt.Sprintf(" AND status = $%d", argIndex)
+		countBaseQuery += fmt.Sprintf(" AND status = $%d", argIndex)
+		args = append(args, string(*status))
+		argIndex++
+	}
+
+	query := baseQuery + fmt.Sprintf(" ORDER BY block_number DESC, log_index DESC LIMIT $%d OFFSET $%d", argIndex, argIndex+1)
+	args = append(args, limit, offset)
+
+	rows, err := s.db.Query(ctx, query, args...)
+	if err != nil {
+		return nil, 0, models.NewDatabaseError("query", "withdrawal_requests", err)
+	}
+	defer rows.Close()
+
+	var withdrawals []models.WithdrawalRequest
+	for rows.Next() {
+		var wr models.WithdrawalRequest
+		err := rows.Scan(
+			&wr.ID, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
+			&wr.EventType, &wr.Owner, &wr.Recipient, &wr.Shares, &wr.AssetsExpected,
+			&wr.AssetsClaimed, &wr.Fee, &wr.GrossAssets, &wr.NetAssets, &wr.ExchangeRate,
+			&wr.Status, &wr.CreatedAt, &wr.CompletedAt,
+		)
+		if err != nil {
+			return nil, 0, models.NewDatabaseError("scan", "withdrawal_requests", err)
+		}
+		withdrawals = append(withdrawals, wr)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, models.NewDatabaseError("iterate", "withdrawal_requests", err)
+	}
+
+	var total int64
+	if status != nil {
+		err = s.db.QueryRow(ctx, countBaseQuery, recipient, string(*status)).Scan(&total)
+	} else {
+		err = s.db.QueryRow(ctx, countBaseQuery, recipient).Scan(&total)
 	}
 	if err != nil {
 		return nil, 0, models.NewDatabaseError("count", "withdrawal_requests", err)

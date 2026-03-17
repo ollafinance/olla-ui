@@ -19,9 +19,11 @@ CREATE INDEX idx_deposits_block ON deposits(block_number);
 CREATE INDEX idx_deposits_tx_hash ON deposits(tx_hash);
 
 -- Withdrawal requests (pending, claimed, and instant)
+-- Note: request_id is NOT unique because multiple events (WithdrawalRequested, RedeemRequest)
+-- can share the same request_id for the same withdrawal request
 CREATE TABLE withdrawal_requests (
     id               BIGSERIAL PRIMARY KEY,
-    request_id       BIGINT UNIQUE,
+    request_id       BIGINT,
     tx_hash          VARCHAR(66) NOT NULL,
     block_number     BIGINT NOT NULL,
     log_index        INTEGER NOT NULL,
