@@ -1,6 +1,6 @@
 {
   "source": {
-    "corePath": "../olla-core"
+    "corePath": "../../olla-core"
   },
   "output": {
     "dir": "src/generated"
