@@ -18,13 +18,14 @@ func NewDepositStore(db *pgxpool.Pool) *DepositStore {
 
 func (s *DepositStore) Insert(ctx context.Context, deposit *models.Deposit) error {
 	query := `
-		INSERT INTO deposits (tx_hash, block_number, log_index, caller, recipient, assets, shares)
-		VALUES ($1, $2, $3, $4, $5, $6, $7)
+		INSERT INTO deposits (contract, tx_hash, block_number, log_index, caller, recipient, assets, shares)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
 		ON CONFLICT (tx_hash) DO NOTHING
 		RETURNING id, created_at
 	`
 
 	err := s.db.QueryRow(ctx, query,
+		deposit.Contract,
 		deposit.TxHash,
 		deposit.BlockNumber,
 		deposit.LogIndex,
@@ -47,7 +48,7 @@ func (s *DepositStore) Insert(ctx context.Context, deposit *models.Deposit) erro
 
 func (s *DepositStore) GetByRecipient(ctx context.Context, recipient string, limit, offset int) ([]models.Deposit, int64, error) {
 	query := `
-		SELECT id, tx_hash, block_number, log_index, caller, recipient, assets, shares, created_at
+		SELECT id, contract, tx_hash, block_number, log_index, caller, recipient, assets, shares, created_at
 		FROM deposits
 		WHERE recipient = $1
 		ORDER BY block_number DESC, log_index DESC
@@ -63,7 +64,7 @@ func (s *DepositStore) GetByRecipient(ctx context.Context, recipient string, lim
 	var deposits []models.Deposit
 	for rows.Next() {
 		var d models.Deposit
-		err := rows.Scan(&d.ID, &d.TxHash, &d.BlockNumber, &d.LogIndex, &d.Caller, &d.Recipient, &d.Assets, &d.Shares, &d.CreatedAt)
+		err := rows.Scan(&d.ID, &d.Contract, &d.TxHash, &d.BlockNumber, &d.LogIndex, &d.Caller, &d.Recipient, &d.Assets, &d.Shares, &d.CreatedAt)
 		if err != nil {
 			return nil, 0, models.NewDatabaseError("scan", "deposits", err)
 		}
@@ -86,13 +87,13 @@ func (s *DepositStore) GetByRecipient(ctx context.Context, recipient string, lim
 
 func (s *DepositStore) GetByTxHash(ctx context.Context, txHash string) (*models.Deposit, error) {
 	query := `
-		SELECT id, tx_hash, block_number, log_index, caller, recipient, assets, shares, created_at
+		SELECT id, contract, tx_hash, block_number, log_index, caller, recipient, assets, shares, created_at
 		FROM deposits
 		WHERE tx_hash = $1
 	`
 
 	var d models.Deposit
-	err := s.db.QueryRow(ctx, query, txHash).Scan(&d.ID, &d.TxHash, &d.BlockNumber, &d.LogIndex, &d.Caller, &d.Recipient, &d.Assets, &d.Shares, &d.CreatedAt)
+	err := s.db.QueryRow(ctx, query, txHash).Scan(&d.ID, &d.Contract, &d.TxHash, &d.BlockNumber, &d.LogIndex, &d.Caller, &d.Recipient, &d.Assets, &d.Shares, &d.CreatedAt)
 	if err == pgx.ErrNoRows {
 		return nil, models.NewNotFoundError("deposit", txHash)
 	}

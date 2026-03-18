@@ -8,6 +8,7 @@ import (
 // Deposit represents a deposit event from the blockchain
 type Deposit struct {
 	ID          int64     `json:"id" doc:"Unique deposit ID"`
+	Contract    string    `json:"contract" doc:"Contract address that emitted this event"`
 	TxHash      string    `json:"tx_hash" doc:"Transaction hash on the blockchain"`
 	BlockNumber int64     `json:"block_number" doc:"Block number when the deposit was made"`
 	LogIndex    int       `json:"log_index" doc:"Log index within the block"`

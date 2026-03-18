@@ -63,6 +63,10 @@ func NewIndexer(
 }
 
 func (i *Indexer) Start(ctx context.Context) error {
+	if err := i.store.Contracts.Upsert(ctx, i.contractAddr.Hex(), nil); err != nil {
+		return fmt.Errorf("failed to upsert contract: %w", err)
+	}
+
 	lastBlock, err := i.store.IndexerState.GetLastBlock(ctx, i.contractAddr.Hex())
 	if err != nil {
 		log.Printf("Warning: could not get last block: %v", err)
@@ -184,7 +188,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 
 	switch eventType {
 	case "Deposit":
-		deposit, err := i.handler.ParseDeposit(vLog)
+		deposit, err := i.handler.ParseDeposit(vLog, i.contractAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse Deposit: %w", err)
 		}
@@ -194,7 +198,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed Deposit: tx=%s, recipient=%s, assets=%s", deposit.TxHash, deposit.Recipient, deposit.Assets)
 
 	case "WithdrawalRequested":
-		wr, err := i.handler.ParseWithdrawalRequested(vLog)
+		wr, err := i.handler.ParseWithdrawalRequested(vLog, i.contractAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse WithdrawalRequested: %w", err)
 		}
@@ -204,7 +208,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed WithdrawalRequested: tx=%s, requestID=%d, owner=%s", wr.TxHash, *wr.RequestID, wr.Owner)
 
 	case "WithdrawalClaimed":
-		wr, err := i.handler.ParseWithdrawalClaimed(vLog)
+		wr, err := i.handler.ParseWithdrawalClaimed(vLog, i.contractAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse WithdrawalClaimed: %w", err)
 		}
@@ -219,7 +223,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed WithdrawalClaimed: tx=%s, requestID=%d", wr.TxHash, *wr.RequestID)
 
 	case "InstantRedemption":
-		wr, err := i.handler.ParseInstantRedemption(vLog)
+		wr, err := i.handler.ParseInstantRedemption(vLog, i.contractAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse InstantRedemption: %w", err)
 		}
@@ -229,7 +233,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed InstantRedemption: tx=%s, owner=%s, netAssets=%s", wr.TxHash, wr.Owner, wr.NetAssets)
 
 	case "RedeemRequest":
-		wr, err := i.handler.ParseRedeemRequest(vLog)
+		wr, err := i.handler.ParseRedeemRequest(vLog, i.contractAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse RedeemRequest: %w", err)
 		}

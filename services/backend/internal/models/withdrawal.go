@@ -26,6 +26,7 @@ const (
 // WithdrawalRequest represents a withdrawal request from the blockchain
 type WithdrawalRequest struct {
 	ID             int64            `json:"id" doc:"Unique withdrawal ID"`
+	Contract       string           `json:"contract" doc:"Contract address that emitted this event"`
 	RequestID      *int64           `json:"request_id" doc:"Request ID from the blockchain (optional)"`
 	TxHash         string           `json:"tx_hash" doc:"Transaction hash on the blockchain"`
 	BlockNumber    int64            `json:"block_number" doc:"Block number when the event occurred"`

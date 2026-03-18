@@ -6,6 +6,7 @@ import (
 )
 
 type Store struct {
+	Contracts    *stores.ContractStore
 	Deposits     *stores.DepositStore
 	Withdrawals  *stores.WithdrawalStore
 	IndexerState *stores.IndexerStateStore
@@ -14,6 +15,7 @@ type Store struct {
 
 func NewStore(db *pgxpool.Pool) *Store {
 	return &Store{
+		Contracts:    stores.NewContractStore(db),
 		Deposits:     stores.NewDepositStore(db),
 		Withdrawals:  stores.NewWithdrawalStore(db),
 		IndexerState: stores.NewIndexerStateStore(db),

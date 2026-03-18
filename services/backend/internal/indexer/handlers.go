@@ -31,7 +31,7 @@ func bigIntToStringPtr(val *big.Int) *string {
 	return &s
 }
 
-func (h *EventHandler) ParseDeposit(log types.Log) (*models.Deposit, error) {
+func (h *EventHandler) ParseDeposit(log types.Log, contractAddr string) (*models.Deposit, error) {
 	if len(log.Topics) < 3 {
 		return nil, fmt.Errorf("invalid Deposit event: expected at least 3 topics, got %d", len(log.Topics))
 	}
@@ -64,6 +64,7 @@ func (h *EventHandler) ParseDeposit(log types.Log) (*models.Deposit, error) {
 	}
 
 	return &models.Deposit{
+		Contract:    contractAddr,
 		TxHash:      log.TxHash.Hex(),
 		BlockNumber: int64(log.BlockNumber),
 		LogIndex:    int(log.Index),
@@ -74,7 +75,7 @@ func (h *EventHandler) ParseDeposit(log types.Log) (*models.Deposit, error) {
 	}, nil
 }
 
-func (h *EventHandler) ParseWithdrawalRequested(log types.Log) (*models.WithdrawalRequest, error) {
+func (h *EventHandler) ParseWithdrawalRequested(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 4 {
 		return nil, fmt.Errorf("invalid WithdrawalRequested event: expected at least 4 topics, got %d", len(log.Topics))
 	}
@@ -114,6 +115,7 @@ func (h *EventHandler) ParseWithdrawalRequested(log types.Log) (*models.Withdraw
 
 	reqID := requestID.Int64()
 	return &models.WithdrawalRequest{
+		Contract:       contractAddr,
 		RequestID:      &reqID,
 		TxHash:         log.TxHash.Hex(),
 		BlockNumber:    int64(log.BlockNumber),
@@ -128,7 +130,7 @@ func (h *EventHandler) ParseWithdrawalRequested(log types.Log) (*models.Withdraw
 	}, nil
 }
 
-func (h *EventHandler) ParseWithdrawalClaimed(log types.Log) (*models.WithdrawalRequest, error) {
+func (h *EventHandler) ParseWithdrawalClaimed(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
 	event, ok := h.abi.Events["WithdrawalClaimed"]
 	if !ok {
 		return nil, fmt.Errorf("WithdrawalClaimed event not found in ABI")
@@ -160,6 +162,7 @@ func (h *EventHandler) ParseWithdrawalClaimed(log types.Log) (*models.Withdrawal
 
 	reqID := requestID.Int64()
 	return &models.WithdrawalRequest{
+		Contract:      contractAddr,
 		RequestID:     &reqID,
 		TxHash:        log.TxHash.Hex(),
 		BlockNumber:   int64(log.BlockNumber),
@@ -171,7 +174,7 @@ func (h *EventHandler) ParseWithdrawalClaimed(log types.Log) (*models.Withdrawal
 	}, nil
 }
 
-func (h *EventHandler) ParseInstantRedemption(log types.Log) (*models.WithdrawalRequest, error) {
+func (h *EventHandler) ParseInstantRedemption(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 3 {
 		return nil, fmt.Errorf("invalid InstantRedemption event: expected at least 3 topics, got %d", len(log.Topics))
 	}
@@ -219,6 +222,7 @@ func (h *EventHandler) ParseInstantRedemption(log types.Log) (*models.Withdrawal
 	}
 
 	return &models.WithdrawalRequest{
+		Contract:     contractAddr,
 		TxHash:       log.TxHash.Hex(),
 		BlockNumber:  int64(log.BlockNumber),
 		LogIndex:     int(log.Index),
@@ -234,7 +238,7 @@ func (h *EventHandler) ParseInstantRedemption(log types.Log) (*models.Withdrawal
 	}, nil
 }
 
-func (h *EventHandler) ParseRedeemRequest(log types.Log) (*models.WithdrawalRequest, error) {
+func (h *EventHandler) ParseRedeemRequest(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 4 {
 		return nil, fmt.Errorf("invalid RedeemRequest event: expected at least 4 topics, got %d", len(log.Topics))
 	}
@@ -264,6 +268,7 @@ func (h *EventHandler) ParseRedeemRequest(log types.Log) (*models.WithdrawalRequ
 
 	reqID := requestID.Int64()
 	return &models.WithdrawalRequest{
+		Contract:       contractAddr,
 		RequestID:      &reqID,
 		TxHash:         log.TxHash.Hex(),
 		BlockNumber:    int64(log.BlockNumber),

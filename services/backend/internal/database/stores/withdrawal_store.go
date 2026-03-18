@@ -20,16 +20,17 @@ func NewWithdrawalStore(db *pgxpool.Pool) *WithdrawalStore {
 func (s *WithdrawalStore) Insert(ctx context.Context, wr *models.WithdrawalRequest) error {
 	query := `
 		INSERT INTO withdrawal_requests (
-			request_id, tx_hash, block_number, log_index, event_type,
+			contract, request_id, tx_hash, block_number, log_index, event_type,
 			owner, recipient, shares, assets_expected, assets_claimed,
 			fee, gross_assets, net_assets, exchange_rate, status
 		)
-		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 		ON CONFLICT (tx_hash, log_index) DO NOTHING
 		RETURNING id, created_at
 	`
 
 	err := s.db.QueryRow(ctx, query,
+		wr.Contract,
 		wr.RequestID,
 		wr.TxHash,
 		wr.BlockNumber,
@@ -60,7 +61,7 @@ func (s *WithdrawalStore) Insert(ctx context.Context, wr *models.WithdrawalReque
 
 func (s *WithdrawalStore) GetByRequestID(ctx context.Context, requestID int64) (*models.WithdrawalRequest, error) {
 	query := `
-		SELECT id, request_id, tx_hash, block_number, log_index, event_type,
+		SELECT id, contract, request_id, tx_hash, block_number, log_index, event_type,
 			owner, recipient, shares, assets_expected, assets_claimed,
 			fee, gross_assets, net_assets, exchange_rate, status, created_at, completed_at
 		FROM withdrawal_requests
@@ -69,7 +70,7 @@ func (s *WithdrawalStore) GetByRequestID(ctx context.Context, requestID int64) (
 
 	var wr models.WithdrawalRequest
 	err := s.db.QueryRow(ctx, query, requestID).Scan(
-		&wr.ID, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
+		&wr.ID, &wr.Contract, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
 		&wr.EventType, &wr.Owner, &wr.Recipient, &wr.Shares, &wr.AssetsExpected,
 		&wr.AssetsClaimed, &wr.Fee, &wr.GrossAssets, &wr.NetAssets, &wr.ExchangeRate,
 		&wr.Status, &wr.CreatedAt, &wr.CompletedAt,
@@ -109,7 +110,7 @@ func (s *WithdrawalStore) UpdateToCompleted(ctx context.Context, requestID int64
 
 func (s *WithdrawalStore) GetByOwner(ctx context.Context, owner string, status *models.WithdrawalStatus, limit, offset int) ([]models.WithdrawalRequest, int64, error) {
 	baseQuery := `
-		SELECT id, request_id, tx_hash, block_number, log_index, event_type,
+		SELECT id, contract, request_id, tx_hash, block_number, log_index, event_type,
 			owner, recipient, shares, assets_expected, assets_claimed,
 			fee, gross_assets, net_assets, exchange_rate, status, created_at, completed_at
 		FROM withdrawal_requests
@@ -140,7 +141,7 @@ func (s *WithdrawalStore) GetByOwner(ctx context.Context, owner string, status *
 	for rows.Next() {
 		var wr models.WithdrawalRequest
 		err := rows.Scan(
-			&wr.ID, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
+			&wr.ID, &wr.Contract, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
 			&wr.EventType, &wr.Owner, &wr.Recipient, &wr.Shares, &wr.AssetsExpected,
 			&wr.AssetsClaimed, &wr.Fee, &wr.GrossAssets, &wr.NetAssets, &wr.ExchangeRate,
 			&wr.Status, &wr.CreatedAt, &wr.CompletedAt,
@@ -170,7 +171,7 @@ func (s *WithdrawalStore) GetByOwner(ctx context.Context, owner string, status *
 
 func (s *WithdrawalStore) GetByRecipient(ctx context.Context, recipient string, status *models.WithdrawalStatus, limit, offset int) ([]models.WithdrawalRequest, int64, error) {
 	baseQuery := `
-		SELECT id, request_id, tx_hash, block_number, log_index, event_type,
+		SELECT id, contract, request_id, tx_hash, block_number, log_index, event_type,
 			owner, recipient, shares, assets_expected, assets_claimed,
 			fee, gross_assets, net_assets, exchange_rate, status, created_at, completed_at
 		FROM withdrawal_requests
@@ -201,7 +202,7 @@ func (s *WithdrawalStore) GetByRecipient(ctx context.Context, recipient string, 
 	for rows.Next() {
 		var wr models.WithdrawalRequest
 		err := rows.Scan(
-			&wr.ID, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
+			&wr.ID, &wr.Contract, &wr.RequestID, &wr.TxHash, &wr.BlockNumber, &wr.LogIndex,
 			&wr.EventType, &wr.Owner, &wr.Recipient, &wr.Shares, &wr.AssetsExpected,
 			&wr.AssetsClaimed, &wr.Fee, &wr.GrossAssets, &wr.NetAssets, &wr.ExchangeRate,
 			&wr.Status, &wr.CreatedAt, &wr.CompletedAt,
