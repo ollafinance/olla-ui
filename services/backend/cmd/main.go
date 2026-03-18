@@ -86,6 +86,21 @@ func main() {
 func setupRouter(store *database.Store) *gin.Engine {
 	router := gin.Default()
 
+	// CORS middleware - allow all origins (handled by envoy gateway in k8s)
+	router.Use(func(c *gin.Context) {
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+		c.Writer.Header().Set("Access-Control-Allow-Credentials", "true")
+		c.Writer.Header().Set("Access-Control-Allow-Headers", "Content-Type, Content-Length, Accept-Encoding, X-CSRF-Token, Authorization, accept, origin, Cache-Control, X-Requested-With")
+		c.Writer.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE, PATCH")
+
+		if c.Request.Method == "OPTIONS" {
+			c.AbortWithStatus(204)
+			return
+		}
+
+		c.Next()
+	})
+
 	// Create main Huma API
 	apiConfig := huma.DefaultConfig("Olla Indexer API", "1.0.0")
 	apiConfig.OpenAPI.Info.Description = "API for the Olla liquid staking indexer service"
