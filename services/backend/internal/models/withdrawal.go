@@ -9,10 +9,9 @@ import (
 type EventType string
 
 const (
-	EventTypeWithdrawalRequested EventType = "withdrawal_requested"
-	EventTypeWithdrawalClaimed   EventType = "withdrawal_claimed"
-	EventTypeInstantRedemption   EventType = "instant_redemption"
-	EventTypeRedeemRequest       EventType = "redeem_request"
+	EventTypeWithdrawalClaimed EventType = "withdrawal_claimed"
+	EventTypeInstantRedemption EventType = "instant_redemption"
+	EventTypeRedeemRequest     EventType = "redeem_request"
 )
 
 // WithdrawalStatus represents the status of a withdrawal request

@@ -159,13 +159,12 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 
 func (i *Indexer) getLogs(ctx context.Context, fromBlock, toBlock int64) ([]types.Log, error) {
 	topics := make([][]common.Hash, 1)
-	topics[0] = make([]common.Hash, 5)
+	topics[0] = make([]common.Hash, 4)
 	sigs := GetEventSignatures()
 	topics[0][0] = common.HexToHash(sigs.Deposit)
-	topics[0][1] = common.HexToHash(sigs.WithdrawalRequested)
-	topics[0][2] = common.HexToHash(sigs.WithdrawalClaimed)
-	topics[0][3] = common.HexToHash(sigs.InstantRedemption)
-	topics[0][4] = common.HexToHash(sigs.RedeemRequest)
+	topics[0][1] = common.HexToHash(sigs.WithdrawalClaimed)
+	topics[0][2] = common.HexToHash(sigs.InstantRedemption)
+	topics[0][3] = common.HexToHash(sigs.RedeemRequest)
 
 	logs, err := i.client.FilterLogs(ctx, ethereum.FilterQuery{
 		Addresses: []common.Address{i.contractAddr},
@@ -196,16 +195,6 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 			return fmt.Errorf("failed to insert Deposit: %w", err)
 		}
 		log.Printf("Indexed Deposit: tx=%s, recipient=%s, assets=%s", deposit.TxHash, deposit.Recipient, deposit.Assets)
-
-	case "WithdrawalRequested":
-		wr, err := i.handler.ParseWithdrawalRequested(vLog, i.contractAddr.Hex())
-		if err != nil {
-			return fmt.Errorf("failed to parse WithdrawalRequested: %w", err)
-		}
-		if err := i.store.Withdrawals.Insert(ctx, wr); err != nil {
-			return fmt.Errorf("failed to insert WithdrawalRequested: %w", err)
-		}
-		log.Printf("Indexed WithdrawalRequested: tx=%s, requestID=%d, owner=%s", wr.TxHash, *wr.RequestID, wr.Owner)
 
 	case "WithdrawalClaimed":
 		wr, err := i.handler.ParseWithdrawalClaimed(vLog, i.contractAddr.Hex())

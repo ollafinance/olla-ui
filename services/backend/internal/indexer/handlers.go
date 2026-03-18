@@ -75,61 +75,6 @@ func (h *EventHandler) ParseDeposit(log types.Log, contractAddr string) (*models
 	}, nil
 }
 
-func (h *EventHandler) ParseWithdrawalRequested(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
-	if len(log.Topics) < 4 {
-		return nil, fmt.Errorf("invalid WithdrawalRequested event: expected at least 4 topics, got %d", len(log.Topics))
-	}
-
-	requestID := new(big.Int).SetBytes(log.Topics[1].Bytes())
-	owner := common.BytesToAddress(log.Topics[2].Bytes())
-	recipient := common.BytesToAddress(log.Topics[3].Bytes())
-
-	event, ok := h.abi.Events["WithdrawalRequested"]
-	if !ok {
-		return nil, fmt.Errorf("WithdrawalRequested event not found in ABI")
-	}
-
-	unpacked, err := event.Inputs.Unpack(log.Data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unpack WithdrawalRequested event: %w", err)
-	}
-
-	if len(unpacked) < 3 {
-		return nil, fmt.Errorf("invalid WithdrawalRequested event: expected 3 non-indexed fields, got %d", len(unpacked))
-	}
-
-	shares, ok := unpacked[0].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid WithdrawalRequested event: shares is %T, expected *big.Int", unpacked[0])
-	}
-
-	assetsExpected, ok := unpacked[1].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid WithdrawalRequested event: assetsExpected is %T, expected *big.Int", unpacked[1])
-	}
-
-	exchangeRate, ok := unpacked[2].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid WithdrawalRequested event: exchangeRate is %T, expected *big.Int", unpacked[2])
-	}
-
-	reqID := requestID.Int64()
-	return &models.WithdrawalRequest{
-		Contract:       contractAddr,
-		RequestID:      &reqID,
-		TxHash:         log.TxHash.Hex(),
-		BlockNumber:    int64(log.BlockNumber),
-		LogIndex:       int(log.Index),
-		EventType:      models.EventTypeWithdrawalRequested,
-		Owner:          owner.Hex(),
-		Recipient:      recipient.Hex(),
-		Shares:         bigIntToStringPtr(shares),
-		AssetsExpected: bigIntToStringPtr(assetsExpected),
-		ExchangeRate:   bigIntToStringPtr(exchangeRate),
-		Status:         models.StatusPending,
-	}, nil
-}
-
 func (h *EventHandler) ParseWithdrawalClaimed(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
 	event, ok := h.abi.Events["WithdrawalClaimed"]
 	if !ok {
@@ -290,8 +235,6 @@ func (h *EventHandler) IdentifyEventType(log types.Log) string {
 	switch {
 	case h.signatures.IsDeposit(topicHash):
 		return "Deposit"
-	case h.signatures.IsWithdrawalRequested(topicHash):
-		return "WithdrawalRequested"
 	case h.signatures.IsWithdrawalClaimed(topicHash):
 		return "WithdrawalClaimed"
 	case h.signatures.IsInstantRedemption(topicHash):

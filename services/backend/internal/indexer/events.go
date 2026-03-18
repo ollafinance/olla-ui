@@ -12,11 +12,10 @@ import (
 )
 
 type EventSignatures struct {
-	Deposit             string
-	WithdrawalRequested string
-	WithdrawalClaimed   string
-	InstantRedemption   string
-	RedeemRequest       string
+	Deposit           string
+	WithdrawalClaimed string
+	InstantRedemption string
+	RedeemRequest     string
 }
 
 func LoadABI(path string) (*abi.ABI, error) {
@@ -58,20 +57,15 @@ func LoadABIFromRelativePath() (*abi.ABI, string, error) {
 
 func GetEventSignatures() *EventSignatures {
 	return &EventSignatures{
-		Deposit:             crypto.Keccak256Hash([]byte("Deposit(address,address,uint256,uint256)")).Hex(),
-		WithdrawalRequested: crypto.Keccak256Hash([]byte("WithdrawalRequested(uint256,address,address,uint256,uint256,uint256)")).Hex(),
-		WithdrawalClaimed:   crypto.Keccak256Hash([]byte("WithdrawalClaimed(uint256,address,uint256)")).Hex(),
-		InstantRedemption:   crypto.Keccak256Hash([]byte("InstantRedemption(address,address,uint256,uint256,uint256,uint256,uint256)")).Hex(),
-		RedeemRequest:       crypto.Keccak256Hash([]byte("RedeemRequest(address,address,uint256,address,uint256)")).Hex(),
+		Deposit:           crypto.Keccak256Hash([]byte("Deposit(address,address,uint256,uint256)")).Hex(),
+		WithdrawalClaimed: crypto.Keccak256Hash([]byte("WithdrawalClaimed(uint256,address,uint256)")).Hex(),
+		InstantRedemption: crypto.Keccak256Hash([]byte("InstantRedemption(address,address,uint256,uint256,uint256,uint256,uint256)")).Hex(),
+		RedeemRequest:     crypto.Keccak256Hash([]byte("RedeemRequest(address,address,uint256,address,uint256)")).Hex(),
 	}
 }
 
 func (s *EventSignatures) IsDeposit(topic string) bool {
 	return strings.EqualFold(s.Deposit, topic)
-}
-
-func (s *EventSignatures) IsWithdrawalRequested(topic string) bool {
-	return strings.EqualFold(s.WithdrawalRequested, topic)
 }
 
 func (s *EventSignatures) IsWithdrawalClaimed(topic string) bool {
