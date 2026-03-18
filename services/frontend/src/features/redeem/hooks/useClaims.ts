@@ -127,6 +127,63 @@ export function useClaims() {
     });
   }, []);
 
+  // Fetch RPC state for ALL active requests to determine real-time status
+  // This includes both indexed and non-indexed active requests
+  const activeRequestContracts = useMemo(() => {
+    return activeRequestIds.map((id) => ({
+      address: CONTRACTS.WithdrawalQueue.address,
+      abi: CONTRACTS.WithdrawalQueue.abi,
+      functionName: "getRequest",
+      args: [id],
+    }));
+  }, [activeRequestIds]);
+
+  const {
+    data: activeRequestDetailsData,
+    isLoading: isLoadingActiveRequests,
+    error: activeRequestsError,
+    refetch: refetchActiveRequests,
+  } = useReadContracts({
+    contracts: activeRequestContracts,
+    query: {
+      enabled: activeRequestContracts.length > 0,
+      refetchInterval: CLAIMS_REFRESH_INTERVAL_MS,
+    },
+  });
+
+  // Create a map of requestId -> RPC state for quick lookup
+  const activeRequestStateMap = useMemo(() => {
+    const map = new Map<
+      number,
+      { finalized: boolean; claimed: boolean; shares: bigint; assetsExpected: bigint }
+    >();
+
+    if (!activeRequestDetailsData) return map;
+
+    activeRequestDetailsData.forEach((result, index) => {
+      if (!result.result) return;
+
+      const requestId = Number(activeRequestIds[index]);
+      const request = result.result as {
+        recipient: `0x${string}`;
+        finalized: boolean;
+        claimed: boolean;
+        shares: bigint;
+        assetsExpected: bigint;
+        rate: bigint;
+      };
+
+      map.set(requestId, {
+        finalized: request.finalized,
+        claimed: request.claimed,
+        shares: request.shares,
+        assetsExpected: request.assetsExpected,
+      });
+    });
+
+    return map;
+  }, [activeRequestDetailsData, activeRequestIds]);
+
   // Group indexed withdrawals by request_id for deduplication
   // For each request_id, pick the most relevant event:
   // - withdrawal_requested: initial request (has shares)
@@ -210,17 +267,27 @@ export function useClaims() {
 
       // Determine if this request is still active (in activeRequestIds from RPC)
       const isActive = activeRequestIds.some((id) => Number(id) === requestId);
+      
+      // Get real-time state from RPC if available
+      const rpcState = activeRequestStateMap.get(requestId);
 
       // Determine final status
-      // If in activeRequestIds, check if finalized via RPC
-      // Otherwise, it's completed/claimed
+      // Priority: RPC state > indexer state
       let status: ClaimStatus;
       if (!isActive) {
         // Not in active list - it's been completed
         status = "claimed";
+      } else if (rpcState) {
+        // Active and we have RPC state - check if finalized
+        if (rpcState.claimed) {
+          status = "claimed";
+        } else if (rpcState.finalized) {
+          status = "ready";
+        } else {
+          status = "processing";
+        }
       } else {
-        // Still active - could be processing or ready
-        // For now assume processing, RPC data will override if available
+        // Active but no RPC state yet - assume processing
         status = "processing";
       }
 
@@ -279,6 +346,7 @@ export function useClaims() {
   }, [
     groupedIndexedWithdrawals,
     activeRequestIds,
+    activeRequestStateMap,
     stAztecToUsd,
     calculateDaysLeft,
     formatRelativeDate,
@@ -289,67 +357,36 @@ export function useClaims() {
     return new Set(indexedClaims.filter((c) => !c.isInstant).map((claim) => claim.id));
   }, [indexedClaims]);
 
-  // Fetch request details for active requests NOT in indexer
-  // This handles very recent requests not yet indexed, or overrides indexer status
+  // Find active requests NOT in indexer (need to fetch separately)
   const missingActiveRequestIds = useMemo(() => {
     return activeRequestIds.filter((id) => !indexedRequestIds.has(Number(id)));
   }, [activeRequestIds, indexedRequestIds]);
 
-  const requestDetailsContracts = useMemo(() => {
-    return missingActiveRequestIds.map((id) => ({
-      address: CONTRACTS.WithdrawalQueue.address,
-      abi: CONTRACTS.WithdrawalQueue.abi,
-      functionName: "getRequest",
-      args: [id],
-    }));
-  }, [missingActiveRequestIds]);
-
-  const {
-    data: requestDetailsData,
-    isLoading: isLoadingRequests,
-    error: requestsError,
-    refetch: refetchRequests,
-  } = useReadContracts({
-    contracts: requestDetailsContracts,
-    query: {
-      enabled: requestDetailsContracts.length > 0,
-      refetchInterval: CLAIMS_REFRESH_INTERVAL_MS,
-    },
-  });
-
   // Transform RPC-only withdrawal data (for requests not in indexer yet)
+  // Uses the activeRequestStateMap which already contains all active request states
   const rpcOnlyClaims: ClaimItemData[] = useMemo(() => {
-    if (!requestDetailsData || requestDetailsData.length === 0) return [];
+    if (missingActiveRequestIds.length === 0) return [];
 
-    return requestDetailsData
-      .map((result, index) => {
-        if (!result.result) return null;
-
-        const requestId = missingActiveRequestIds[index];
-        const request = result.result as {
-          recipient: `0x${string}`;
-          finalized: boolean;
-          claimed: boolean;
-          shares: bigint;
-          assetsExpected: bigint;
-          rate: bigint;
-        };
+    return missingActiveRequestIds
+      .map((requestId) => {
+        const rpcState = activeRequestStateMap.get(Number(requestId));
+        if (!rpcState) return null;
 
         const eventInfo = eventData.get(requestId);
 
         // Determine status from RPC (real-time)
         let status: ClaimStatus;
-        if (request.claimed) {
+        if (rpcState.claimed) {
           status = "claimed";
-        } else if (request.finalized) {
+        } else if (rpcState.finalized) {
           status = "ready";
         } else {
           status = "processing";
         }
 
         // Calculate amounts
-        const sharesFormatted = formatEther(request.shares);
-        const assetsFormatted = formatEther(request.assetsExpected);
+        const sharesFormatted = formatEther(rpcState.shares);
+        const assetsFormatted = formatEther(rpcState.assetsExpected);
         const usdValue = stAztecToUsd(sharesFormatted);
 
         // Calculate days left for processing requests
@@ -368,18 +405,18 @@ export function useClaims() {
           usdValue,
           daysLeft,
           claimedDate,
-          shares: request.shares,
-          assetsExpected: request.assetsExpected,
+          shares: rpcState.shares,
+          assetsExpected: rpcState.assetsExpected,
           requestedAt: eventInfo?.requestedAt,
-          finalized: request.finalized,
-          claimed: request.claimed,
+          finalized: rpcState.finalized,
+          claimed: rpcState.claimed,
           isInstant: false,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null) as ClaimItemData[];
   }, [
-    requestDetailsData,
     missingActiveRequestIds,
+    activeRequestStateMap,
     eventData,
     stAztecToUsd,
     calculateDaysLeft,
@@ -468,15 +505,15 @@ export function useClaims() {
 
   // Manual refetch function
   const refetch = useCallback(() => {
-    refetchRequests();
+    refetchActiveRequests();
     refetchEvents();
     refetchInstantEvents();
-  }, [refetchRequests, refetchEvents, refetchInstantEvents]);
+  }, [refetchActiveRequests, refetchEvents, refetchInstantEvents]);
 
   // Determine loading and error states
   const isLoading =
-    isLoadingIndexed || isLoadingRequests || isLoadingEvents || isLoadingInstantEvents;
-  const error = indexerError || requestsError || eventsError || instantEventsError;
+    isLoadingIndexed || isLoadingActiveRequests || isLoadingEvents || isLoadingInstantEvents;
+  const error = indexerError || activeRequestsError || eventsError || instantEventsError;
 
   // Track when initial load completes (regardless of success/error)
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
