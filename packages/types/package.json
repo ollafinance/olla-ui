@@ -25,6 +25,10 @@
     "./contracts": {
       "types": "./src/constants/contracts.ts",
       "default": "./src/constants/contracts.ts"
+    },
+    "./schema": {
+      "types": "./src/generated/schema.ts",
+      "default": "./src/generated/schema.ts"
     }
   },
   "scripts": {

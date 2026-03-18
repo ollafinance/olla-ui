@@ -18,7 +18,7 @@ export const ActionButton = forwardRef<HTMLButtonElement, ActionButtonProps>(
       <button
         ref={ref}
         className={cn(
-          "bg-[#232323] hover:bg-[#2a2a2a] flex items-center justify-center rounded-full transition-colors duration-200",
+          "flex items-center justify-center rounded-full bg-[#232323] transition-colors duration-200 hover:bg-[#2a2a2a]",
           sizes[size],
           className
         )}
