@@ -1145,6 +1145,7 @@ __metadata:
   dependencies:
     "@eslint/js": "npm:^9.39.1"
     "@lottiefiles/react-lottie-player": "npm:^3.6.0"
+    "@olla-ui/types": "workspace:*"
     "@rainbow-me/rainbowkit": "file:local-packages/rainbow-me-rainbowkit-2.2.10.tgz"
     "@tailwindcss/vite": "npm:^4.1.18"
     "@tanstack/react-query": "npm:^5.90.19"
@@ -1184,7 +1185,7 @@ __metadata:
   languageName: unknown
   linkType: soft
 
-"@olla-ui/types@workspace:packages/types":
+"@olla-ui/types@workspace:*, @olla-ui/types@workspace:packages/types":
   version: 0.0.0-use.local
   resolution: "@olla-ui/types@workspace:packages/types"
   dependencies:
