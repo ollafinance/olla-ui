@@ -8,7 +8,7 @@ import {
   usePublicClient,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
-import { readContract } from "wagmi/actions";
+import { readContract, writeContract, waitForTransactionReceipt } from "wagmi/actions";
 import { CONTRACTS } from "@/constants/contracts";
 import { PROTOCOL_CONSTANTS, applySlippage, CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import {
@@ -97,21 +97,13 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
   }, [isInstantRedeemConfirmed, refetchStAztecNonce, options]);
 
   const instantRedeem = async (amount: string) => {
-    if (!address || !stAztecDomain || stAztecNonce === undefined) return;
-
-    const domain = extractDomainParams(stAztecDomain as Eip712DomainTuple);
+    if (!address) return;
 
     try {
       setIsSigning(true);
       setTimeoutError(null);
 
-      const { data: currentNonce } = await refetchStAztecNonce();
-      if (currentNonce === undefined || currentNonce === null)
-        throw new Error("Could not fetch nonce");
-
       const value = parseEther(amount);
-      const block = await publicClient!.getBlock();
-      const deadline = block.timestamp + BigInt(PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
 
       // Get expected assets and apply slippage
       const expectedAssets = await readContract(config, {
@@ -128,39 +120,93 @@ export function useInstantRedeem(options: UseInstantRedeemOptions = {}) {
         PROTOCOL_CONSTANTS.SLIPPAGE_TOLERANCE_BP
       );
 
-      const signature = await mutateAsync({
-        domain: {
-          name: domain.name,
-          version: domain.version,
-          chainId: Number(domain.chainId),
-          verifyingContract: domain.verifyingContract,
-        },
-        types: {
-          Permit: PERMIT_TYPES,
-        },
-        primaryType: "Permit",
-        message: buildPermitMessage(
-          address,
-          CONTRACTS.OllaVault.address,
-          value,
-          currentNonce as bigint,
-          deadline
-        ),
-      });
+      const canUsePermit = !!stAztecDomain && stAztecNonce !== undefined;
 
-      const { v, r, s } = parseSignature(signature);
+      if (canUsePermit) {
+        const domain = extractDomainParams(stAztecDomain as Eip712DomainTuple);
+        const block = await publicClient!.getBlock();
+        const deadline = block.timestamp + BigInt(PROTOCOL_CONSTANTS.DEADLINE_SECONDS);
+
+        const { data: currentNonce } = await refetchStAztecNonce();
+        if (currentNonce === undefined || currentNonce === null)
+          throw new Error("Could not fetch nonce");
+
+        const signature = await mutateAsync({
+          domain: {
+            name: domain.name,
+            version: domain.version,
+            chainId: Number(domain.chainId),
+            verifyingContract: domain.verifyingContract,
+          },
+          types: {
+            Permit: PERMIT_TYPES,
+          },
+          primaryType: "Permit",
+          message: buildPermitMessage(
+            address,
+            CONTRACTS.OllaVault.address,
+            value,
+            currentNonce as bigint,
+            deadline
+          ),
+        });
+
+        const { v, r, s } = parseSignature(signature);
+
+        instantRedeemMutate(
+          {
+            address: CONTRACTS.OllaVault.address,
+            abi: CONTRACTS.OllaVault.abi,
+            functionName: "instantRedeemWithPermit",
+            args: [value, address, minAssetsOut, deadline, Number(v), r, s],
+          },
+          {
+            onSuccess: () => {
+              setIsSigning(false);
+              timeoutRef.current = setTimeout(() => {
+                setTimeoutError(
+                  new Error(
+                    "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+                  )
+                );
+              }, CONFIRMATION_TIMEOUT_MS);
+              options.onSuccess?.();
+            },
+            onError: () => setIsSigning(false),
+          }
+        );
+
+        return;
+      }
+
+      const currentAllowance = (await readContract(config, {
+        address: CONTRACTS.StAztec.address,
+        abi: CONTRACTS.StAztec.abi,
+        functionName: "allowance",
+        args: [address, CONTRACTS.OllaVault.address],
+      })) as bigint;
+
+      if (currentAllowance < value) {
+        const approveHash = await writeContract(config, {
+          address: CONTRACTS.StAztec.address,
+          abi: CONTRACTS.StAztec.abi,
+          functionName: "approve",
+          args: [CONTRACTS.OllaVault.address, value],
+        });
+
+        await waitForTransactionReceipt(config, { hash: approveHash });
+      }
 
       instantRedeemMutate(
         {
           address: CONTRACTS.OllaVault.address,
           abi: CONTRACTS.OllaVault.abi,
-          functionName: "instantRedeemWithPermit",
-          args: [value, address, minAssetsOut, deadline, Number(v), r, s],
+          functionName: "instantRedeem",
+          args: [value, address, minAssetsOut],
         },
         {
           onSuccess: () => {
             setIsSigning(false);
-            // Start timeout for confirmation
             timeoutRef.current = setTimeout(() => {
               setTimeoutError(
                 new Error(

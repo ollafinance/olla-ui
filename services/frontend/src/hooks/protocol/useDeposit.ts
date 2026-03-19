@@ -8,7 +8,7 @@ import {
   usePublicClient,
 } from "wagmi";
 import { parseEther, parseSignature } from "viem";
-import { readContract } from "wagmi/actions";
+import { readContract, writeContract, waitForTransactionReceipt } from "wagmi/actions";
 import { CONTRACTS } from "@/constants/contracts";
 import { PROTOCOL_CONSTANTS, applySlippage, CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
 import {
@@ -97,19 +97,13 @@ export function useDeposit(options: UseDepositOptions = {}) {
   }, [isDepositConfirmed, refetchNonce, options]);
 
   const deposit = async (amount: string) => {
-    if (!address || !assetDomain || nonce === undefined) {
+    if (!address) {
       return;
     }
-
-    const domain = extractDomainParams(assetDomain as Eip712DomainTuple);
 
     try {
       setIsSigning(true);
       setTimeoutError(null);
-
-      const { data: currentNonce } = await refetchNonce();
-      if (currentNonce === undefined || currentNonce === null)
-        throw new Error("Could not fetch nonce");
 
       const value = parseEther(amount);
       const block = await publicClient!.getBlock();
@@ -128,49 +122,102 @@ export function useDeposit(options: UseDepositOptions = {}) {
         PROTOCOL_CONSTANTS.SLIPPAGE_TOLERANCE_BP
       );
 
-      const signature = await mutateAsync({
-        domain: {
-          name: domain.name,
-          version: domain.version,
-          chainId: Number(domain.chainId),
-          verifyingContract: domain.verifyingContract,
-        },
-        types: {
-          Permit: PERMIT_TYPES,
-        },
-        primaryType: "Permit",
-        message: buildPermitMessage(
-          address,
-          CONTRACTS.OllaVault.address,
-          value,
-          currentNonce as bigint,
-          deadline
-        ),
-      });
+      const canUsePermit = !!assetDomain && nonce !== undefined;
 
-      const { v, r, s } = parseSignature(signature);
+      if (canUsePermit) {
+        const domain = extractDomainParams(assetDomain as Eip712DomainTuple);
 
-      const args = [value, address, minSharesOut, deadline, Number(v), r, s];
+        const { data: currentNonce } = await refetchNonce();
+        if (currentNonce === undefined || currentNonce === null)
+          throw new Error("Could not fetch nonce");
+
+        const signature = await mutateAsync({
+          domain: {
+            name: domain.name,
+            version: domain.version,
+            chainId: Number(domain.chainId),
+            verifyingContract: domain.verifyingContract,
+          },
+          types: {
+            Permit: PERMIT_TYPES,
+          },
+          primaryType: "Permit",
+          message: buildPermitMessage(
+            address,
+            CONTRACTS.OllaVault.address,
+            value,
+            currentNonce as bigint,
+            deadline
+          ),
+        });
+
+        const { v, r, s } = parseSignature(signature);
+        const args = [value, address, minSharesOut, deadline, Number(v), r, s];
+
+        depositMutate(
+          {
+            address: CONTRACTS.OllaVault.address,
+            abi: CONTRACTS.OllaVault.abi,
+            functionName: "depositWithPermit",
+            args: args as [
+              bigint,
+              `0x${string}`,
+              bigint,
+              bigint,
+              number,
+              `0x${string}`,
+              `0x${string}`,
+            ],
+          },
+          {
+            onSuccess: () => {
+              setIsSigning(false);
+              timeoutRef.current = setTimeout(() => {
+                setTimeoutError(
+                  new Error(
+                    "Transaction confirmation timed out. The transaction may have been reverted or stuck."
+                  )
+                );
+              }, CONFIRMATION_TIMEOUT_MS);
+              options.onSuccess?.();
+            },
+            onError: () => {
+              setIsSigning(false);
+            },
+          }
+        );
+
+        return;
+      }
+
+      const currentAllowance = (await readContract(config, {
+        address: CONTRACTS.Asset.address,
+        abi: CONTRACTS.Asset.abi,
+        functionName: "allowance",
+        args: [address, CONTRACTS.OllaVault.address],
+      })) as bigint;
+
+      if (currentAllowance < value) {
+        const approveHash = await writeContract(config, {
+          address: CONTRACTS.Asset.address,
+          abi: CONTRACTS.Asset.abi,
+          functionName: "approve",
+          args: [CONTRACTS.OllaVault.address, value],
+        });
+
+        await waitForTransactionReceipt(config, { hash: approveHash });
+      }
 
       depositMutate(
         {
           address: CONTRACTS.OllaVault.address,
           abi: CONTRACTS.OllaVault.abi,
-          functionName: "depositWithPermit",
-          args: args as [
-            bigint,
-            `0x${string}`,
-            bigint,
-            bigint,
-            number,
-            `0x${string}`,
-            `0x${string}`,
-          ],
+          functionName: "deposit",
+          args: [value, address, minSharesOut],
         },
         {
           onSuccess: () => {
             setIsSigning(false);
-            // Start timeout for confirmation
             timeoutRef.current = setTimeout(() => {
               setTimeoutError(
                 new Error(
