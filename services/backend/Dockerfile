@@ -9,7 +9,7 @@ COPY go.mod go.sum ./
 RUN go mod download
 
 # Install tern migration tool
-RUN go install github.com/jackc/tern/v2/cmd/tern@v2.2.5
+RUN go install github.com/jackc/tern/v2@v2.2.3
 
 COPY . .
 
