@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: olla-ui
-  namespace: olla-prod
   labels:
     app: olla-ui
     app.kubernetes.io/name: olla-ui
@@ -21,7 +20,7 @@ spec:
         - name: olla-containers
       containers:
         - name: olla-ui
-          image: registry.digitalocean.com/olla-containers/olla-ui:testnet-latest
+          image: registry.digitalocean.com/olla-containers/olla-ui
           imagePullPolicy: Always
           ports:
             - name: http

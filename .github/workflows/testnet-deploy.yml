@@ -1,4 +1,4 @@
-name: CI/CD Olla UI Testnet
+name: CI/CD Olla Testnet
 
 on:
   push:
@@ -6,7 +6,6 @@ on:
 
 env:
   REGISTRY: registry.digitalocean.com/olla-containers
-  IMAGE_NAME: olla-ui
   CLUSTER_NAME: aztecscan-prod
 
 jobs:
@@ -52,7 +51,7 @@ jobs:
       - name: Log in to DigitalOcean Container Registry
         run: tools/doctl registry login --expiry-seconds 1200
 
-  build-and-push:
+  build-frontend:
     runs-on: ubuntu-latest
     needs: set-up
 
@@ -85,15 +84,15 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/olla-ui
           tags: |
             type=sha,prefix=testnet-
             type=raw,value=testnet-latest
 
-      - name: Build and push Docker image
+      - name: Build and push frontend Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: services/frontend/
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
@@ -101,14 +100,62 @@ jobs:
             VITE_CONTRACTS_ENV=sepolia
             VITE_RPC_URL_SEPOLIA=${{ secrets.VITE_RPC_URL_SEPOLIA }}
             VITE_WALLET_CONNECT_PROJECT_ID=${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,scope=frontend,mode=max
+
+  build-backend:
+    runs-on: ubuntu-latest
+    needs: set-up
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Log in to DigitalOcean Container Registry
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl registry login --expiry-seconds 1200
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/olla-indexer
+          tags: |
+            type=sha,prefix=testnet-
+            type=raw,value=testnet-latest
+
+      - name: Build and push backend Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: services/backend/
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
 
   deploy:
     runs-on: ubuntu-latest
     needs:
       - set-up
-      - build-and-push
+      - build-frontend
+      - build-backend
 
     steps:
       - name: Checkout Repository
@@ -134,18 +181,34 @@ jobs:
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
 
-      - name: Deploy to cluster
+      - name: Inject olla-secrets
         run: |
-          echo "Applying infrastructure manifests..."
-          kubectl apply -k k8s/infra/
+          kubectl create secret generic olla-secrets \
+            --from-literal=rpc-url="${{ secrets.RPC_URL_SEPOLIA }}" \
+            --namespace olla-prod \
+            --dry-run=client -o yaml | kubectl apply -f -
 
-          echo "Applying testnet manifests..."
-          kubectl apply -k k8s/testnet/
+      - name: Deploy frontend
+        run: |
+          echo "Applying frontend testnet manifests..."
+          kubectl apply -k services/frontend/k8s/overlays/testnet/
 
-          echo "Restarting deployment to pick up new image..."
+          echo "Restarting frontend deployment..."
           kubectl rollout restart deployment/olla-ui -n olla-prod
 
-          echo "Waiting for rollout to complete..."
+          echo "Waiting for frontend rollout..."
           kubectl rollout status deployment/olla-ui -n olla-prod --timeout=300s
 
-          echo "Deployment successful!"
+      - name: Deploy backend
+        run: |
+          echo "Applying backend testnet manifests..."
+          kubectl apply -k services/backend/k8s/overlays/testnet/
+
+          echo "Restarting backend deployment..."
+          kubectl rollout restart deployment/olla-indexer -n olla-prod
+
+          echo "Waiting for backend rollout..."
+          kubectl rollout status deployment/olla-indexer -n olla-prod --timeout=300s
+
+      - name: Deployment complete
+        run: echo "Testnet deployment successful!"

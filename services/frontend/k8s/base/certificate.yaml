@@ -2,7 +2,6 @@ apiVersion: cert-manager.io/v1
 kind: Certificate
 metadata:
   name: olla-ui-tls
-  namespace: olla-prod
 spec:
   dnsNames:
     - demo.olla.finance

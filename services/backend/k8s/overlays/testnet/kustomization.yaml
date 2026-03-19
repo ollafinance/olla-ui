@@ -1,0 +1,23 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: olla-prod
+
+resources:
+  - ../../base
+
+images:
+  - name: registry.digitalocean.com/olla-containers/olla-indexer
+    newTag: testnet-latest
+
+patches:
+  - patch: |-
+      - op: replace
+        path: /spec/template/spec/initContainers/0/env/2/value
+        value: olla_indexer_testnet
+      - op: replace
+        path: /spec/template/spec/containers/0/env/2/value
+        value: olla_indexer_testnet
+    target:
+      kind: Deployment
+      name: olla-indexer
