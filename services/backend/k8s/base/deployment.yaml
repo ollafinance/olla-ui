@@ -61,6 +61,12 @@ spec:
                 secretKeyRef:
                   name: olla-secrets-env
                   key: rpc-url
+            - name: CONTRACTS_ENV
+              value: "local"
+            - name: POLL_INTERVAL
+              value: "10s"
+            - name: START_BLOCK
+              value: "-1"
             - name: PORT
               value: "8080"
             - name: LOG_LEVEL

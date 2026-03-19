@@ -12,15 +12,27 @@ images:
 
 patches:
   - patch: |-
-      - op: replace
-        path: /spec/template/spec/initContainers/0/env/2/value
-        value: olla_indexer_testnet
-      - op: replace
-        path: /spec/template/spec/containers/0/env/2/value
-        value: olla_indexer_testnet
-      - op: replace
-        path: /spec/template/spec/containers/0/env/6/valueFrom/secretKeyRef/name
-        value: olla-secrets-testnet
-    target:
+      apiVersion: apps/v1
       kind: Deployment
-      name: olla-indexer
+      metadata:
+        name: olla-indexer
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: run-migrations
+                env:
+                  - name: POSTGRES_DB_NAME
+                    value: olla_indexer_testnet
+            containers:
+              - name: olla-indexer
+                env:
+                  - name: POSTGRES_DB_NAME
+                    value: olla_indexer_testnet
+                  - name: CONTRACTS_ENV
+                    value: sepolia
+                  - name: RPC_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: olla-secrets-testnet
+                        key: rpc-url
