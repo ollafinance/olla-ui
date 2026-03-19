@@ -36,3 +36,7 @@ patches:
                       secretKeyRef:
                         name: olla-secrets-testnet
                         key: rpc-url
+                  - name: CONTRACTS_ENV
+                    value: "sepolia"
+                  - name: START_BLOCK
+                    value: "10457986
