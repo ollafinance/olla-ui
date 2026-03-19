@@ -27,3 +27,21 @@ spec:
       allowedRoutes:
         namespaces:
           from: Same
+    - name: olla-indexer-http
+      hostname: api.demo.olla.finance
+      port: 80
+      protocol: HTTP
+      allowedRoutes:
+        namespaces:
+          from: Same
+    - name: olla-indexer-https
+      hostname: api.demo.olla.finance
+      port: 443
+      protocol: HTTPS
+      tls:
+        mode: Terminate
+        certificateRefs:
+          - name: olla-indexer-tls
+      allowedRoutes:
+        namespaces:
+          from: Same
