@@ -132,7 +132,7 @@ jobs:
 
       - name: Inject olla-secrets
         run: |
-          kubectl create secret generic olla-secrets \
+          kubectl create secret generic olla-secrets-testnet \
             --from-literal=rpc-url="${{ secrets.RPC_URL_SEPOLIA }}" \
             --namespace olla-prod \
             --dry-run=client -o yaml | kubectl apply -f -

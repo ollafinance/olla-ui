@@ -18,6 +18,9 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/2/value
         value: olla_indexer_testnet
+      - op: replace
+        path: /spec/template/spec/containers/0/env/6/valueFrom/secretKeyRef/name
+        value: olla-secrets-testnet
     target:
       kind: Deployment
       name: olla-indexer
