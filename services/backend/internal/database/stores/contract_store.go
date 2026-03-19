@@ -2,6 +2,7 @@ package stores
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -48,7 +49,7 @@ func (s *ContractStore) GetByVersion(ctx context.Context, version int) (*models.
 		&c.ID, &c.Address, &c.Version, &c.DeployedAtBlock, &c.FirstIndexedAt, &c.Notes,
 	)
 	if err == pgx.ErrNoRows {
-		return nil, models.NewNotFoundError("contract", string(rune(version)))
+		return nil, models.NewNotFoundError("contract", strconv.Itoa(version))
 	}
 	if err != nil {
 		return nil, models.NewDatabaseError("query", "contracts", err)

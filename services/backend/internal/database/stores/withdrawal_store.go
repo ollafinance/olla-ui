@@ -66,6 +66,8 @@ func (s *WithdrawalStore) GetByRequestID(ctx context.Context, requestID int64) (
 			fee, gross_assets, net_assets, exchange_rate, status, created_at, completed_at
 		FROM withdrawal_requests
 		WHERE request_id = $1
+		ORDER BY block_number DESC, log_index DESC
+		LIMIT 1
 	`
 
 	var wr models.WithdrawalRequest

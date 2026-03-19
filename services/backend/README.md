@@ -20,7 +20,7 @@ A Go-based indexer service for the Olla liquid staking protocol. Indexes Ethereu
 
 ## Prerequisites
 
-- Go 1.22+
+- Go 1.25+
 - PostgreSQL 14+
 - Ethereum RPC endpoint
 
