@@ -1,12 +1,13 @@
-name: CI/CD Olla UI Testnet
+name: CI/CD Olla Testnet — Backend
 
 on:
   push:
     branches: [testnet]
+    paths:
+      - 'services/backend/**'
 
 env:
   REGISTRY: registry.digitalocean.com/olla-containers
-  IMAGE_NAME: olla-ui
   CLUSTER_NAME: aztecscan-prod
 
 jobs:
@@ -52,7 +53,7 @@ jobs:
       - name: Log in to DigitalOcean Container Registry
         run: tools/doctl registry login --expiry-seconds 1200
 
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
     needs: set-up
 
@@ -85,7 +86,7 @@ jobs:
         id: meta
         uses: docker/metadata-action@v5
         with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          images: ${{ env.REGISTRY }}/olla-indexer
           tags: |
             type=sha,prefix=testnet-
             type=raw,value=testnet-latest
@@ -93,22 +94,17 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
+          context: services/backend/
           push: true
           tags: ${{ steps.meta.outputs.tags }}
-          build-args: |
-            VITE_APP_ENV=production
-            VITE_CONTRACTS_ENV=sepolia
-            VITE_RPC_URL_SEPOLIA=${{ secrets.VITE_RPC_URL_SEPOLIA }}
-            VITE_WALLET_CONNECT_PROJECT_ID=${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
 
   deploy:
     runs-on: ubuntu-latest
     needs:
       - set-up
-      - build-and-push
+      - build
 
     steps:
       - name: Checkout Repository
@@ -134,18 +130,18 @@ jobs:
       - name: Save DigitalOcean kubeconfig
         run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
 
-      - name: Deploy to cluster
+      - name: Inject olla-secrets
         run: |
-          echo "Applying infrastructure manifests..."
-          kubectl apply -k k8s/infra/
+          kubectl create secret generic olla-secrets-testnet \
+            --from-literal=rpc-url="${{ secrets.RPC_URL_SEPOLIA }}" \
+            --namespace olla-prod \
+            --dry-run=client -o yaml | kubectl apply -f -
 
-          echo "Applying testnet manifests..."
-          kubectl apply -k k8s/testnet/
+      - name: Apply manifests
+        run: kubectl apply -k services/backend/k8s/overlays/testnet/
 
-          echo "Restarting deployment to pick up new image..."
-          kubectl rollout restart deployment/olla-ui -n olla-prod
+      - name: Restart deployment
+        run: kubectl rollout restart deployment/olla-indexer -n olla-prod
 
-          echo "Waiting for rollout to complete..."
-          kubectl rollout status deployment/olla-ui -n olla-prod --timeout=300s
-
-          echo "Deployment successful!"
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/olla-indexer -n olla-prod --timeout=300s

@@ -2,7 +2,6 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: olla-indexer
-  namespace: olla-prod
   labels:
     app: olla-indexer
     app.kubernetes.io/name: olla-indexer
@@ -19,9 +18,26 @@ spec:
     spec:
       imagePullSecrets:
         - name: olla-containers
+      initContainers:
+        - name: run-migrations
+          image: registry.digitalocean.com/olla-containers/olla-indexer
+          command: ["./tern", "migrate", "--config", "tern.conf"]
+          env:
+            - name: POSTGRES_HOST
+              value: "postgresql"
+            - name: POSTGRES_PORT
+              value: "5432"
+            - name: POSTGRES_DB_NAME
+              value: "olla_indexer"
+            - name: POSTGRES_USER
+              value: "admin"
+            - name: POSTGRES_PASSWORD
+              value: "secret-local-password"
+            - name: POSTGRES_SSL_ENABLED
+              value: "disable"
       containers:
         - name: olla-indexer
-          image: registry.digitalocean.com/olla-containers/olla-indexer:testnet-latest
+          image: registry.digitalocean.com/olla-containers/olla-indexer
           imagePullPolicy: Always
           ports:
             - name: http
@@ -33,21 +49,24 @@ spec:
             - name: POSTGRES_PORT
               value: "5432"
             - name: POSTGRES_DB_NAME
-              value: "olla_indexer_testnet"
+              value: "olla_indexer"
             - name: POSTGRES_USER
               value: "admin"
             - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: postgres-auth
-                  key: password
+              value: "secret-local-password"
             - name: POSTGRES_SSL_ENABLED
               value: "disable"
             - name: RPC_URL
               valueFrom:
                 secretKeyRef:
-                  name: olla-secrets
+                  name: olla-secrets-env
                   key: rpc-url
+            - name: CONTRACTS_ENV
+              value: "local"
+            - name: POLL_INTERVAL
+              value: "10s"
+            - name: START_BLOCK
+              value: "-1"
             - name: PORT
               value: "8080"
             - name: LOG_LEVEL
