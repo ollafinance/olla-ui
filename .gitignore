@@ -66,3 +66,6 @@ postgres_data/
 # Backend generated docs (except swagger.yaml for type generation)
 services/backend/docs/docs.go
 services/backend/docs/swagger.json
+
+# Backend deployments (copied from packages/types at build time)
+services/backend/deployments/

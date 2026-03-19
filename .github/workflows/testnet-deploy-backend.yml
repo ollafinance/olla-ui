@@ -91,6 +91,9 @@ jobs:
             type=sha,prefix=testnet-
             type=raw,value=testnet-latest
 
+      - name: Copy deployment JSONs into backend build context
+        run: cp -r packages/types/src/generated/deployments services/backend/deployments
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
