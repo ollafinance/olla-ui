@@ -186,7 +186,6 @@ export function useClaims() {
 
   // Group indexed withdrawals by request_id for deduplication
   // For each request_id, pick the most relevant event:
-  // - withdrawal_requested: initial request (has shares)
   // - redeem_request: user initiated claim
   // - withdrawal_claimed: completed
   const groupedIndexedWithdrawals = useMemo(() => {
@@ -255,14 +254,11 @@ export function useClaims() {
       // For regular withdrawals, find the best event to represent this request
       const requestId = Number(key);
 
-      // Find withdrawal_requested event (has shares info)
-      const requestedEvent = withdrawals.find((w) => w.event_type === "withdrawal_requested");
-
       // Find redeem_request event
       const redeemEvent = withdrawals.find((w) => w.event_type === "redeem_request");
 
-      // Use requested event as base, or fallback to any event
-      const baseEvent = requestedEvent ?? redeemEvent ?? withdrawals[0];
+      // Use redeem event as base, or fallback to any event
+      const baseEvent = redeemEvent ?? withdrawals[0];
       if (!baseEvent) continue;
 
       // Determine if this request is still active (in activeRequestIds from RPC)
@@ -302,18 +298,12 @@ export function useClaims() {
         ? Math.floor(new Date(baseEvent.completed_at).getTime() / 1000)
         : undefined;
 
-      // Calculate amounts from requested event (has shares/assets_expected)
-      const shares = requestedEvent?.shares
-        ? BigInt(requestedEvent.shares)
-        : baseEvent.shares
-          ? BigInt(baseEvent.shares)
-          : 0n;
+      // Calculate amounts from base event
+      const shares = baseEvent.shares ? BigInt(baseEvent.shares) : 0n;
 
-      const assetsExpected = requestedEvent?.assets_expected
-        ? BigInt(requestedEvent.assets_expected)
-        : baseEvent.assets_expected
-          ? BigInt(baseEvent.assets_expected)
-          : 0n;
+      const assetsExpected = baseEvent.assets_expected
+        ? BigInt(baseEvent.assets_expected)
+        : 0n;
 
       const sharesFormatted = formatEther(shares);
       const assetsFormatted = formatEther(assetsExpected);
@@ -424,43 +414,40 @@ export function useClaims() {
   ]);
 
   // Transform instant redemption events to ClaimItemData[]
-  // Only use RPC events if indexer didn't capture them
+  // Note: RPC instant redemption events are used as fallback when indexer is not available.
+  // Since we cannot reliably de-duplicate against indexed events without a shared identifier
+  // (e.g., tx_hash + log_index), we display all RPC events. The indexer is the source of truth.
   const instantClaimsFromRpc: ClaimItemData[] = useMemo(() => {
     if (!instantRedemptionEvents || instantRedemptionEvents.length === 0) return [];
 
-    // Filter out instant redemptions already captured by indexer
-    const indexedInstantIds = new Set(indexedClaims.filter((c) => c.isInstant).map((c) => -c.id));
+    return instantRedemptionEvents.map((event, index) => {
+      // Calculate amounts
+      const sharesFormatted = formatEther(event.shares);
+      const netAssetsFormatted = formatEther(event.netAssets);
+      const usdValue = stAztecToUsd(sharesFormatted);
 
-    return instantRedemptionEvents
-      .filter((_, index) => !indexedInstantIds.has(-(index + 1)))
-      .map((event, index) => {
-        // Calculate amounts
-        const sharesFormatted = formatEther(event.shares);
-        const netAssetsFormatted = formatEther(event.netAssets);
-        const usdValue = stAztecToUsd(sharesFormatted);
+      // Format completion date
+      const completedDate = formatRelativeDate(event.timestamp);
 
-        // Format completion date
-        const completedDate = formatRelativeDate(event.timestamp);
+      // Generate a unique ID for instant redemptions (use negative numbers to avoid conflicts)
+      const id = -1 * (index + 1);
 
-        // Generate a unique ID for instant redemptions (use negative numbers to avoid conflicts)
-        const id = -1 * (index + 1);
-
-        return {
-          id,
-          amount: netAssetsFormatted,
-          status: "instant",
-          claimType: "instant",
-          usdValue,
-          claimedDate: completedDate,
-          shares: event.shares,
-          assetsExpected: event.netAssets,
-          requestedAt: event.timestamp,
-          finalized: true,
-          claimed: true,
-          isInstant: true,
-        };
-      });
-  }, [instantRedemptionEvents, indexedClaims, stAztecToUsd, formatRelativeDate]);
+      return {
+        id,
+        amount: netAssetsFormatted,
+        status: "instant",
+        claimType: "instant",
+        usdValue,
+        claimedDate: completedDate,
+        shares: event.shares,
+        assetsExpected: event.netAssets,
+        requestedAt: event.timestamp,
+        finalized: true,
+        claimed: true,
+        isInstant: true,
+      };
+    });
+  }, [instantRedemptionEvents, stAztecToUsd, formatRelativeDate]);
 
   // Combine all claims: indexed + RPC-only + instant from RPC (fallback)
   const allClaims = useMemo(() => {

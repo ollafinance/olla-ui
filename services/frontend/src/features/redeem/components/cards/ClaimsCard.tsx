@@ -25,9 +25,6 @@ export function ClaimsCard({
   claimingRequestId,
   claimHash,
 }: ClaimsCardProps) {
-  // Debug: Log claims received
-  console.log(`[ClaimsCard] Received ${claims.length} claims`, { hasInitiallyLoaded, isLoading });
-
   return (
     <div className="bg-card-claims rounded-card flex min-h-[348px] w-full flex-1 flex-col px-4 pt-[28px] pb-4 lg:min-h-0 lg:flex-1">
       <p className="text-card-claims-foreground mb-4 shrink-0 text-[21.33px] leading-[1.16] font-medium">
