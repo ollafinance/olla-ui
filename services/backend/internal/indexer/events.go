@@ -33,9 +33,9 @@ func LoadABI(path string) (*abi.ABI, error) {
 }
 
 func LoadABIFromRelativePath() (*abi.ABI, string, error) {
+	// From services/backend, ../../ goes to repo root
 	paths := []string{
-		filepath.Join("../../../", "packages/types/src/generated/abis/OllaVault.json"),
-		filepath.Join("/Users/mauro/Dev/Olla/olla-ui/packages/types/src/generated/abis/OllaVault.json"),
+		filepath.Join("../../", "packages/types/src/generated/abis/OllaVault.json"),
 	}
 
 	if customPath := os.Getenv("ABI_PATH"); customPath != "" {

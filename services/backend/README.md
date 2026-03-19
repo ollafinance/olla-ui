@@ -11,16 +11,16 @@ A Go-based indexer service for the Olla liquid staking protocol. Indexes Ethereu
 
 ## Events Indexed
 
-| Event | Description |
-|-------|-------------|
-| `Deposit` | User stakes assets into the vault |
-| `WithdrawalRequested` | User initiates a pending withdrawal |
-| `WithdrawalClaimed` | User claims a pending withdrawal |
-| `InstantRedemption` | User performs instant withdrawal with fee |
+| Event                 | Description                               |
+| --------------------- | ----------------------------------------- |
+| `Deposit`             | User stakes assets into the vault         |
+| `WithdrawalRequested` | User initiates a pending withdrawal       |
+| `WithdrawalClaimed`   | User claims a pending withdrawal          |
+| `InstantRedemption`   | User performs instant withdrawal with fee |
 
 ## Prerequisites
 
-- Go 1.22+
+- Go 1.25+
 - PostgreSQL 14+
 - Ethereum RPC endpoint
 
@@ -28,30 +28,31 @@ A Go-based indexer service for the Olla liquid staking protocol. Indexes Ethereu
 
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|----------|----------|---------|-------------|
-| `POSTGRES_HOST` | No | `localhost` | PostgreSQL host |
-| `POSTGRES_PORT` | No | `5432` | PostgreSQL port |
-| `POSTGRES_DB_NAME` | No | `olla_indexer_testnet` | Database name |
-| `POSTGRES_USER` | No | `admin` | Database user |
-| `POSTGRES_PASSWORD` | Yes | - | Database password |
-| `POSTGRES_SSL_ENABLED` | No | `disable` | SSL mode (`disable`/`require`) |
-| `RPC_URL` | Yes | - | Ethereum RPC endpoint |
-| `CONTRACTS_ENV` | No | `local` | Deployment environment (`local`/`sepolia`/`mainnet`) |
-| `POLL_INTERVAL` | No | `10s` | Interval between blockchain polls |
-| `START_BLOCK` | No | `-1` | Starting block (see below) |
-| `PORT` | No | `8080` | API server port |
-| `LOG_LEVEL` | No | `info` | Log level (`debug`/`info`/`warn`/`error`) |
+| Variable               | Required | Default                | Description                                          |
+| ---------------------- | -------- | ---------------------- | ---------------------------------------------------- |
+| `POSTGRES_HOST`        | No       | `localhost`            | PostgreSQL host                                      |
+| `POSTGRES_PORT`        | No       | `5432`                 | PostgreSQL port                                      |
+| `POSTGRES_DB_NAME`     | No       | `olla_indexer_testnet` | Database name                                        |
+| `POSTGRES_USER`        | No       | `admin`                | Database user                                        |
+| `POSTGRES_PASSWORD`    | Yes      | -                      | Database password                                    |
+| `POSTGRES_SSL_ENABLED` | No       | `disable`              | SSL mode (`disable`/`require`)                       |
+| `RPC_URL`              | Yes      | -                      | Ethereum RPC endpoint                                |
+| `CONTRACTS_ENV`        | No       | `local`                | Deployment environment (`local`/`sepolia`/`mainnet`) |
+| `POLL_INTERVAL`        | No       | `10s`                  | Interval between blockchain polls                    |
+| `START_BLOCK`          | No       | `-1`                   | Starting block (see below)                           |
+| `PORT`                 | No       | `8080`                 | API server port                                      |
+| `LOG_LEVEL`            | No       | `info`                 | Log level (`debug`/`info`/`warn`/`error`)            |
 
 ### START_BLOCK Behavior
 
-| Value | Behavior |
-|-------|----------|
-| `-1` | Use `updatedAtBlock` from deployment JSON (recommended for existing deployments) |
-| `0` | Start from the latest block (only index new events going forward) |
-| `>0` | Start from a specific block number (useful for historical indexing) |
+| Value | Behavior                                                                         |
+| ----- | -------------------------------------------------------------------------------- |
+| `-1`  | Use `updatedAtBlock` from deployment JSON (recommended for existing deployments) |
+| `0`   | Start from the latest block (only index new events going forward)                |
+| `>0`  | Start from a specific block number (useful for historical indexing)              |
 
 **Examples:**
+
 - New deployment with no history: `START_BLOCK=0`
 - Existing deployment on sepolia: `START_BLOCK=-1` (will use block from deployment JSON)
 - Historical backfill: `START_BLOCK=10000000`
@@ -60,11 +61,11 @@ A Go-based indexer service for the Olla liquid staking protocol. Indexes Ethereu
 
 The `CONTRACTS_ENV` variable selects which contract address to use:
 
-| Value | Network | Contract Address |
-|-------|---------|------------------|
-| `local` | Local testnet (port 8545) | From `packages/types/src/generated/deployments/local.json` |
-| `sepolia` | Sepolia testnet | From `packages/types/src/generated/deployments/sepolia.json` |
-| `mainnet` | Ethereum mainnet | From `packages/types/src/generated/deployments/mainnet.json` (not yet available) |
+| Value     | Network                   | Contract Address                                                                 |
+| --------- | ------------------------- | -------------------------------------------------------------------------------- |
+| `local`   | Local testnet (port 8545) | From `packages/types/src/generated/deployments/local.json`                       |
+| `sepolia` | Sepolia testnet           | From `packages/types/src/generated/deployments/sepolia.json`                     |
+| `mainnet` | Ethereum mainnet          | From `packages/types/src/generated/deployments/mainnet.json` (not yet available) |
 
 ## Quick Start
 
@@ -100,6 +101,7 @@ make run
 ```
 
 The service will:
+
 1. Start the API server on `:8080`
 2. Start the indexer as a background goroutine
 3. Begin polling for events from the configured starting block
@@ -113,6 +115,7 @@ GET /health
 ```
 
 Response:
+
 ```json
 {
   "status": "healthy"
@@ -126,10 +129,12 @@ GET /api/v1/deposits/:address
 ```
 
 Query Parameters:
+
 - `limit` (optional): Max results (default: 100)
 - `offset` (optional): Pagination offset (default: 0)
 
 Response:
+
 ```json
 {
   "deposits": [
@@ -156,11 +161,13 @@ GET /api/v1/withdrawals/:address
 ```
 
 Query Parameters:
+
 - `status` (optional): Filter by status (`pending`/`completed`)
 - `limit` (optional): Max results (default: 100)
 - `offset` (optional): Pagination offset (default: 0)
 
 Response:
+
 ```json
 {
   "withdrawals": [
@@ -239,49 +246,49 @@ make migrate-create NAME=add_new_table
 
 ### deposits
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | BIGSERIAL | Primary key |
-| `tx_hash` | VARCHAR(66) | Transaction hash (unique) |
-| `block_number` | BIGINT | Block number |
-| `log_index` | INTEGER | Log index in block |
-| `caller` | VARCHAR(42) | Address that initiated deposit |
-| `recipient` | VARCHAR(42) | Address receiving shares |
-| `assets` | NUMERIC(78,0) | Amount of assets deposited |
-| `shares` | NUMERIC(78,0) | Amount of shares minted |
-| `created_at` | TIMESTAMP | Record creation time |
+| Column         | Type          | Description                    |
+| -------------- | ------------- | ------------------------------ |
+| `id`           | BIGSERIAL     | Primary key                    |
+| `tx_hash`      | VARCHAR(66)   | Transaction hash (unique)      |
+| `block_number` | BIGINT        | Block number                   |
+| `log_index`    | INTEGER       | Log index in block             |
+| `caller`       | VARCHAR(42)   | Address that initiated deposit |
+| `recipient`    | VARCHAR(42)   | Address receiving shares       |
+| `assets`       | NUMERIC(78,0) | Amount of assets deposited     |
+| `shares`       | NUMERIC(78,0) | Amount of shares minted        |
+| `created_at`   | TIMESTAMP     | Record creation time           |
 
 ### withdrawal_requests
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | BIGSERIAL | Primary key |
-| `request_id` | BIGINT | Request ID (unique, may be NULL for instant) |
-| `tx_hash` | VARCHAR(66) | Transaction hash |
-| `block_number` | BIGINT | Block number |
-| `log_index` | INTEGER | Log index in block |
-| `event_type` | VARCHAR(30) | Event type |
-| `owner` | VARCHAR(42) | Owner address |
-| `recipient` | VARCHAR(42) | Recipient address |
-| `shares` | NUMERIC(78,0) | Shares amount |
-| `assets_expected` | NUMERIC(78,0) | Expected assets |
-| `assets_claimed` | NUMERIC(78,0) | Actual assets claimed |
-| `fee` | NUMERIC(78,0) | Fee (for instant) |
-| `gross_assets` | NUMERIC(78,0) | Gross assets (for instant) |
-| `net_assets` | NUMERIC(78,0) | Net assets (for instant) |
-| `exchange_rate` | NUMERIC(78,0) | Exchange rate at event time |
-| `status` | VARCHAR(20) | Status (`pending`/`completed`) |
-| `created_at` | TIMESTAMP | Record creation time |
-| `completed_at` | TIMESTAMP | Completion time |
+| Column            | Type          | Description                                  |
+| ----------------- | ------------- | -------------------------------------------- |
+| `id`              | BIGSERIAL     | Primary key                                  |
+| `request_id`      | BIGINT        | Request ID (unique, may be NULL for instant) |
+| `tx_hash`         | VARCHAR(66)   | Transaction hash                             |
+| `block_number`    | BIGINT        | Block number                                 |
+| `log_index`       | INTEGER       | Log index in block                           |
+| `event_type`      | VARCHAR(30)   | Event type                                   |
+| `owner`           | VARCHAR(42)   | Owner address                                |
+| `recipient`       | VARCHAR(42)   | Recipient address                            |
+| `shares`          | NUMERIC(78,0) | Shares amount                                |
+| `assets_expected` | NUMERIC(78,0) | Expected assets                              |
+| `assets_claimed`  | NUMERIC(78,0) | Actual assets claimed                        |
+| `fee`             | NUMERIC(78,0) | Fee (for instant)                            |
+| `gross_assets`    | NUMERIC(78,0) | Gross assets (for instant)                   |
+| `net_assets`      | NUMERIC(78,0) | Net assets (for instant)                     |
+| `exchange_rate`   | NUMERIC(78,0) | Exchange rate at event time                  |
+| `status`          | VARCHAR(20)   | Status (`pending`/`completed`)               |
+| `created_at`      | TIMESTAMP     | Record creation time                         |
+| `completed_at`    | TIMESTAMP     | Completion time                              |
 
 ### indexer_state
 
-| Column | Type | Description |
-|--------|------|-------------|
-| `id` | SERIAL | Primary key |
-| `contract` | VARCHAR(42) | Contract address (unique) |
-| `last_block` | BIGINT | Last processed block |
-| `updated_at` | TIMESTAMP | Last update time |
+| Column       | Type        | Description               |
+| ------------ | ----------- | ------------------------- |
+| `id`         | SERIAL      | Primary key               |
+| `contract`   | VARCHAR(42) | Contract address (unique) |
+| `last_block` | BIGINT      | Last processed block      |
+| `updated_at` | TIMESTAMP   | Last update time          |
 
 ## Deployment
 
@@ -299,3 +306,4 @@ See `k8s/` directory for Kubernetes manifests.
 ## License
 
 Proprietary - Olla Finance
+

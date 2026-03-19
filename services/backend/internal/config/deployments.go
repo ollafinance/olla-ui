@@ -25,11 +25,15 @@ type DeploymentStatus struct {
 }
 
 func LoadDeployment(env string) (*Deployment, error) {
-	// Try relative path from backend directory
+	// Try relative path from backend directory or custom path from env
+	// From services/backend, ../../ goes to repo root
 	paths := []string{
-		filepath.Join("../../../", "packages/types/src/generated/deployments", env+".json"),
-		filepath.Join("/Users/mauro/Dev/Olla/olla-ui/packages/types/src/generated/deployments", env+".json"),
-		filepath.Join(os.Getenv("DEPLOYMENTS_PATH"), env+".json"),
+		filepath.Join("../../", "packages/types/src/generated/deployments", env+".json"),
+	}
+
+	// Add custom path from env if set
+	if customPath := os.Getenv("DEPLOYMENTS_PATH"); customPath != "" {
+		paths = append([]string{filepath.Join(customPath, env+".json")}, paths...)
 	}
 
 	var lastErr error

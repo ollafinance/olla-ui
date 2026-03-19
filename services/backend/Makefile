@@ -14,7 +14,7 @@ migrate-up:
 		--database "$${POSTGRES_DB_NAME}" \
 		--user "$${POSTGRES_USER}" \
 		--password "$${POSTGRES_PASSWORD}" \
-		--sslmode disable \
+		--sslmode "$${POSTGRES_SSL_ENABLED:-disable}" \
 		--migrations ./migrations
 
 migrate-down:
@@ -26,7 +26,7 @@ migrate-down:
 		--database "$${POSTGRES_DB_NAME}" \
 		--user "$${POSTGRES_USER}" \
 		--password "$${POSTGRES_PASSWORD}" \
-		--sslmode disable \
+		--sslmode "$${POSTGRES_SSL_ENABLED:-disable}" \
 		--migrations ./migrations
 
 migrate-create:

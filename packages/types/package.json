@@ -32,7 +32,7 @@
     }
   },
   "scripts": {
-    "generate": "curl -s http://localhost:8080/openapi.json -o src/generated/openapi.json && openapi-typescript src/generated/openapi.json -o src/generated/schema.ts",
+    "generate": "openapi-typescript src/generated/openapi.json -o src/generated/schema.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },

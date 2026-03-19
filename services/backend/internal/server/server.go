@@ -2,6 +2,8 @@ package server
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -39,22 +41,34 @@ func (s *Server) Shutdown(ctx context.Context) error {
 	return s.httpServer.Shutdown(ctx)
 }
 
+// RunWithGracefulShutdown starts the server and handles graceful shutdown.
+// Returns an error if the server fails to start or shutdown.
 func (s *Server) RunWithGracefulShutdown() error {
+	// Channel to capture server errors
+	serverErr := make(chan error, 1)
+
 	go func() {
-		if err := s.Start(); err != nil && err != http.ErrServerClosed {
-			log.Fatal("Failed to start server:", err)
+		if err := s.Start(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+			serverErr <- fmt.Errorf("failed to start server: %w", err)
 		}
 	}()
 
+	// Wait for interrupt signal or server error
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	<-quit
+
+	select {
+	case err := <-serverErr:
+		return err
+	case <-quit:
+		// Graceful shutdown initiated
+	}
 
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
 	if err := s.Shutdown(ctx); err != nil {
-		log.Fatal("Server forced to shutdown:", err)
+		return fmt.Errorf("server forced to shutdown: %w", err)
 	}
 
 	log.Println("Server exited")

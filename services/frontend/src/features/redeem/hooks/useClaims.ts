@@ -267,7 +267,7 @@ export function useClaims() {
 
       // Determine if this request is still active (in activeRequestIds from RPC)
       const isActive = activeRequestIds.some((id) => Number(id) === requestId);
-      
+
       // Get real-time state from RPC if available
       const rpcState = activeRequestStateMap.get(requestId);
 

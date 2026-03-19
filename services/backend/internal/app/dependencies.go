@@ -109,9 +109,7 @@ func (d *Dependencies) Close() {
 	if d.Indexer != nil {
 		d.Indexer.Stop()
 	}
-	if d.Store != nil {
-		d.Store.Close()
-	}
+	// Close DB only (Store uses the same pool, so we don't close it separately)
 	if d.DB != nil {
 		d.DB.Close()
 	}
