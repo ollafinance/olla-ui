@@ -21,7 +21,7 @@ spec:
       initContainers:
         - name: run-migrations
           image: registry.digitalocean.com/olla-containers/olla-indexer
-          command: ["./tern", "migrate", "--config", "tern.conf"]
+          command: ["./tern", "migrate", "--config", "tern.conf", "--migrations", "migrations"]
           env:
             - name: POSTGRES_HOST
               value: "postgresql"
