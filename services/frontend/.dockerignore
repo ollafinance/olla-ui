@@ -39,3 +39,10 @@ coverage
 README.md
 AGENTS.md
 *.md
+
+# Monorepo: exclude non-frontend directories from build context
+services/backend/
+k8s/
+.github/
+docker-compose.yml
+Makefile

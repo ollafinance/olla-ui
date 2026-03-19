@@ -24,27 +24,27 @@ RUN corepack enable
 
 WORKDIR /app
 
-# Copy package files
+# Copy monorepo root package files (yarn.lock and .yarnrc.yml live at repo root)
 COPY package.json yarn.lock .yarnrc.yml ./
-COPY local-packages/ ./local-packages/
+
+# Copy workspace packages needed by the frontend
+COPY packages/ ./packages/
+COPY services/frontend/ ./services/frontend/
 
 # Install dependencies
 RUN yarn install --immutable
 
-# Copy source code
-COPY . .
-
-# Build the application
-RUN yarn build
+# Build the frontend workspace
+RUN yarn workspace @olla-ui/frontend build
 
 # Production stage - serve with nginx
 FROM nginx:alpine AS production
 
 # Copy built assets from builder
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /app/services/frontend/dist /usr/share/nginx/html
 
 # Copy nginx configuration for SPA routing
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY services/frontend/nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80
 EXPOSE 80
