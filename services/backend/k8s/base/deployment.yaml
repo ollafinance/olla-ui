@@ -32,7 +32,10 @@ spec:
             - name: POSTGRES_USER
               value: "admin"
             - name: POSTGRES_PASSWORD
-              value: "secret-local-password"
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: password
             - name: POSTGRES_SSL_ENABLED
               value: "disable"
       containers:
@@ -53,13 +56,16 @@ spec:
             - name: POSTGRES_USER
               value: "admin"
             - name: POSTGRES_PASSWORD
-              value: "secret-local-password"
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-auth
+                  key: password
             - name: POSTGRES_SSL_ENABLED
               value: "disable"
             - name: RPC_URL
               valueFrom:
                 secretKeyRef:
-                  name: olla-secrets-env
+                  name: olla-secrets-testnet
                   key: rpc-url
             - name: CONTRACTS_ENV
               value: "local"
