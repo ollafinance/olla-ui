@@ -219,7 +219,11 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		if err := i.store.Withdrawals.Insert(ctx, wr); err != nil {
 			return fmt.Errorf("failed to insert InstantRedemption: %w", err)
 		}
-		log.Printf("Indexed InstantRedemption: tx=%s, owner=%s, netAssets=%s", wr.TxHash, wr.Owner, wr.NetAssets)
+		netAssetsStr := "<nil>"
+		if wr.NetAssets != nil {
+			netAssetsStr = *wr.NetAssets
+		}
+		log.Printf("Indexed InstantRedemption: tx=%s, owner=%s, netAssets=%s", wr.TxHash, wr.Owner, netAssetsStr)
 
 	case "RedeemRequest":
 		wr, err := i.handler.ParseRedeemRequest(vLog, i.contractAddr.Hex())
