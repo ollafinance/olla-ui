@@ -27,6 +27,7 @@ COPY --from=builder /go/bin/tern .
 COPY --from=builder /app/migrations ./migrations
 COPY --from=builder /app/tern.conf .
 COPY --from=builder /app/deployments ./deployments
+COPY --from=builder /app/abis ./abis
 
 EXPOSE 8080
 

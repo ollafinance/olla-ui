@@ -71,6 +71,8 @@ spec:
               value: "local"
             - name: DEPLOYMENTS_PATH
               value: "deployments"
+            - name: ABI_PATH
+              value: "abis/OllaVault.json"
             - name: POLL_INTERVAL
               value: "10s"
             - name: START_BLOCK

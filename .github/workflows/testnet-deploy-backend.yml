@@ -94,6 +94,9 @@ jobs:
       - name: Copy deployment JSONs into backend build context
         run: cp -r packages/types/src/generated/deployments services/backend/deployments
 
+      - name: Copy ABI files into backend build context
+        run: cp -r packages/types/src/generated/abis services/backend/abis
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:

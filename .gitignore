@@ -69,3 +69,6 @@ services/backend/docs/swagger.json
 
 # Backend deployments (copied from packages/types at build time)
 services/backend/deployments/
+
+# Backend ABIs (copied from packages/types at build time)
+services/backend/abis/
