@@ -1,0 +1,21 @@
+apiVersion: gateway.envoyproxy.io/v1alpha1
+kind: SecurityPolicy
+metadata:
+  name: olla-indexer-cors
+  labels:
+    app.kubernetes.io/name: olla-indexer
+    app.kubernetes.io/part-of: olla
+spec:
+  targetRef:
+    group: gateway.networking.k8s.io
+    kind: HTTPRoute
+    name: olla-indexer
+  cors:
+    allowOrigins:
+      - type: Exact
+        value: https://demo.olla.finance
+    allowMethods:
+      - GET
+      - OPTIONS
+    allowHeaders:
+      - Content-Type

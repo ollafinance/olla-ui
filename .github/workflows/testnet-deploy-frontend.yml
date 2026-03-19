@@ -103,6 +103,7 @@ jobs:
             VITE_CONTRACTS_ENV=sepolia
             VITE_RPC_URL_SEPOLIA=${{ secrets.VITE_RPC_URL_SEPOLIA }}
             VITE_WALLET_CONNECT_PROJECT_ID=${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
+            VITE_INDEXER_API_URL=https://api.demo.olla.finance
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,scope=frontend,mode=max
 
