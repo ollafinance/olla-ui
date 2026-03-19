@@ -80,9 +80,7 @@ const ALL_ABIS: Abi[] = [
  * Attempt to decode raw revert data against all known ABIs.
  * Useful for cross-contract reverts where viem couldn't match the error.
  */
-function tryDecodeFromAllAbis(
-  data: Hex
-): { errorName: string; args?: ErrorArgs } | null {
+function tryDecodeFromAllAbis(data: Hex): { errorName: string; args?: ErrorArgs } | null {
   for (const abi of ALL_ABIS) {
     try {
       const decoded = decodeErrorResult({ abi, data });
@@ -136,9 +134,7 @@ export function getContractErrorMessage(error: Error): string {
   }
 
   // Check for wallet rejection first
-  const userRejection = error.walk(
-    (e) => e instanceof UserRejectedRequestError
-  );
+  const userRejection = error.walk((e) => e instanceof UserRejectedRequestError);
   if (userRejection) {
     return "Transaction was rejected in your wallet.";
   }
@@ -162,8 +158,9 @@ export function getContractErrorMessage(error: Error): string {
     }
 
     // Try raw hex decoding against all ABIs (cross-contract reverts)
-    const raw = (revertError.data as { raw?: Hex } | undefined)?.raw
-      ?? (revertError as unknown as { raw?: Hex }).raw;
+    const raw =
+      (revertError.data as { raw?: Hex } | undefined)?.raw ??
+      (revertError as unknown as { raw?: Hex }).raw;
     if (raw) {
       const decoded = tryDecodeFromAllAbis(raw);
       if (decoded) {
@@ -179,7 +176,5 @@ export function getContractErrorMessage(error: Error): string {
   if (fromMessage) return fromMessage;
 
   // Fall back to viem's shortMessage or raw message
-  return (
-    (error as BaseError).shortMessage || error.message || "Transaction failed"
-  );
+  return (error as BaseError).shortMessage || error.message || "Transaction failed";
 }

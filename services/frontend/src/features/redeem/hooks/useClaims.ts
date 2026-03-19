@@ -3,10 +3,14 @@ import { CONTRACTS } from "@/constants/contracts";
 import { PROTOCOL_CONSTANTS, CLAIMS_REFRESH_INTERVAL_MS } from "@/constants/protocol";
 import { useWithdrawalEvents } from "@/hooks/protocol/useWithdrawalEvents";
 import { useInstantRedemptionEvents } from "@/hooks/protocol/useInstantRedemptionEvents";
+import { useIndexerWithdrawals } from "@/hooks/indexer";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { formatEther } from "viem";
+import type { components } from "@olla-ui/types/schema";
+
+type WithdrawalRequest = components["schemas"]["WithdrawalRequest"];
 
 export type ClaimStatus = "ready" | "processing" | "claimed" | "instant";
 export type ClaimType = "queued" | "instant";
@@ -31,9 +35,12 @@ const CLAIMS_PAGE_SIZE = 10;
 
 /**
  * Hook to fetch and manage withdrawal claims data.
- * Fetches both active requests and historical claimed requests from events,
- * plus instant redemptions, enriches with timestamps, calculates USD values,
- * and provides pagination with priority sorting (ready > processing > instant > claimed).
+ * Merges data from:
+ * - Backend indexer (historical withdrawals, timestamps)
+ * - RPC calls (active request state, real-time status)
+ * - Event logs (recent events as fallback)
+ *
+ * Provides pagination with priority sorting (ready > processing > instant > claimed).
  */
 export function useClaims() {
   const { address } = useConnection();
@@ -44,16 +51,27 @@ export function useClaims() {
     address: address,
   });
 
+  // Fetch withdrawals from backend indexer
+  const {
+    data: indexedWithdrawals,
+    isLoading: isLoadingIndexed,
+    error: indexerError,
+  } = useIndexerWithdrawals({
+    address,
+    limit: 100,
+    enabled: !!address,
+  });
+
   // Get claimed request IDs and event timestamps from withdrawal event logs
+  // Keep this as fallback for recent events not yet indexed
   const {
     eventData,
-    claimedRequestIds,
     isLoading: isLoadingEvents,
     error: eventsError,
     refetch: refetchEvents,
-  } = useWithdrawalEvents(address, activeRequestIds);
+  } = useWithdrawalEvents(address);
 
-  // Get instant redemption events
+  // Get instant redemption events from RPC
   const {
     events: instantRedemptionEvents,
     isLoading: isLoadingInstantEvents,
@@ -61,42 +79,12 @@ export function useClaims() {
     refetch: refetchInstantEvents,
   } = useInstantRedemptionEvents(address);
 
-  // Combine active and claimed request IDs, removing duplicates
-  const allRequestIds = useMemo(() => {
-    const combined = [...activeRequestIds];
-
-    // Add claimed request IDs that aren't already in the active list
-    for (const claimedId of claimedRequestIds) {
-      if (!combined.some((id) => id === claimedId)) {
-        combined.push(claimedId);
-      }
+  // Log indexer errors but continue with RPC fallback
+  useEffect(() => {
+    if (indexerError) {
+      console.warn("[Claims] Indexer unavailable, falling back to RPC:", indexerError);
     }
-
-    return combined;
-  }, [activeRequestIds, claimedRequestIds]);
-
-  // Fetch request details using multicall for ALL requests (active + claimed)
-  const requestDetailsContracts = useMemo(() => {
-    return allRequestIds.map((id) => ({
-      address: CONTRACTS.WithdrawalQueue.address,
-      abi: CONTRACTS.WithdrawalQueue.abi,
-      functionName: "getRequest",
-      args: [id],
-    }));
-  }, [allRequestIds]);
-
-  const {
-    data: requestDetailsData,
-    isLoading: isLoadingRequests,
-    error: requestsError,
-    refetch: refetchRequests,
-  } = useReadContracts({
-    contracts: requestDetailsContracts,
-    query: {
-      enabled: requestDetailsContracts.length > 0,
-      refetchInterval: CLAIMS_REFRESH_INTERVAL_MS,
-    },
-  });
+  }, [indexerError]);
 
   // Get currency utilities for USD calculations
   const exchangeRateNum = exchangeRate ? Number(formatEther(exchangeRate)) : null;
@@ -139,40 +127,256 @@ export function useClaims() {
     });
   }, []);
 
-  // Transform queued withdrawal data to ClaimItemData[]
-  const queuedClaims: ClaimItemData[] = useMemo(() => {
-    if (!requestDetailsData || requestDetailsData.length === 0) return [];
+  // Fetch RPC state for ALL active requests to determine real-time status
+  // This includes both indexed and non-indexed active requests
+  const activeRequestContracts = useMemo(() => {
+    return activeRequestIds.map((id) => ({
+      address: CONTRACTS.WithdrawalQueue.address,
+      abi: CONTRACTS.WithdrawalQueue.abi,
+      functionName: "getRequest",
+      args: [id],
+    }));
+  }, [activeRequestIds]);
 
-    return requestDetailsData
-      .map((result, index) => {
-        if (!result.result) return null;
+  const {
+    data: activeRequestDetailsData,
+    isLoading: isLoadingActiveRequests,
+    error: activeRequestsError,
+    refetch: refetchActiveRequests,
+  } = useReadContracts({
+    contracts: activeRequestContracts,
+    query: {
+      enabled: activeRequestContracts.length > 0,
+      refetchInterval: CLAIMS_REFRESH_INTERVAL_MS,
+    },
+  });
 
-        const requestId = allRequestIds[index];
-        const request = result.result as {
-          recipient: `0x${string}`;
-          finalized: boolean;
-          claimed: boolean;
-          shares: bigint;
-          assetsExpected: bigint;
-          rate: bigint;
-        };
+  // Create a map of requestId -> RPC state for quick lookup
+  const activeRequestStateMap = useMemo(() => {
+    const map = new Map<
+      number,
+      { finalized: boolean; claimed: boolean; shares: bigint; assetsExpected: bigint }
+    >();
+
+    if (!activeRequestDetailsData) return map;
+
+    activeRequestDetailsData.forEach((result, index) => {
+      if (!result.result) return;
+
+      const requestId = Number(activeRequestIds[index]);
+      const request = result.result as {
+        recipient: `0x${string}`;
+        finalized: boolean;
+        claimed: boolean;
+        shares: bigint;
+        assetsExpected: bigint;
+        rate: bigint;
+      };
+
+      map.set(requestId, {
+        finalized: request.finalized,
+        claimed: request.claimed,
+        shares: request.shares,
+        assetsExpected: request.assetsExpected,
+      });
+    });
+
+    return map;
+  }, [activeRequestDetailsData, activeRequestIds]);
+
+  // Group indexed withdrawals by request_id for deduplication
+  // For each request_id, pick the most relevant event:
+  // - redeem_request: user initiated claim
+  // - withdrawal_claimed: completed
+  const groupedIndexedWithdrawals = useMemo(() => {
+    const groups = new Map<number | string, WithdrawalRequest[]>();
+
+    for (const withdrawal of indexedWithdrawals ?? []) {
+      // Handle instant redemptions separately (no request_id)
+      if (withdrawal.event_type === "instant_redemption") {
+        const key = `instant-${withdrawal.id}`;
+        groups.set(key, [withdrawal]);
+        continue;
+      }
+
+      // Skip entries without request_id (shouldn't happen for non-instant)
+      if (withdrawal.request_id == null) continue;
+
+      const key = Number(withdrawal.request_id);
+      const existing = groups.get(key) ?? [];
+      groups.set(key, [...existing, withdrawal]);
+    }
+
+    return groups;
+  }, [indexedWithdrawals]);
+
+  // Transform indexed withdrawal data to ClaimItemData
+  // Deduplicated by request_id
+  const indexedClaims: ClaimItemData[] = useMemo(() => {
+    const claims: ClaimItemData[] = [];
+
+    for (const [key, withdrawals] of groupedIndexedWithdrawals.entries()) {
+      // Handle instant redemptions
+      if (typeof key === "string" && key.startsWith("instant-")) {
+        const withdrawal = withdrawals[0];
+        if (!withdrawal) continue;
+
+        // Parse timestamps
+        const requestedAt = withdrawal.created_at
+          ? Math.floor(new Date(withdrawal.created_at).getTime() / 1000)
+          : undefined;
+
+        // Calculate amounts - use net_assets for instant redemptions
+        const shares = withdrawal.shares ? BigInt(withdrawal.shares) : 0n;
+        const netAssets = withdrawal.net_assets ? BigInt(withdrawal.net_assets) : 0n;
+
+        const sharesFormatted = formatEther(shares);
+        const netAssetsFormatted = formatEther(netAssets);
+        const usdValue = stAztecToUsd(sharesFormatted);
+
+        claims.push({
+          id: -withdrawal.id, // Negative ID to avoid conflicts with request IDs
+          amount: netAssetsFormatted,
+          status: "instant",
+          claimType: "instant",
+          usdValue,
+          claimedDate: formatRelativeDate(requestedAt),
+          shares,
+          assetsExpected: netAssets,
+          requestedAt,
+          finalized: true,
+          claimed: true,
+          isInstant: true,
+        });
+        continue;
+      }
+
+      // For regular withdrawals, find the best event to represent this request
+      const requestId = Number(key);
+
+      // Find redeem_request event
+      const redeemEvent = withdrawals.find((w) => w.event_type === "redeem_request");
+
+      // Use redeem event as base, or fallback to any event
+      const baseEvent = redeemEvent ?? withdrawals[0];
+      if (!baseEvent) continue;
+
+      // Determine if this request is still active (in activeRequestIds from RPC)
+      const isActive = activeRequestIds.some((id) => Number(id) === requestId);
+      
+      // Get real-time state from RPC if available
+      const rpcState = activeRequestStateMap.get(requestId);
+
+      // Determine final status
+      // Priority: RPC state > indexer state
+      let status: ClaimStatus;
+      if (!isActive) {
+        // Not in active list - it's been completed
+        status = "claimed";
+      } else if (rpcState) {
+        // Active and we have RPC state - check if finalized
+        if (rpcState.claimed) {
+          status = "claimed";
+        } else if (rpcState.finalized) {
+          status = "ready";
+        } else {
+          status = "processing";
+        }
+      } else {
+        // Active but no RPC state yet - assume processing
+        status = "processing";
+      }
+
+      // Parse timestamps from indexer
+      // Use the withdrawal record's completed_at field if available
+      const requestedAt = baseEvent.created_at
+        ? Math.floor(new Date(baseEvent.created_at).getTime() / 1000)
+        : undefined;
+
+      // For completed withdrawals, use the completed_at timestamp from any event in the group
+      const completedAt = baseEvent.completed_at
+        ? Math.floor(new Date(baseEvent.completed_at).getTime() / 1000)
+        : undefined;
+
+      // Calculate amounts from base event
+      const shares = baseEvent.shares ? BigInt(baseEvent.shares) : 0n;
+
+      const assetsExpected = baseEvent.assets_expected
+        ? BigInt(baseEvent.assets_expected)
+        : 0n;
+
+      const sharesFormatted = formatEther(shares);
+      const assetsFormatted = formatEther(assetsExpected);
+      const usdValue = stAztecToUsd(sharesFormatted);
+
+      // Calculate days left for processing requests
+      const daysLeft = status === "processing" ? calculateDaysLeft(requestedAt) : undefined;
+
+      // Format claimed date
+      const claimedDate = status === "claimed" ? formatRelativeDate(completedAt) : undefined;
+
+      claims.push({
+        id: requestId,
+        amount: assetsFormatted,
+        status,
+        claimType: "queued",
+        usdValue,
+        daysLeft,
+        claimedDate,
+        shares,
+        assetsExpected,
+        requestedAt,
+        finalized: status !== "processing",
+        claimed: status === "claimed",
+        isInstant: false,
+      });
+    }
+
+    return claims;
+  }, [
+    groupedIndexedWithdrawals,
+    activeRequestIds,
+    activeRequestStateMap,
+    stAztecToUsd,
+    calculateDaysLeft,
+    formatRelativeDate,
+  ]);
+
+  // Get IDs of requests already covered by indexed claims
+  const indexedRequestIds = useMemo(() => {
+    return new Set(indexedClaims.filter((c) => !c.isInstant).map((claim) => claim.id));
+  }, [indexedClaims]);
+
+  // Find active requests NOT in indexer (need to fetch separately)
+  const missingActiveRequestIds = useMemo(() => {
+    return activeRequestIds.filter((id) => !indexedRequestIds.has(Number(id)));
+  }, [activeRequestIds, indexedRequestIds]);
+
+  // Transform RPC-only withdrawal data (for requests not in indexer yet)
+  // Uses the activeRequestStateMap which already contains all active request states
+  const rpcOnlyClaims: ClaimItemData[] = useMemo(() => {
+    if (missingActiveRequestIds.length === 0) return [];
+
+    return missingActiveRequestIds
+      .map((requestId) => {
+        const rpcState = activeRequestStateMap.get(Number(requestId));
+        if (!rpcState) return null;
 
         const eventInfo = eventData.get(requestId);
-        const isClaimed = claimedRequestIds.includes(requestId);
 
-        // Determine status
+        // Determine status from RPC (real-time)
         let status: ClaimStatus;
-        if (isClaimed || request.claimed) {
+        if (rpcState.claimed) {
           status = "claimed";
-        } else if (request.finalized) {
+        } else if (rpcState.finalized) {
           status = "ready";
         } else {
           status = "processing";
         }
 
         // Calculate amounts
-        const sharesFormatted = formatEther(request.shares);
-        const assetsFormatted = formatEther(request.assetsExpected);
+        const sharesFormatted = formatEther(rpcState.shares);
+        const assetsFormatted = formatEther(rpcState.assetsExpected);
         const usdValue = stAztecToUsd(sharesFormatted);
 
         // Calculate days left for processing requests
@@ -191,27 +395,29 @@ export function useClaims() {
           usdValue,
           daysLeft,
           claimedDate,
-          shares: request.shares,
-          assetsExpected: request.assetsExpected,
+          shares: rpcState.shares,
+          assetsExpected: rpcState.assetsExpected,
           requestedAt: eventInfo?.requestedAt,
-          finalized: request.finalized,
-          claimed: isClaimed || request.claimed,
+          finalized: rpcState.finalized,
+          claimed: rpcState.claimed,
           isInstant: false,
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null) as ClaimItemData[];
   }, [
-    requestDetailsData,
-    allRequestIds,
+    missingActiveRequestIds,
+    activeRequestStateMap,
     eventData,
-    claimedRequestIds,
     stAztecToUsd,
     calculateDaysLeft,
     formatRelativeDate,
   ]);
 
   // Transform instant redemption events to ClaimItemData[]
-  const instantClaims: ClaimItemData[] = useMemo(() => {
+  // Note: RPC instant redemption events are used as fallback when indexer is not available.
+  // Since we cannot reliably de-duplicate against indexed events without a shared identifier
+  // (e.g., tx_hash + log_index), we display all RPC events. The indexer is the source of truth.
+  const instantClaimsFromRpc: ClaimItemData[] = useMemo(() => {
     if (!instantRedemptionEvents || instantRedemptionEvents.length === 0) return [];
 
     return instantRedemptionEvents.map((event, index) => {
@@ -243,10 +449,10 @@ export function useClaims() {
     });
   }, [instantRedemptionEvents, stAztecToUsd, formatRelativeDate]);
 
-  // Combine all claims
+  // Combine all claims: indexed + RPC-only + instant from RPC (fallback)
   const allClaims = useMemo(() => {
-    return [...queuedClaims, ...instantClaims];
-  }, [queuedClaims, instantClaims]);
+    return [...indexedClaims, ...rpcOnlyClaims, ...instantClaimsFromRpc];
+  }, [indexedClaims, rpcOnlyClaims, instantClaimsFromRpc]);
 
   // Sort by priority: ready > processing > (instant = claimed by time)
   const sortedClaims = useMemo(() => {
@@ -286,23 +492,21 @@ export function useClaims() {
 
   // Manual refetch function
   const refetch = useCallback(() => {
-    refetchRequests();
+    refetchActiveRequests();
     refetchEvents();
     refetchInstantEvents();
-  }, [refetchRequests, refetchEvents, refetchInstantEvents]);
+  }, [refetchActiveRequests, refetchEvents, refetchInstantEvents]);
 
   // Determine loading and error states
-  const isLoading = isLoadingRequests || isLoadingEvents || isLoadingInstantEvents;
-  const error = requestsError || eventsError || instantEventsError;
+  const isLoading =
+    isLoadingIndexed || isLoadingActiveRequests || isLoadingEvents || isLoadingInstantEvents;
+  const error = indexerError || activeRequestsError || eventsError || instantEventsError;
 
   // Track when initial load completes (regardless of success/error)
-  // Once loading finishes for the first time, we consider it "initially loaded"
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   useEffect(() => {
-    // Only set to true once, when loading transitions from true to false
     if (!isLoading) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setHasInitiallyLoaded(true);
     }
   }, [isLoading]);

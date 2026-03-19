@@ -35,7 +35,7 @@ const WITHDRAWAL_CLAIMED_EVENT = parseAbiItem(
  *
  * @note Currently limited to 10 blocks for Alchemy free tier compatibility.
  */
-export function useWithdrawalEvents(address: `0x${string}` | undefined, requestIds: bigint[]) {
+export function useWithdrawalEvents(address: `0x${string}` | undefined) {
   const publicClient = usePublicClient();
   const [eventData, setEventData] = useState<Map<bigint, WithdrawalEventData>>(new Map());
   const [claimedRequestIds, setClaimedRequestIds] = useState<bigint[]>([]);
@@ -139,7 +139,7 @@ export function useWithdrawalEvents(address: `0x${string}` | undefined, requestI
     } finally {
       setIsLoading(false);
     }
-  }, [publicClient, address, requestIds]);
+  }, [publicClient, address]);
 
   // Fetch events on mount and when dependencies change
   useEffect(() => {

@@ -1,9 +1,4 @@
-import {
-  OllaCoreABI,
-  OllaVaultABI,
-  MockAztecABI,
-  StAztecABI,
-} from "@olla-ui/types";
+import { OllaCoreABI, OllaVaultABI, MockAztecABI, StAztecABI } from "@olla-ui/types";
 import { local, sepolia } from "@olla-ui/types/deployments";
 import { CONTRACTS_ENV } from "./environment";
 

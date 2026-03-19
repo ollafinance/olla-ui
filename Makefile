@@ -1,4 +1,4 @@
-.PHONY: dev build lint clean migrate-up migrate-down swagger
+.PHONY: dev build lint clean migrate-up migrate-down types-generate install
 
 dev:
 	docker-compose up -d postgres
@@ -20,8 +20,8 @@ migrate-up:
 migrate-down:
 	cd services/backend && make migrate-down
 
-swagger:
-	cd services/backend && make swagger
+types-generate:
+	yarn types:generate
 
 install:
 	yarn install

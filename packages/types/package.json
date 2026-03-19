@@ -25,15 +25,19 @@
     "./contracts": {
       "types": "./src/constants/contracts.ts",
       "default": "./src/constants/contracts.ts"
+    },
+    "./schema": {
+      "types": "./src/generated/schema.ts",
+      "default": "./src/generated/schema.ts"
     }
   },
   "scripts": {
-    "generate": "openapi-typescript ../../services/backend/docs/swagger.yaml -o src/generated/schema.ts",
+    "generate": "openapi-typescript src/generated/openapi.json -o src/generated/schema.ts",
     "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
-    "openapi-typescript": "^6.7.0",
+    "openapi-typescript": "^7.13.0",
     "typescript": "~5.9.3"
   }
 }

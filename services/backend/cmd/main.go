@@ -1,26 +1,44 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
-	_ "github.com/ollafinance/ui/services/backend/docs"
-	"github.com/swaggo/gin-swagger"
-	"github.com/swaggo/swag"
-	"net/http"
+	"context"
+	"log"
+
+	"github.com/ollafinance/ui/services/backend/internal/app"
+	"github.com/ollafinance/ui/services/backend/internal/router"
+	"github.com/ollafinance/ui/services/backend/internal/server"
 )
 
-// @title Olla Indexer API
-// @version 1.0
-// @description API for the Olla liquid staking indexer service
-// @host localhost:8080
-// @BasePath /api/v1
 func main() {
-	r := gin.Default()
+	ctx := context.Background()
 
-	r.GET("/health", func(c *gin.Context) {
-		c.JSON(http.StatusOK, gin.H{"status": "healthy"})
+	deps, err := app.Initialize(ctx)
+	if err != nil {
+		log.Fatalf("Failed to initialize application: %v", err)
+	}
+	defer deps.Close()
+
+	log.Printf("Loaded deployment for network: %s (chain ID: %d)", deps.Deployment.Network, deps.Deployment.ChainID)
+	log.Printf("Loaded ABI from: %s", deps.ABIPath)
+
+	go func() {
+		log.Println("Starting indexer...")
+		if err := deps.Indexer.Start(ctx); err != nil {
+			log.Printf("Indexer error: %v", err)
+		}
+	}()
+
+	engine := router.Setup(&router.RouterDeps{
+		Store: deps.Store,
 	})
 
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swag.Handler))
+	log.Printf("API documentation available at /docs")
+	log.Printf("OpenAPI spec available at /openapi.json and /openapi.yaml")
 
-	r.Run(":8080")
+	srv := server.NewServer(engine, deps.Config.Port)
+	log.Printf("Starting server on port %s", deps.Config.Port)
+
+	if err := srv.RunWithGracefulShutdown(); err != nil {
+		log.Fatalf("Server error: %v", err)
+	}
 }

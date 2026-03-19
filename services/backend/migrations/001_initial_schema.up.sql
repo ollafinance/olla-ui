@@ -1,2 +1,0 @@
--- Initial schema for olla indexer
--- Placeholder for future migrations

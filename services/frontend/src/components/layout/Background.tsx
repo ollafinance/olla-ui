@@ -250,12 +250,7 @@ export function Background() {
                 <rect width="718.52" height="670.69" fill="white" />
               </clipPath>
               <clipPath id="clip1_desktop">
-                <rect
-                  width="718.52"
-                  height="670.69"
-                  fill="white"
-                  transform="translate(680)"
-                />
+                <rect width="718.52" height="670.69" fill="white" transform="translate(680)" />
               </clipPath>
               <mask
                 id="mask0_283_14172"
@@ -266,10 +261,7 @@ export function Background() {
                 width="86"
                 height="96"
               >
-                <path
-                  d="M680.82 383.18V478.85H595.78V383.18H680.82Z"
-                  fill="white"
-                />
+                <path d="M680.82 383.18V478.85H595.78V383.18H680.82Z" fill="white" />
               </mask>
               <mask
                 id="mask1_283_14113"
@@ -280,10 +272,7 @@ export function Background() {
                 width="86"
                 height="96"
               >
-                <path
-                  d="M1360.82 383.18V478.85H1275.78V383.18H1360.82Z"
-                  fill="white"
-                />
+                <path d="M1360.82 383.18V478.85H1275.78V383.18H1360.82Z" fill="white" />
               </mask>
             </defs>
           </g>
@@ -354,11 +343,7 @@ export function Background() {
             stroke="currentColor"
             strokeMiterlimit="10"
           />
-          <path
-            d="M511.24 1V96.67H341.16V1H511.24Z"
-            stroke="currentColor"
-            strokeMiterlimit="10"
-          />
+          <path d="M511.24 1V96.67H341.16V1H511.24Z" stroke="currentColor" strokeMiterlimit="10" />
           <path
             d="M511.24 383.68V479.35H341.16V383.68H511.24Z"
             stroke="currentColor"
@@ -403,10 +388,7 @@ export function Background() {
             width="86"
             height="97"
           >
-            <path
-              d="M681.32 1053.37V1149.04H596.28V1053.37H681.32Z"
-              fill="white"
-            />
+            <path d="M681.32 1053.37V1149.04H596.28V1053.37H681.32Z" fill="white" />
           </mask>
           <g mask="url(#mask1_283_14172)">
             <path
