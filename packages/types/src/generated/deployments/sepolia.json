@@ -29,7 +29,8 @@
     "StakingProviderRegistryImplementation": "0x402c29f730f1f37db202fba6cf8c5e59cc716b07",
     "StakingProviderRegistryProxy": "0x62eb3a17629c8b600d494b88232874866272ae65",
     "SafetyModule": "0x5a78d0a3ddae84011329cf22342336e00dc1324b",
-    "StakingManager": "0xde847897cb4d964fba3022df3cd9ed7f520ba3be"
+    "StakingManager": "0xde847897cb4d964fba3022df3cd9ed7f520ba3be",
+    "AztecRollup": "0xf6d0d42ace06829becb78c74f49879528fc632c1"
   },
   "status": {
     "phase": "D",

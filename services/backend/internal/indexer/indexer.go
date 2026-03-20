@@ -17,10 +17,13 @@ import (
 )
 
 type Indexer struct {
-	client       *ethclient.Client
-	store        *database.Store
-	handler      *EventHandler
-	contractAddr common.Address
+	client  *ethclient.Client
+	store   *database.Store
+	handler *EventHandler
+	// vaultAddr is the OllaVault contract address (Deposit, Withdrawal events).
+	vaultAddr common.Address
+	// coreAddr is the OllaCore contract address (AccountingUpdated events).
+	coreAddr     common.Address
 	abi          *abi.ABI
 	pollInterval time.Duration
 	startBlock   int64
@@ -44,17 +47,34 @@ func NewIndexer(
 		return nil, fmt.Errorf("failed to get vault address: %w", err)
 	}
 
+	coreAddrStr, ok := deployment.Addresses["OllaCoreProxy"]
+	if !ok || coreAddrStr == "" {
+		client.Close()
+		return nil, fmt.Errorf("OllaCoreProxy address not found in deployment")
+	}
+
 	startBlock, err := deployment.GetStartBlock(cfg.StartBlock)
 	if err != nil {
 		client.Close()
 		return nil, fmt.Errorf("failed to determine start block: %w", err)
 	}
 
+	// Load OllaCore ABI for AccountingUpdated parsing.
+	coreABI, err := LoadOllaCoreABI()
+	if err != nil {
+		client.Close()
+		return nil, fmt.Errorf("failed to load OllaCore ABI: %w", err)
+	}
+
+	handler := NewEventHandler(contractABI)
+	handler.SetCoreABI(coreABI)
+
 	return &Indexer{
 		client:       client,
 		store:        store,
-		handler:      NewEventHandler(contractABI),
-		contractAddr: common.HexToAddress(vaultAddr),
+		handler:      handler,
+		vaultAddr:    common.HexToAddress(vaultAddr),
+		coreAddr:     common.HexToAddress(coreAddrStr),
 		abi:          contractABI,
 		pollInterval: cfg.PollInterval,
 		startBlock:   startBlock,
@@ -63,11 +83,15 @@ func NewIndexer(
 }
 
 func (i *Indexer) Start(ctx context.Context) error {
-	if err := i.store.Contracts.Upsert(ctx, i.contractAddr.Hex(), nil); err != nil {
-		return fmt.Errorf("failed to upsert contract: %w", err)
+	// Register both contracts so foreign-key constraints are satisfied.
+	if err := i.store.Contracts.Upsert(ctx, i.vaultAddr.Hex(), nil); err != nil {
+		return fmt.Errorf("failed to upsert vault contract: %w", err)
+	}
+	if err := i.store.Contracts.Upsert(ctx, i.coreAddr.Hex(), nil); err != nil {
+		return fmt.Errorf("failed to upsert core contract: %w", err)
 	}
 
-	lastBlock, err := i.store.IndexerState.GetLastBlock(ctx, i.contractAddr.Hex())
+	lastBlock, err := i.store.IndexerState.GetLastBlock(ctx, i.vaultAddr.Hex())
 	if err != nil {
 		log.Printf("Warning: could not get last block: %v", err)
 	}
@@ -136,7 +160,7 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 	}
 
 	if len(logs) == 0 {
-		if err := i.store.IndexerState.Upsert(ctx, i.contractAddr.Hex(), toBlock); err != nil {
+		if err := i.store.IndexerState.Upsert(ctx, i.vaultAddr.Hex(), toBlock); err != nil {
 			return fromBlock, fmt.Errorf("failed to update indexer state: %w", err)
 		}
 		return toBlock, nil
@@ -149,7 +173,7 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 		}
 	}
 
-	if err := i.store.IndexerState.Upsert(ctx, i.contractAddr.Hex(), toBlock); err != nil {
+	if err := i.store.IndexerState.Upsert(ctx, i.vaultAddr.Hex(), toBlock); err != nil {
 		return fromBlock, fmt.Errorf("failed to update indexer state: %w", err)
 	}
 
@@ -158,16 +182,22 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 }
 
 func (i *Indexer) getLogs(ctx context.Context, fromBlock, toBlock int64) ([]types.Log, error) {
-	topics := make([][]common.Hash, 1)
-	topics[0] = make([]common.Hash, 4)
 	sigs := GetEventSignatures()
-	topics[0][0] = common.HexToHash(sigs.Deposit)
-	topics[0][1] = common.HexToHash(sigs.WithdrawalClaimed)
-	topics[0][2] = common.HexToHash(sigs.InstantRedemption)
-	topics[0][3] = common.HexToHash(sigs.RedeemRequest)
+
+	// topic0 filter: match any of the 5 known event signatures across both contracts.
+	topics := [][]common.Hash{
+		{
+			common.HexToHash(sigs.Deposit),
+			common.HexToHash(sigs.WithdrawalClaimed),
+			common.HexToHash(sigs.InstantRedemption),
+			common.HexToHash(sigs.RedeemRequest),
+			common.HexToHash(sigs.AccountingUpdated),
+		},
+	}
 
 	logs, err := i.client.FilterLogs(ctx, ethereum.FilterQuery{
-		Addresses: []common.Address{i.contractAddr},
+		// Watch both OllaVault (Deposit/Withdrawal events) and OllaCore (AccountingUpdated).
+		Addresses: []common.Address{i.vaultAddr, i.coreAddr},
 		FromBlock: big.NewInt(fromBlock),
 		ToBlock:   big.NewInt(toBlock),
 		Topics:    topics,
@@ -187,7 +217,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 
 	switch eventType {
 	case "Deposit":
-		deposit, err := i.handler.ParseDeposit(vLog, i.contractAddr.Hex())
+		deposit, err := i.handler.ParseDeposit(vLog, i.vaultAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse Deposit: %w", err)
 		}
@@ -197,7 +227,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed Deposit: tx=%s, recipient=%s, assets=%s", deposit.TxHash, deposit.Recipient, deposit.Assets)
 
 	case "WithdrawalClaimed":
-		wr, err := i.handler.ParseWithdrawalClaimed(vLog, i.contractAddr.Hex())
+		wr, err := i.handler.ParseWithdrawalClaimed(vLog, i.vaultAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse WithdrawalClaimed: %w", err)
 		}
@@ -212,7 +242,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed WithdrawalClaimed: tx=%s, requestID=%d", wr.TxHash, *wr.RequestID)
 
 	case "InstantRedemption":
-		wr, err := i.handler.ParseInstantRedemption(vLog, i.contractAddr.Hex())
+		wr, err := i.handler.ParseInstantRedemption(vLog, i.vaultAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse InstantRedemption: %w", err)
 		}
@@ -222,7 +252,7 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 		log.Printf("Indexed InstantRedemption: tx=%s, owner=%s, netAssets=%s", wr.TxHash, wr.Owner, wr.NetAssets)
 
 	case "RedeemRequest":
-		wr, err := i.handler.ParseRedeemRequest(vLog, i.contractAddr.Hex())
+		wr, err := i.handler.ParseRedeemRequest(vLog, i.vaultAddr.Hex())
 		if err != nil {
 			return fmt.Errorf("failed to parse RedeemRequest: %w", err)
 		}
@@ -230,6 +260,16 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 			return fmt.Errorf("failed to insert RedeemRequest: %w", err)
 		}
 		log.Printf("Indexed RedeemRequest: tx=%s, requestID=%d, owner=%s", wr.TxHash, *wr.RequestID, wr.Owner)
+
+	case "AccountingUpdated":
+		au, err := i.handler.ParseAccountingUpdated(vLog, i.coreAddr.Hex())
+		if err != nil {
+			return fmt.Errorf("failed to parse AccountingUpdated: %w", err)
+		}
+		if err := i.store.AccountingUpdates.Insert(ctx, au); err != nil {
+			return fmt.Errorf("failed to insert AccountingUpdated: %w", err)
+		}
+		log.Printf("Indexed AccountingUpdated: tx=%s, exchangeRate=%s, timestamp=%d", au.TxHash, au.ExchangeRate, au.EventTimestamp)
 	}
 
 	return nil
