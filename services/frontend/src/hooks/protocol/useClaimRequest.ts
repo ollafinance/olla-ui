@@ -1,7 +1,7 @@
 import { useWriteContract, useWaitForTransactionReceipt } from "wagmi";
+import { useCallback } from "react";
 import { CONTRACTS } from "@/constants/contracts";
-import { CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useTransactionWithTimeout } from "./useTransactionWithTimeout";
 
 export interface UseClaimRequestOptions {
   onSuccess?: () => void;
@@ -9,10 +9,6 @@ export interface UseClaimRequestOptions {
 }
 
 export function useClaimRequest(options: UseClaimRequestOptions = {}) {
-  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hasCalledConfirmed = useRef(false);
-
   const {
     mutate: claimMutate,
     data: claimHash,
@@ -27,36 +23,13 @@ export function useClaimRequest(options: UseClaimRequestOptions = {}) {
     error: receiptError,
   } = useWaitForTransactionReceipt({ hash: claimHash });
 
-  // Clear timeout on success or unmount
-  useEffect(() => {
-    if (isClaimConfirmed && timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [isClaimConfirmed]);
-
-  // Reset hasCalledConfirmed when a new transaction hash is generated
-  useEffect(() => {
-    if (claimHash) {
-      hasCalledConfirmed.current = false;
-    }
-  }, [claimHash]);
-
-  // Handle confirmation
-  useEffect(() => {
-    if (isClaimConfirmed && !hasCalledConfirmed.current) {
-      hasCalledConfirmed.current = true;
-      options.onConfirmed?.();
-    }
-  }, [isClaimConfirmed, options]);
+  const { timeoutError, startTimeout, reset: resetTimeout } = useTransactionWithTimeout({
+    hash: claimHash,
+    isConfirmed: isClaimConfirmed,
+    onConfirmed: options.onConfirmed,
+  });
 
   const claimRequestById = (requestId: bigint) => {
-    setTimeoutError(null);
     claimMutate(
       {
         address: CONTRACTS.OllaVault.address,
@@ -67,31 +40,16 @@ export function useClaimRequest(options: UseClaimRequestOptions = {}) {
       {
         onSuccess: () => {
           options.onSuccess?.();
-          // Start timeout for confirmation
-          timeoutRef.current = setTimeout(() => {
-            setTimeoutError(
-              new Error(
-                "Transaction confirmation timed out. The transaction may have been reverted or stuck."
-              )
-            );
-          }, CONFIRMATION_TIMEOUT_MS);
+          startTimeout();
         },
       }
     );
   };
 
   const reset = useCallback(() => {
-    setTimeoutError(null);
-    hasCalledConfirmed.current = false;
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+    resetTimeout();
     resetWriteContract();
-  }, [resetWriteContract]);
-
-  // Combine errors - prioritize timeout error if confirmation is stuck
-  const combinedError = timeoutError || receiptError || claimError;
+  }, [resetTimeout, resetWriteContract]);
 
   return {
     write: claimRequestById,
@@ -99,7 +57,7 @@ export function useClaimRequest(options: UseClaimRequestOptions = {}) {
     isConfirming: isClaimConfirming,
     isConfirmed: isClaimConfirmed,
     hash: claimHash,
-    error: combinedError,
+    error: timeoutError ?? receiptError ?? claimError,
     reset,
   };
 }

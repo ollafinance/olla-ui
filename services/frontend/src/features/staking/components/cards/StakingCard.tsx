@@ -53,7 +53,6 @@ export function StakingCard({
           amount={amount}
           shares={previewShares}
           onPrimaryAction={onReset}
-          onViewExplorer={() => console.log("View on Explorer clicked")}
         />
       );
     case "error":
