@@ -17,6 +17,7 @@ export function StakingFeature() {
     stAztecBalance,
     exchangeRate,
     previewShares,
+    rewardsEarned,
     hash,
   } = useStakingState();
   const { apy } = useProtocolApy();
@@ -48,6 +49,7 @@ export function StakingFeature() {
         <PortfolioCard
           isConnected={isConnected}
           totalStaked={stAztecBalance}
+          rewardsEarned={rewardsEarned}
           className="lg:h-card-third"
         />
       }
