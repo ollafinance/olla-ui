@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/danielgtaylor/huma/v2"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ollafinance/ui/services/backend/internal/database"
 	"github.com/ollafinance/ui/services/backend/internal/models"
 )
@@ -39,7 +40,12 @@ func RegisterApy(api huma.API, store *database.Store) {
 		Description: "Returns the annualised percentage yield for the given OllaCore contract, computed from indexed AccountingUpdated events.",
 		Tags:        []string{"apy"},
 	}, func(ctx context.Context, input *ApyInput) (*ApyOutput, error) {
-		resp, err := computeApy(ctx, store, input.Contract)
+		if !common.IsHexAddress(input.Contract) {
+			return nil, huma.Error422UnprocessableEntity("Invalid contract address", fmt.Errorf("contract address %q is not a valid Ethereum address", input.Contract))
+		}
+		// Normalize to EIP-55 checksum format to match what the indexer stores.
+		contract := common.HexToAddress(input.Contract).Hex()
+		resp, err := computeApy(ctx, store, contract)
 		if err != nil {
 			return nil, huma.Error500InternalServerError("Failed to compute APY", err)
 		}
