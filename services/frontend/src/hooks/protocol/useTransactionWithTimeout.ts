@@ -81,6 +81,7 @@ export function useTransactionWithTimeout({
   }, [isConfirmed, onConfirmed, refetchAfterConfirm]);
 
   const startTimeout = useCallback(() => {
+    setTimeoutError(null);
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
     timeoutRef.current = setTimeout(() => {
       setTimeoutError(new Error(TIMEOUT_MESSAGE));
