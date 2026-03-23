@@ -56,7 +56,8 @@ export function useProtocolApy(): UseProtocolApyReturn {
         return null;
       }
     },
-    refetchInterval: APY_REFETCH_INTERVAL_MS,
+    enabled: !!INDEXER_API_URL,
+    refetchInterval: INDEXER_API_URL ? APY_REFETCH_INTERVAL_MS : false,
     staleTime: APY_REFETCH_INTERVAL_MS,
     retry: 2,
   });
