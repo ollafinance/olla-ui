@@ -91,10 +91,22 @@ func (i *Indexer) Start(ctx context.Context) error {
 		return fmt.Errorf("failed to upsert core contract: %w", err)
 	}
 
-	lastBlock, err := i.store.IndexerState.GetLastBlock(ctx, i.vaultAddr.Hex())
+	vaultLastBlock, err := i.store.IndexerState.GetLastBlock(ctx, i.vaultAddr.Hex())
 	if err != nil {
-		log.Printf("Warning: could not get last block: %v", err)
+		log.Printf("Warning: could not get vault last block: %v", err)
 	}
+	coreLastBlock, err := i.store.IndexerState.GetLastBlock(ctx, i.coreAddr.Hex())
+	if err != nil {
+		log.Printf("Warning: could not get core last block: %v", err)
+	}
+
+	// Use the minimum of both contracts' last processed blocks so that a newly
+	// watched contract (coreAddr) does not silently skip events that were emitted
+	// before the vault state had advanced.
+	// When coreLastBlock == 0 (never indexed), min() returns 0, which causes the
+	// block below to fall back to startBlock — ensuring all historical core events
+	// are captured without skipping.
+	lastBlock := min(vaultLastBlock, coreLastBlock)
 
 	if lastBlock == 0 {
 		lastBlock = i.startBlock
@@ -161,7 +173,10 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 
 	if len(logs) == 0 {
 		if err := i.store.IndexerState.Upsert(ctx, i.vaultAddr.Hex(), toBlock); err != nil {
-			return fromBlock, fmt.Errorf("failed to update indexer state: %w", err)
+			return fromBlock, fmt.Errorf("failed to update vault indexer state: %w", err)
+		}
+		if err := i.store.IndexerState.Upsert(ctx, i.coreAddr.Hex(), toBlock); err != nil {
+			return fromBlock, fmt.Errorf("failed to update core indexer state: %w", err)
 		}
 		return toBlock, nil
 	}
@@ -174,7 +189,10 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 	}
 
 	if err := i.store.IndexerState.Upsert(ctx, i.vaultAddr.Hex(), toBlock); err != nil {
-		return fromBlock, fmt.Errorf("failed to update indexer state: %w", err)
+		return fromBlock, fmt.Errorf("failed to update vault indexer state: %w", err)
+	}
+	if err := i.store.IndexerState.Upsert(ctx, i.coreAddr.Hex(), toBlock); err != nil {
+		return fromBlock, fmt.Errorf("failed to update core indexer state: %w", err)
 	}
 
 	log.Printf("Processed blocks %d to %d, %d events found", fromBlock+1, toBlock, len(logs))
