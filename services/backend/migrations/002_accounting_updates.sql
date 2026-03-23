@@ -22,4 +22,4 @@ CREATE TABLE accounting_updates (
 
 CREATE INDEX idx_accounting_updates_contract ON accounting_updates(contract);
 CREATE INDEX idx_accounting_updates_block ON accounting_updates(block_number);
-CREATE INDEX idx_accounting_updates_timestamp ON accounting_updates(event_timestamp);
+CREATE INDEX idx_accounting_updates_contract_event_timestamp_desc ON accounting_updates(contract, event_timestamp DESC);
