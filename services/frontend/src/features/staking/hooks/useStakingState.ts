@@ -7,6 +7,7 @@ import { useAztecToken } from "@/hooks/protocol/useAztecToken";
 import { useStAztec } from "@/hooks/protocol/useStAztec";
 import { useCurrency } from "@/hooks/useCurrency";
 import { getContractErrorMessage } from "@/lib/errors";
+import { useRewardsEarned } from "@/hooks/indexer";
 
 export type StakingState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -23,6 +24,7 @@ interface UseStakingStateReturn {
   exchangeRate: string;
   previewShares: string;
   previewSharesUsd: string;
+  rewardsEarned: string;
   hash: `0x${string}` | undefined;
 }
 
@@ -48,6 +50,8 @@ export function useStakingState(): UseStakingStateReturn {
 
   const { balance: aztecBalance } = useAztecToken();
   const { balance: stAztecBalance } = useStAztec();
+
+  const { rewardsEarned } = useRewardsEarned();
 
   const exchangeRateNum = reads.exchangeRate ? Number(formatEther(reads.exchangeRate)) : null;
 
@@ -113,6 +117,7 @@ export function useStakingState(): UseStakingStateReturn {
     exchangeRate,
     previewShares,
     previewSharesUsd,
+    rewardsEarned,
     hash: deposit.hash,
   };
 }

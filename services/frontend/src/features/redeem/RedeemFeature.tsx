@@ -16,6 +16,7 @@ export function RedeemFeature() {
     error,
     stAztecBalance,
     exchangeRate,
+    rewardsEarned,
     grossAssets,
     previewAssets,
     minAssetsOut,
@@ -77,6 +78,7 @@ export function RedeemFeature() {
         <PortfolioCard
           isConnected={isConnected}
           totalStaked={stAztecBalance}
+          rewardsEarned={rewardsEarned}
           className="lg:h-card-third"
         />
       }

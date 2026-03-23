@@ -8,6 +8,7 @@ import { useStAztec } from "@/hooks/protocol/useStAztec";
 import { useClaimRequest } from "@/hooks/protocol/useClaimRequest";
 import { useClaims, type ClaimItemData } from "./useClaims";
 import { getContractErrorMessage } from "@/lib/errors";
+import { useRewardsEarned } from "@/hooks/indexer";
 
 export type RedeemState = "idle" | "signing" | "pending" | "confirming" | "success" | "error";
 
@@ -34,6 +35,7 @@ interface UseRedeemStateReturn {
   // Balances & Rates
   stAztecBalance: string;
   exchangeRate: string;
+  rewardsEarned: string;
 
   // Preview Values
   grossAssets: string; // Converted assets without any fees
@@ -108,6 +110,8 @@ export function useRedeemState(): UseRedeemStateReturn {
   });
 
   const { balance: stAztecBalance } = useStAztec();
+
+  const { rewardsEarned } = useRewardsEarned();
 
   // Determine active hook based on mode
   const activeHook = isInstantMode ? instantRedeem : requestRedeem;
@@ -250,6 +254,7 @@ export function useRedeemState(): UseRedeemStateReturn {
     error,
     stAztecBalance,
     exchangeRate,
+    rewardsEarned,
     grossAssets,
     previewAssets,
     minAssetsOut,
