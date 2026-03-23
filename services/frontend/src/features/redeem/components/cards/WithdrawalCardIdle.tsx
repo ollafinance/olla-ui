@@ -3,11 +3,12 @@ import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Toggle } from "@/components/ui/Toggle";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
-import { PercentageButtons } from "@/features/staking/components/shared/PercentageButtons";
+import { PercentageButtons } from "@/components/ui/PercentageButtons";
 import { useCurrency } from "@/hooks/useCurrency";
 import { sanitizeNumericInput } from "@/lib/utils";
 import infoIcon from "@/assets/icons/info-icon.svg";
-import { BalanceBadge } from "@/features/staking/components";
+import { BalanceBadge } from "@/components/ui/BalanceBadge";
+import { STAKING_CONSTANTS } from "@/features/staking/constants";
 
 interface WithdrawalCardIdleProps {
   amount: string;
@@ -241,7 +242,7 @@ export function WithdrawalCardIdle({
                   Exchange Rate
                 </span>
                 <span className="text-[9px] leading-[1.4] font-medium tracking-[0.27px] text-[#6c6c6c]">
-                  1 Aztec = 0.95 stAztec
+                  1 Aztec = {exchangeRateProp} stAztec
                 </span>
               </div>
               <div className="flex flex-col">
@@ -249,7 +250,7 @@ export function WithdrawalCardIdle({
                   Transaction Fee
                 </span>
                 <span className="text-[9px] leading-[1.4] font-medium tracking-[0.27px] text-[#6c6c6c]">
-                  ~0.0001 Aztec
+                  ~{STAKING_CONSTANTS.TRANSACTION_FEE} Aztec
                 </span>
               </div>
             </div>

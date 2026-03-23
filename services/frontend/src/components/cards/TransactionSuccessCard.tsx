@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/Button";
 import ollaLoading from "@/assets/icons/olla-loading.svg";
 import arrowRightIcon from "@/assets/icons/arrow-right.svg";
+import { ETHEREUM_EXPLORER_URL } from "@/constants/environment";
 
 interface TransactionSuccessCardProps {
   variant: "staking" | "withdrawal";
@@ -9,7 +10,6 @@ interface TransactionSuccessCardProps {
   isInstantMode?: boolean;
   hash?: `0x${string}` | undefined;
   onPrimaryAction: () => void;
-  onViewExplorer?: () => void;
 }
 
 export function TransactionSuccessCard({
@@ -19,9 +19,9 @@ export function TransactionSuccessCard({
   isInstantMode,
   hash,
   onPrimaryAction,
-  onViewExplorer,
 }: TransactionSuccessCardProps) {
-  const explorerUrl = hash ? `https://explorer.example.com/tx/${hash}` : undefined;
+  const explorerUrl =
+    hash && ETHEREUM_EXPLORER_URL ? `${ETHEREUM_EXPLORER_URL}/tx/${hash}` : undefined;
 
   if (variant === "staking") {
     return (
@@ -60,11 +60,11 @@ export function TransactionSuccessCard({
             Stake More
             <img src={arrowRightIcon} alt="" className="ml-2.5 inline-block h-3 w-3" />
           </Button>
-          {onViewExplorer && (
+          {explorerUrl && (
             <Button
               variant="pink"
               size="xl"
-              onClick={onViewExplorer}
+              onClick={() => window.open(explorerUrl, "_blank", "noopener,noreferrer")}
               className="bg-card-secondary text-primary-accent rounded-full px-5 py-3 text-base leading-[1.16] font-medium tracking-[-0.32px]"
             >
               View on Explorer
@@ -115,11 +115,11 @@ export function TransactionSuccessCard({
           Another Request
           <img src={arrowRightIcon} alt="" className="ml-2.5 inline-block h-3 w-3" />
         </Button>
-        {explorerUrl && onViewExplorer && (
+        {explorerUrl && (
           <Button
             variant="cyan"
             size="xl"
-            onClick={onViewExplorer}
+            onClick={() => window.open(explorerUrl, "_blank", "noopener,noreferrer")}
             className="bg-card-secondary rounded-full px-5 py-3 text-base leading-[1.16] font-medium tracking-[-0.32px] text-black"
           >
             View on Explorer

@@ -5,16 +5,13 @@ import {
   useWaitForTransactionReceipt,
 } from "wagmi";
 import { formatEther, parseEther } from "viem";
+import { useCallback } from "react";
 import { CONTRACTS } from "@/constants/contracts";
 import { useBlockWatcher } from "./useBlockWatcher";
-import { CONFIRMATION_TIMEOUT_MS } from "@/constants/protocol";
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useTransactionWithTimeout } from "./useTransactionWithTimeout";
 
 export function useStAztec() {
   const { address } = useConnection();
-  const [timeoutError, setTimeoutError] = useState<Error | null>(null);
-  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hasCalledConfirmed = useRef(false);
 
   // READS
   const { data: balance, refetch: refetchBalance } = useReadContract({
@@ -66,38 +63,14 @@ export function useStAztec() {
     error: receiptError,
   } = useWaitForTransactionReceipt({ hash: approveHash });
 
-  // Clear timeout on success or unmount
-  useEffect(() => {
-    if (isApproveConfirmed && timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    return () => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-      }
-    };
-  }, [isApproveConfirmed]);
+  const { timeoutError, startTimeout, reset: resetTimeout } = useTransactionWithTimeout({
+    hash: approveHash,
+    isConfirmed: isApproveConfirmed,
+    refetchAfterConfirm: refetchAllowance,
+  });
 
-  // Reset hasCalledConfirmed when a new transaction hash is generated
-  useEffect(() => {
-    if (approveHash) {
-      hasCalledConfirmed.current = false;
-    }
-  }, [approveHash]);
-
-  // Handle confirmation
-  useEffect(() => {
-    if (isApproveConfirmed && !hasCalledConfirmed.current) {
-      hasCalledConfirmed.current = true;
-      refetchAllowance();
-    }
-  }, [isApproveConfirmed, refetchAllowance]);
-
-  // Actions
   const approveSpender = (amount: string) => {
     if (!address) return;
-    setTimeoutError(null);
     approve(
       {
         address: CONTRACTS.StAztec.address,
@@ -105,33 +78,14 @@ export function useStAztec() {
         functionName: "approve",
         args: [CONTRACTS.OllaVault.address, parseEther(amount)],
       },
-      {
-        onSuccess: () => {
-          // Start timeout for confirmation
-          timeoutRef.current = setTimeout(() => {
-            setTimeoutError(
-              new Error(
-                "Transaction confirmation timed out. The transaction may have been reverted or stuck."
-              )
-            );
-          }, CONFIRMATION_TIMEOUT_MS);
-        },
-      }
+      { onSuccess: startTimeout }
     );
   };
 
   const reset = useCallback(() => {
-    setTimeoutError(null);
-    hasCalledConfirmed.current = false;
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
+    resetTimeout();
     resetWriteContract();
-  }, [resetWriteContract]);
-
-  // Combine errors - prioritize timeout error if confirmation is stuck
-  const combinedError = timeoutError || receiptError || approveError;
+  }, [resetTimeout, resetWriteContract]);
 
   return {
     balance: balance ? formatEther(balance as bigint) : "0",
@@ -143,7 +97,7 @@ export function useStAztec() {
       isConfirming: isApproveConfirming,
       isConfirmed: isApproveConfirmed,
       hash: approveHash,
-      error: combinedError,
+      error: timeoutError ?? receiptError ?? approveError,
       reset,
     },
     refetchBalance,

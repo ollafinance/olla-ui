@@ -1,5 +1,11 @@
 import { cn } from "@/lib/utils";
-import { PERCENTAGE_OPTIONS } from "../../constants";
+
+const PERCENTAGE_OPTIONS = [
+  { label: "25%", value: 0.25 },
+  { label: "50%", value: 0.5 },
+  { label: "75%", value: 0.75 },
+  { label: "Max", value: 1 },
+] as const;
 
 interface PercentageButtonsProps {
   selectedPercentage?: number;
