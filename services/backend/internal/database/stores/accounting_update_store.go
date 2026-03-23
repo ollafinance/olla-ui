@@ -72,10 +72,10 @@ func (s *AccountingUpdateStore) GetLatestN(ctx context.Context, contract string,
 			SELECT *
 			FROM accounting_updates
 			WHERE contract = $1
-			ORDER BY event_timestamp DESC
+			ORDER BY event_timestamp DESC, block_number DESC, log_index DESC
 			LIMIT $2
 		) sub
-		ORDER BY event_timestamp ASC
+		ORDER BY event_timestamp ASC, block_number ASC, log_index ASC
 	`
 
 	rows, err := s.db.Query(ctx, query, contract, n)
