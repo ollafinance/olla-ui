@@ -1,7 +1,6 @@
 package indexer
 
 import (
-	"context"
 	"fmt"
 	"math/big"
 
@@ -12,7 +11,8 @@ import (
 )
 
 type EventHandler struct {
-	abi        *abi.ABI
+	abi        *abi.ABI // OllaVault ABI
+	coreABI    *abi.ABI // OllaCore ABI (for AccountingUpdated)
 	signatures *EventSignatures
 }
 
@@ -21,6 +21,11 @@ func NewEventHandler(contractABI *abi.ABI) *EventHandler {
 		abi:        contractABI,
 		signatures: GetEventSignatures(),
 	}
+}
+
+// SetCoreABI attaches the OllaCore ABI so AccountingUpdated events can be parsed.
+func (h *EventHandler) SetCoreABI(coreABI *abi.ABI) {
+	h.coreABI = coreABI
 }
 
 func bigIntToStringPtr(val *big.Int) *string {
@@ -241,11 +246,80 @@ func (h *EventHandler) IdentifyEventType(log types.Log) string {
 		return "InstantRedemption"
 	case h.signatures.IsRedeemRequest(topicHash):
 		return "RedeemRequest"
+	case h.signatures.IsAccountingUpdated(topicHash):
+		return "AccountingUpdated"
 	default:
 		return ""
 	}
 }
 
-func (h *EventHandler) HandleLog(ctx context.Context, log types.Log) error {
-	return nil
+// ParseAccountingUpdated parses an AccountingUpdated event from OllaCore.
+// All 8 fields are non-indexed (packed into log.Data).
+func (h *EventHandler) ParseAccountingUpdated(log types.Log, contractAddr string) (*models.AccountingUpdate, error) {
+	if h.coreABI == nil {
+		return nil, fmt.Errorf("OllaCore ABI not loaded; call SetCoreABI first")
+	}
+
+	event, ok := h.coreABI.Events["AccountingUpdated"]
+	if !ok {
+		return nil, fmt.Errorf("AccountingUpdated event not found in OllaCore ABI")
+	}
+
+	unpacked, err := event.Inputs.Unpack(log.Data)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unpack AccountingUpdated event: %w", err)
+	}
+
+	if len(unpacked) < 8 {
+		return nil, fmt.Errorf("invalid AccountingUpdated event: expected 8 fields, got %d", len(unpacked))
+	}
+
+	totalAssets, ok := unpacked[0].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: totalAssets is not *big.Int")
+	}
+	exchangeRate, ok := unpacked[1].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: exchangeRate is not *big.Int")
+	}
+	grossRewards, ok := unpacked[2].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: grossRewards is not *big.Int")
+	}
+	// netFlows is int256 — go-ethereum decodes it as *big.Int (signed)
+	netFlows, ok := unpacked[3].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: netFlows is not *big.Int")
+	}
+	protocolFeeAssets, ok := unpacked[4].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: protocolFeeAssets is not *big.Int")
+	}
+	treasuryShares, ok := unpacked[5].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: treasuryShares is not *big.Int")
+	}
+	providerShares, ok := unpacked[6].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: providerShares is not *big.Int")
+	}
+	timestamp, ok := unpacked[7].(*big.Int)
+	if !ok {
+		return nil, fmt.Errorf("invalid AccountingUpdated: timestamp is not *big.Int")
+	}
+
+	return &models.AccountingUpdate{
+		Contract:          contractAddr,
+		TxHash:            log.TxHash.Hex(),
+		BlockNumber:       int64(log.BlockNumber),
+		LogIndex:          int(log.Index),
+		TotalAssets:       totalAssets.String(),
+		ExchangeRate:      exchangeRate.String(),
+		GrossRewards:      grossRewards.String(),
+		NetFlows:          netFlows.String(),
+		ProtocolFeeAssets: protocolFeeAssets.String(),
+		TreasuryShares:    treasuryShares.String(),
+		ProviderShares:    providerShares.String(),
+		EventTimestamp:    timestamp.Int64(),
+	}, nil
 }

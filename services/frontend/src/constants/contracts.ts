@@ -66,7 +66,7 @@ export const CONTRACTS = {
     abi: WithdrawalQueueABI,
   },
   AztecRollup: {
-    address: deployment.addresses.MockAztecRollup as `0x${string}`,
+    address: (deployment.addresses.AztecRollup ?? deployment.addresses.MockAztecRollup) as `0x${string}`,
   },
 } as const;
 

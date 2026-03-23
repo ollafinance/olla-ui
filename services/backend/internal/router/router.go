@@ -80,4 +80,5 @@ func registerRoutes(api huma.API, deps *RouterDeps) {
 	v1Group := huma.NewGroup(api, "/api/v1")
 	handlers.RegisterDeposits(v1Group, deps.Store)
 	handlers.RegisterWithdrawals(v1Group, deps.Store)
+	handlers.RegisterApy(v1Group, deps.Store)
 }
