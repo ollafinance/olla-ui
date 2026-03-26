@@ -1,5 +1,7 @@
+import { useMemo } from "react";
 import type { ClaimStatus } from "../../hooks/useClaims";
 import { Button } from "@/components/ui/Button";
+import { PROTOCOL_CONSTANTS } from "@/constants/protocol";
 
 interface ClaimItemProps {
   id: number;
@@ -7,6 +9,7 @@ interface ClaimItemProps {
   status: ClaimStatus;
   usdValue: string;
   daysLeft?: number;
+  requestedAt?: number;
   claimedDate?: string;
   onClaim?: (id: number) => void;
   isClaiming?: boolean;
@@ -25,11 +28,22 @@ export function ClaimItem({
   status,
   usdValue,
   daysLeft,
+  requestedAt,
   claimedDate,
   onClaim,
   isClaiming = false,
   claimHash,
 }: ClaimItemProps) {
+  const computedDaysLeft = useMemo(() => {
+    if (daysLeft !== undefined) return daysLeft;
+    if (!requestedAt) return undefined;
+    const now = Math.floor(Date.now() / 1000);
+    const unlockTime = requestedAt + PROTOCOL_CONSTANTS.WITHDRAWAL_DELAY_DAYS * 24 * 60 * 60;
+    const secondsLeft = Math.max(0, unlockTime - now);
+    const days = Math.ceil(secondsLeft / 86400);
+    return days > 0 ? days : undefined;
+  }, [daysLeft, requestedAt]);
+
   const statusConfig = {
     ready: {
       bg: "bg-card",
@@ -59,7 +73,9 @@ export function ClaimItem({
       statusText: "Processing",
       rightContent: (
         <span className="text-card-claims-foreground text-xs leading-[1.16] font-medium">
-          {daysLeft} {daysLeft === 1 ? "Day" : "Days"} Left
+          {computedDaysLeft !== undefined
+            ? `${computedDaysLeft} ${computedDaysLeft === 1 ? "Day" : "Days"} Left`
+            : "Pending"}
         </span>
       ),
     },
@@ -113,7 +129,7 @@ export function ClaimItem({
 
       <div className="flex flex-col items-end gap-1">
         {config.rightContent}
-        {status !== "ready" && usdValue && (
+        {usdValue && (
           <span className={`text-xs ${usdTextColor} leading-[1.16] font-medium`}>
             ~ $ {usdValue}
           </span>

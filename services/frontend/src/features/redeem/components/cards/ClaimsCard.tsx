@@ -59,6 +59,7 @@ export function ClaimsCard({
             status={claim.status}
             usdValue={claim.usdValue}
             daysLeft={claim.daysLeft}
+            requestedAt={claim.requestedAt}
             claimedDate={claim.claimedDate}
             onClaim={onClaim}
             isClaiming={claimingRequestId === claim.id}
