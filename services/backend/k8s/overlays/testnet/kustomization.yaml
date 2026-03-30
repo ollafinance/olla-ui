@@ -37,4 +37,4 @@ patches:
                   - name: CONTRACTS_ENV
                     value: "sepolia"
                   - name: START_BLOCK
-                    value: "10457986"
+                    value: "10553526"
