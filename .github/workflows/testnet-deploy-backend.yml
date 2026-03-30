@@ -5,6 +5,14 @@ on:
     branches: [testnet]
     paths:
       - 'services/backend/**'
+      - 'packages/types/src/generated/deployments/**'
+  workflow_dispatch:
+    inputs:
+      wipe_db:
+        description: 'Wipe the testnet database before deploying (DROP SCHEMA + re-migrate)'
+        type: boolean
+        default: false
+        required: false
 
 env:
   REGISTRY: registry.digitalocean.com/olla-containers
@@ -106,11 +114,51 @@ jobs:
           cache-from: type=gha,scope=backend
           cache-to: type=gha,scope=backend,mode=max
 
+  wipe-db:
+    runs-on: ubuntu-latest
+    needs:
+      - set-up
+      - build
+    if: ${{ github.event.inputs.wipe_db == 'true' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
+
+      - name: Wipe testnet database
+        run: |
+          POSTGRES_POD=$(kubectl get pod -n olla-prod -l app=postgresql -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec -n olla-prod "$POSTGRES_POD" -- \
+            psql -U admin -d olla_indexer_testnet -c \
+            "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO admin; GRANT ALL ON SCHEMA public TO public;"
+
   deploy:
     runs-on: ubuntu-latest
     needs:
       - set-up
       - build
+      - wipe-db
+    if: ${{ always() && needs.build.result == 'success' && (needs.wipe-db.result == 'success' || needs.wipe-db.result == 'skipped') }}
 
     steps:
       - name: Checkout Repository
