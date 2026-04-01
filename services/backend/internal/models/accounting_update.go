@@ -37,8 +37,15 @@ type ApyResponse struct {
 	IsLive bool `json:"is_live" doc:"True when APY is derived from on-chain data"`
 }
 
+// AccountingUpdateList represents a paginated list of accounting updates.
+type AccountingUpdateList struct {
+	Updates []AccountingUpdate `json:"updates" doc:"List of accounting update records ordered by block_number ascending"`
+	Total   int64              `json:"total" doc:"Total number of records for this contract"`
+}
+
 // AccountingUpdateStore defines the interface for accounting update data operations.
 type AccountingUpdateStore interface {
 	Insert(ctx context.Context, update *AccountingUpdate) error
 	GetLatestN(ctx context.Context, contract string, n int) ([]AccountingUpdate, error)
+	GetByContract(ctx context.Context, contract string, limit, offset int) ([]AccountingUpdate, int64, error)
 }
