@@ -124,10 +124,10 @@ export function useRewardsEarned() {
     // Path A: Per-deposit rate interpolation (preferred when history is available)
     // -------------------------------------------------------------------------
     if (hasAccountingHistory) {
-      // Build a map of deposit tx_hash -> entry rate for quick exit lookup.
-      // We also need to track which shares are still held vs. exited.
-      // Approach: process deposits oldest-first to build a FIFO share ledger,
-      // then compute unrealized gain on remaining shares and realized gain on exits.
+      // For each deposit, interpolate the entry exchange rate at its block and
+      // build "lots" of shares with that entry rate. These lots are then used
+      // downstream to separate realized rewards on exited shares from unrealized
+      // rewards on currently held shares.
 
       // Sort deposits oldest-first (store returns newest-first)
       const sortedDeposits = [...deposits].sort((a, b) => a.block_number - b.block_number);
@@ -149,37 +149,48 @@ export function useRewardsEarned() {
 
       if (!lots.length) return "0.00";
 
-      // --- Realized gains from completed exits ---
+      // --- Realized gains from completed exits (FIFO lot consumption) ---
+      // Sort withdrawals oldest-first so we consume earliest lots first.
+      const sortedWithdrawals = [...completedWithdrawals].sort(
+        (a, b) => a.block_number - b.block_number
+      );
+
+      // Working copy of lots; shares are consumed as withdrawals are processed.
+      const remainingLots = lots.map((lot) => ({ ...lot }));
+      let lotIndex = 0;
       let realizedGain = 0n;
 
-      for (const wr of completedWithdrawals) {
+      for (const wr of sortedWithdrawals) {
         try {
           if (!wr.shares) continue;
           const exitShares = BigInt(wr.shares);
           if (exitShares === 0n) continue;
 
-          // Look up the exit exchange rate
-          let exitRate: bigint | null = null;
-          if (wr.exchange_rate) {
-            try {
-              exitRate = BigInt(wr.exchange_rate);
-            } catch {
-              // fall through
+          // Consume exitShares from lots FIFO to accumulate the entry cost basis.
+          let exitRemaining = exitShares;
+          let costBasis = 0n;
+          while (exitRemaining > 0n && lotIndex < remainingLots.length) {
+            const lot = remainingLots[lotIndex];
+            if (lot.shares <= 0n) {
+              lotIndex++;
+              continue;
+            }
+            const sharesToConsume = lot.shares <= exitRemaining ? lot.shares : exitRemaining;
+            costBasis += (sharesToConsume * lot.entryRate) / WAD;
+            lot.shares -= sharesToConsume;
+            exitRemaining -= sharesToConsume;
+            if (lot.shares === 0n) {
+              lotIndex++;
             }
           }
 
-          if (wr.event_type === "instant_redemption" && exitRate !== null) {
-            // Instant: rate-delta gain
-            const entryRate = interpolateEntryRate(accountingHistory, wr.block_number);
-            if (entryRate === null) continue;
-            realizedGain += (exitShares * (exitRate - entryRate)) / WAD;
+          if (wr.event_type === "instant_redemption" && wr.exchange_rate) {
+            // Instant: proceeds at exit rate minus FIFO cost basis
+            const exitRate = BigInt(wr.exchange_rate);
+            realizedGain += (exitShares * exitRate) / WAD - costBasis;
           } else if (wr.event_type === "redeem_request" && wr.assets_claimed) {
-            // Queued withdrawal: use assets_claimed minus cost basis
-            const assetsClaimed = BigInt(wr.assets_claimed);
-            const entryRate = interpolateEntryRate(accountingHistory, wr.block_number);
-            if (entryRate === null) continue;
-            const costBasis = (exitShares * entryRate) / WAD;
-            realizedGain += assetsClaimed - costBasis;
+            // Queued withdrawal: assets claimed minus FIFO cost basis
+            realizedGain += BigInt(wr.assets_claimed) - costBasis;
           }
         } catch {
           // Skip malformed entries
@@ -187,19 +198,20 @@ export function useRewardsEarned() {
       }
 
       // --- Unrealized gain on still-held shares ---
-      // Weight entry rates by share proportion across lots
+      // Compute weighted average entry rate from remaining (unexited) lots only.
       let unrealizedGain = 0n;
       if (sharesHeld > 0n) {
-        // Compute total shares deposited to weight entry rates
-        const totalDeposited = lots.reduce((acc, l) => acc + l.shares, 0n);
-        if (totalDeposited > 0n) {
-          // Weighted average entry rate across all lots
-          let weightedEntryRateSum = 0n;
-          for (const lot of lots) {
-            weightedEntryRateSum += (lot.entryRate * lot.shares) / totalDeposited;
+        const totalRemaining = remainingLots.reduce((acc, l) => acc + l.shares, 0n);
+        if (totalRemaining > 0n) {
+          // Accumulate numerator first to avoid per-lot truncation error, divide once.
+          let weightedEntryRateNumerator = 0n;
+          for (const lot of remainingLots) {
+            if (lot.shares <= 0n) continue;
+            weightedEntryRateNumerator += lot.entryRate * lot.shares;
           }
+          const weightedEntryRate = weightedEntryRateNumerator / totalRemaining;
           const currentValue = (sharesHeld * exchangeRate) / WAD;
-          const entryValue = (sharesHeld * weightedEntryRateSum) / WAD;
+          const entryValue = (sharesHeld * weightedEntryRate) / WAD;
           unrealizedGain = currentValue - entryValue;
         }
       }

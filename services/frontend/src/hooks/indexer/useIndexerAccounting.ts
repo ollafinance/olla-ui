@@ -60,9 +60,8 @@ export function useIndexerAccounting(options: UseIndexerAccountingOptions) {
       }
     },
     enabled: !!contract && !!INDEXER_API_URL,
-    // Accounting history grows slowly (one entry per AccountingUpdated event).
-    // Refresh at the same interval as other indexer data but with a longer stale time
-    // since historical entries never change.
+    // Refresh and stale time are aligned with other indexer data; this is acceptable
+    // since historical entries never change and new entries arrive infrequently.
     refetchInterval: CLAIMS_REFRESH_INTERVAL_MS,
     staleTime: CLAIMS_REFRESH_INTERVAL_MS,
     retry: 2,
