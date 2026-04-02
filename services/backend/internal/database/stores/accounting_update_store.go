@@ -54,6 +54,54 @@ func (s *AccountingUpdateStore) Insert(ctx context.Context, u *models.Accounting
 	return nil
 }
 
+// GetByContract returns all AccountingUpdate records for a contract ordered by
+// block_number ascending (oldest first). Supports pagination via limit/offset.
+func (s *AccountingUpdateStore) GetByContract(ctx context.Context, contract string, limit, offset int) ([]models.AccountingUpdate, int64, error) {
+	query := `
+		SELECT id, contract, tx_hash, block_number, log_index,
+		       total_assets, exchange_rate, gross_rewards, net_flows,
+		       protocol_fee_assets, treasury_shares, provider_shares,
+		       event_timestamp, created_at
+		FROM accounting_updates
+		WHERE contract = $1
+		ORDER BY block_number ASC, log_index ASC
+		LIMIT $2 OFFSET $3
+	`
+
+	rows, err := s.db.Query(ctx, query, contract, limit, offset)
+	if err != nil {
+		return nil, 0, models.NewDatabaseError("query", "accounting_updates", err)
+	}
+	defer rows.Close()
+
+	var updates []models.AccountingUpdate
+	for rows.Next() {
+		var u models.AccountingUpdate
+		err := rows.Scan(
+			&u.ID, &u.Contract, &u.TxHash, &u.BlockNumber, &u.LogIndex,
+			&u.TotalAssets, &u.ExchangeRate, &u.GrossRewards, &u.NetFlows,
+			&u.ProtocolFeeAssets, &u.TreasuryShares, &u.ProviderShares,
+			&u.EventTimestamp, &u.CreatedAt,
+		)
+		if err != nil {
+			return nil, 0, models.NewDatabaseError("scan", "accounting_updates", err)
+		}
+		updates = append(updates, u)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, 0, models.NewDatabaseError("iterate", "accounting_updates", err)
+	}
+
+	countQuery := `SELECT COUNT(*) FROM accounting_updates WHERE contract = $1`
+	var total int64
+	if err := s.db.QueryRow(ctx, countQuery, contract).Scan(&total); err != nil {
+		return nil, 0, models.NewDatabaseError("count", "accounting_updates", err)
+	}
+
+	return updates, total, nil
+}
+
 // GetLatestN returns the n most recent AccountingUpdate records for a contract,
 // ordered by event_timestamp ascending (oldest first) so callers can compute
 // APY by comparing index 0 (older) to index n-1 (newer).
