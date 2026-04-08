@@ -9,6 +9,8 @@ import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
   ledgerWallet,
   metaMaskWallet,
+  phantomWallet,
+  rabbyWallet,
   safeWallet,
   trustWallet,
   walletConnectWallet,
@@ -54,7 +56,7 @@ const config = WALLET_CONNECT_PROJECT_ID
       wallets: [
         {
           groupName: "Popular",
-          wallets: [metaMaskWallet, walletConnectWallet],
+          wallets: [metaMaskWallet, walletConnectWallet, phantomWallet, rabbyWallet],
         },
         {
           groupName: "More",
