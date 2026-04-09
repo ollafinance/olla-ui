@@ -5,12 +5,12 @@ import {
   RPC_URL_SEPOLIA,
   WALLET_CONNECT_PROJECT_ID,
 } from "@/constants/environment";
-import { customPhantomWallet } from "@/lib/phantom-wallet";
 import { getDefaultConfig } from "@rainbow-me/rainbowkit";
 import {
   coinbaseWallet,
   ledgerWallet,
   metaMaskWallet,
+  phantomWallet,
   rabbyWallet,
   rainbowWallet,
   safeWallet,
@@ -58,7 +58,7 @@ const config = WALLET_CONNECT_PROJECT_ID
       wallets: [
         {
           groupName: "Popular",
-          wallets: [metaMaskWallet, walletConnectWallet, customPhantomWallet, rainbowWallet, coinbaseWallet],
+          wallets: [metaMaskWallet, walletConnectWallet, phantomWallet, rainbowWallet, coinbaseWallet],
         },
         {
           groupName: "More",
