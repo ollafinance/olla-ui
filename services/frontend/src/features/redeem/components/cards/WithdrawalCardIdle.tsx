@@ -1,14 +1,15 @@
-import { useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { Toggle } from "@/components/ui/Toggle";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { PercentageButtons } from "@/components/ui/PercentageButtons";
 import { useCurrency } from "@/hooks/useCurrency";
-import { sanitizeNumericInput } from "@/lib/utils";
+import { useAmountInput } from "@/hooks/useAmountInput";
+import { usePercentageSelect } from "@/hooks/usePercentageSelect";
+import { useTransactionFeeEstimate } from "@/hooks/protocol";
+import { getAmountSizeClass } from "@/lib/utils";
 import infoIcon from "@/assets/icons/info-icon.svg";
 import { BalanceBadge } from "@/components/ui/BalanceBadge";
-import { STAKING_CONSTANTS } from "@/features/staking/constants";
 
 interface WithdrawalCardIdleProps {
   amount: string;
@@ -45,66 +46,26 @@ export function WithdrawalCardIdle({
   const { isUsdMode, stAztecToUsd, usdToStAztec, aztecToUsd } = useCurrency({
     exchangeRate: exchangeRateNum,
   });
-  const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>();
+  const { inputValue, handleInputChange: handleAmountChange } = useAmountInput({
+    amount,
+    isUsdMode,
+    onAmountChange,
+    usdToToken: usdToStAztec,
+    tokenToUsd: stAztecToUsd,
+  });
 
-  // Local input state to prevent cursor jumping and formatting issues while typing
-  const [inputValue, setInputValue] = useState("");
-
-  // Sync local input when amount changes externally or mode changes
-  const [lastSyncedAmount, setLastSyncedAmount] = useState(amount);
-  const [lastMode, setLastMode] = useState(isUsdMode);
-
-  if (amount !== lastSyncedAmount || isUsdMode !== lastMode) {
-    const shouldUpdate = (() => {
-      if (isUsdMode !== lastMode) return true;
-      const currentValInStAztec = isUsdMode ? usdToStAztec(inputValue) : inputValue;
-      if (!currentValInStAztec || isNaN(parseFloat(currentValInStAztec))) return true;
-      return Math.abs(parseFloat(currentValInStAztec) - parseFloat(amount || "0")) > 0.000001;
-    })();
-
-    if (shouldUpdate) {
-      const newValue = isUsdMode ? stAztecToUsd(amount) : amount;
-      setInputValue(newValue === "0" ? "" : newValue);
-    }
-
-    setLastSyncedAmount(amount);
-    setLastMode(isUsdMode);
-  }
-
-  const handlePercentageSelect = (percentage: number) => {
-    setSelectedPercentage(percentage);
-    const parsedBalance = parseFloat(balance);
-    if (isNaN(parsedBalance) || parsedBalance <= 0) return;
-
-    if (isUsdMode) {
-      const usdBalance = stAztecToUsd(parsedBalance);
-      const newUsdAmount = (parseFloat(usdBalance) * percentage).toFixed(2);
-      onAmountChange(usdToStAztec(newUsdAmount));
-    } else {
-      const newAmount = (parsedBalance * percentage).toFixed(2);
-      onAmountChange(newAmount);
-    }
-  };
+  const { selectedPercentage, setSelectedPercentage, handlePercentageSelect } =
+    usePercentageSelect({
+      balance,
+      isUsdMode,
+      onAmountChange,
+      usdToToken: usdToStAztec,
+      tokenToUsd: stAztecToUsd,
+    });
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPercentage(undefined);
-    const rawValue = e.target.value;
-
-    if (!/^\d*\.?\d*$/.test(rawValue)) return;
-
-    setInputValue(rawValue);
-    const sanitizedValue = sanitizeNumericInput(rawValue);
-
-    if (isUsdMode) {
-      const usdAmount = parseFloat(sanitizedValue);
-      if (!isNaN(usdAmount) && usdAmount > 0) {
-        onAmountChange(usdToStAztec(usdAmount));
-      } else {
-        onAmountChange("0");
-      }
-    } else {
-      onAmountChange(sanitizedValue);
-    }
+    handleAmountChange(e);
   };
 
   const usdValue = stAztecToUsd(amount);
@@ -117,12 +78,24 @@ export function WithdrawalCardIdle({
 
   const primaryLabel = isUsdMode ? "USD" : "stAztec";
 
+  const inputAmountSizeClass = getAmountSizeClass(
+    (isUsdMode ? "$" : "") + (inputValue || "0.00"),
+    "withdraw"
+  );
+
+  const receiveDisplay = isUsdMode ? `$${previewUsdValue}` : previewAssets;
+  const receiveSizeClass = getAmountSizeClass(receiveDisplay, "withdraw");
+
   const handleToggleInstantMode = (checked: boolean) => {
     if (!canInstantRedeem && checked) {
       return;
     }
     onInstantModeChange(checked);
   };
+
+  const transactionFee = useTransactionFeeEstimate(
+    isInstantMode ? "withdraw-instant" : "withdraw-request"
+  );
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col">
@@ -143,10 +116,12 @@ export function WithdrawalCardIdle({
             />
           </div>
 
-          <div className="flex w-full items-end justify-between">
-            <div className="flex max-w-[70%] items-end">
+          <div className="flex w-full items-end justify-between gap-2">
+            <div className="flex min-w-0 flex-1 items-end">
               {isUsdMode && (
-                <span className="text-text-display pr-2 text-[50px] leading-[1.16] font-medium tracking-[-1px]">
+                <span
+                  className={`text-text-display pr-2 ${inputAmountSizeClass} leading-[1.16] font-medium tracking-[-1px]`}
+                >
                   $
                 </span>
               )}
@@ -154,9 +129,10 @@ export function WithdrawalCardIdle({
                 type="text"
                 inputMode="decimal"
                 placeholder="0.00"
+                maxLength={22}
                 value={inputValue}
                 onChange={handleInputChange}
-                className="text-text-display w-full border-none bg-transparent text-[50px] leading-[1.16] font-medium tracking-[-1px] outline-none"
+                className={`text-text-display w-full min-w-0 border-none bg-transparent ${inputAmountSizeClass} leading-[1.16] font-medium tracking-[-1px] outline-none`}
               />
             </div>
             <span className="text-text-display shrink-0 text-base leading-[1.8] font-medium">
@@ -213,11 +189,13 @@ export function WithdrawalCardIdle({
 
           <div className="flex w-full flex-col gap-2">
             {/* Net amount - always shown */}
-            <div className="flex w-full items-end justify-between">
-              <span className="text-text-display text-[50px] leading-[1.16] font-medium tracking-[-1px]">
-                {isUsdMode ? `$${previewUsdValue}` : previewAssets}
+            <div className="flex w-full items-end justify-between gap-2">
+              <span
+                className={`text-text-display min-w-0 flex-1 truncate ${receiveSizeClass} leading-[1.16] font-medium tracking-[-1px]`}
+              >
+                {receiveDisplay}
               </span>
-              <span className="text-text-display text-base leading-[1.8] font-medium">
+              <span className="text-text-display shrink-0 text-base leading-[1.8] font-medium">
                 {isUsdMode ? "USD" : "Aztec"}
               </span>
             </div>
@@ -250,7 +228,7 @@ export function WithdrawalCardIdle({
                   Transaction Fee
                 </span>
                 <span className="text-[9px] leading-[1.4] font-medium tracking-[0.27px] text-[#6c6c6c]">
-                  ~{STAKING_CONSTANTS.TRANSACTION_FEE} Aztec
+                  ~{transactionFee} ETH
                 </span>
               </div>
             </div>

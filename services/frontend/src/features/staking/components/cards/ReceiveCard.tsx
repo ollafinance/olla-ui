@@ -1,9 +1,13 @@
+import { getAmountSizeClass } from "@/lib/utils";
+
 interface ReceiveCardProps {
   shares: string;
   exchangeRate: string;
 }
 
 export function ReceiveCard({ shares, exchangeRate }: ReceiveCardProps) {
+  const sharesSizeClass = getAmountSizeClass(shares, "compact");
+
   return (
     <div className="bg-card rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
       <p className="text-text-display text-lg leading-[1.16] font-medium">You Receive</p>
@@ -11,11 +15,13 @@ export function ReceiveCard({ shares, exchangeRate }: ReceiveCardProps) {
       <div className="flex-1" />
 
       <div className="flex w-full flex-col gap-3">
-        <div className="flex w-full items-end justify-between">
-          <span className="text-text-display text-[28.43px] leading-none font-medium tracking-[-0.57px]">
+        <div className="flex w-full items-end justify-between gap-2">
+          <span
+            className={`text-text-display min-w-0 flex-1 truncate ${sharesSizeClass} leading-none font-medium tracking-[-0.57px] transition-[font-size] duration-150`}
+          >
             {shares}
           </span>
-          <span className="text-text-display text-base leading-[1.8]">stAztec</span>
+          <span className="text-text-display shrink-0 text-base leading-[1.8]">stAztec</span>
         </div>
 
         <div className="bg-primary-line h-px w-full" />

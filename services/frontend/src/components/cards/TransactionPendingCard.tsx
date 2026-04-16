@@ -16,7 +16,9 @@ export function TransactionPendingCard({ state, variant }: TransactionPendingCar
   const [line1, line2] = titles[state];
 
   const typographyClasses =
-    variant === "staking" ? "text-[67px] text-black" : "text-[67.43px] text-text-display";
+    variant === "staking"
+      ? "text-4xl sm:text-5xl md:text-[60px] lg:text-[50px] text-black"
+      : "text-4xl sm:text-5xl md:text-[60px] lg:text-[50px] text-text-display";
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
