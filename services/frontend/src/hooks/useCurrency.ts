@@ -1,7 +1,19 @@
 import { useContext, createContext, useCallback } from "react";
+import {
+  toScaledBigInt,
+  fromScaledBigInt,
+  mulScaled,
+  divScaled,
+  toPlainDecimal,
+} from "@/lib/utils";
 
 const TOKEN_DECIMALS = 2;
 const USD_DECIMALS = 2;
+
+function trimTrailingDecimalZeros(s: string): string {
+  if (!s.includes(".")) return s;
+  return s.replace(/(\.\d*?)0+$/, "$1").replace(/\.$/, "");
+}
 
 interface CurrencyContextValue {
   isUsdMode: boolean;
@@ -40,54 +52,53 @@ export function useCurrency(options: UseCurrencyOptions = {}): UseCurrencyReturn
 
   const formatUsd = useCallback((value: string | number): string => {
     const num = typeof value === "string" ? parseFloat(value) : value;
-    if (isNaN(num) || num === 0) return "0";
-    const formatted = num.toFixed(USD_DECIMALS);
-    return parseFloat(formatted).toString();
+    if (!Number.isFinite(num) || num === 0) return "0";
+    return trimTrailingDecimalZeros(toPlainDecimal(num, USD_DECIMALS));
   }, []);
 
   const formatToken = useCallback((value: string | number): string => {
     const num = typeof value === "string" ? parseFloat(value) : value;
-    if (isNaN(num) || num === 0) return "0";
-    const formatted = num.toFixed(TOKEN_DECIMALS);
-    return parseFloat(formatted).toString();
+    if (!Number.isFinite(num) || num === 0) return "0";
+    return trimTrailingDecimalZeros(toPlainDecimal(num, TOKEN_DECIMALS));
   }, []);
 
   const aztecToUsd = useCallback(
     (aztec: string | number): string => {
-      const num = typeof aztec === "string" ? parseFloat(aztec) : aztec;
-      if (isNaN(num) || num <= 0) return "0";
-      return formatUsd(num * aztecPriceUsd);
+      const aztecBig = toScaledBigInt(aztec);
+      if (aztecBig === 0n || aztecPriceUsd <= 0) return "0";
+      return fromScaledBigInt(mulScaled(aztecBig, toScaledBigInt(aztecPriceUsd)), USD_DECIMALS);
     },
-    [formatUsd, aztecPriceUsd]
+    [aztecPriceUsd]
   );
 
   const usdToAztec = useCallback(
     (usd: string | number): string => {
-      const num = typeof usd === "string" ? parseFloat(usd) : usd;
-      if (isNaN(num) || num <= 0 || aztecPriceUsd <= 0) return "0";
-      return formatToken(num / aztecPriceUsd);
+      const usdBig = toScaledBigInt(usd);
+      const priceBig = toScaledBigInt(aztecPriceUsd);
+      if (usdBig === 0n || priceBig === 0n) return "0";
+      return fromScaledBigInt(divScaled(usdBig, priceBig), TOKEN_DECIMALS);
     },
-    [formatToken, aztecPriceUsd]
+    [aztecPriceUsd]
   );
 
   const stAztecToAztec = useCallback(
     (stAztec: string | number): string => {
       if (!exchangeRate || exchangeRate <= 0) return "0";
-      const num = typeof stAztec === "string" ? parseFloat(stAztec) : stAztec;
-      if (isNaN(num) || num <= 0) return "0";
-      return formatToken(num * exchangeRate);
+      const stAztecBig = toScaledBigInt(stAztec);
+      if (stAztecBig === 0n) return "0";
+      return fromScaledBigInt(mulScaled(stAztecBig, toScaledBigInt(exchangeRate)), TOKEN_DECIMALS);
     },
-    [exchangeRate, formatToken]
+    [exchangeRate]
   );
 
   const aztecToStAztec = useCallback(
     (aztec: string | number): string => {
       if (!exchangeRate || exchangeRate <= 0) return "0";
-      const num = typeof aztec === "string" ? parseFloat(aztec) : aztec;
-      if (isNaN(num) || num <= 0) return "0";
-      return formatToken(num / exchangeRate);
+      const aztecBig = toScaledBigInt(aztec);
+      if (aztecBig === 0n) return "0";
+      return fromScaledBigInt(divScaled(aztecBig, toScaledBigInt(exchangeRate)), TOKEN_DECIMALS);
     },
-    [exchangeRate, formatToken]
+    [exchangeRate]
   );
 
   const stAztecToUsd = useCallback(

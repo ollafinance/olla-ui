@@ -7,8 +7,20 @@ export interface UseOllaCoreReadsOptions {
   address?: `0x${string}`;
 }
 
+function safeParseEther(value?: string): bigint | undefined {
+  if (!value) return undefined;
+  try {
+    return parseEther(value);
+  } catch {
+    return undefined;
+  }
+}
+
 export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
   const { amountToConvert, address } = options;
+  const parsedAmount = safeParseEther(amountToConvert);
+  const amountArgs = parsedAmount !== undefined ? [parsedAmount] : undefined;
+  const amountEnabled = parsedAmount !== undefined && parsedAmount > 0n;
 
   const { data: exchangeRate } = useReadContract({
     address: CONTRACTS.OllaCore.address,
@@ -23,9 +35,9 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     address: CONTRACTS.OllaCore.address,
     abi: CONTRACTS.OllaCore.abi,
     functionName: "convertToShares",
-    args: amountToConvert ? [parseEther(amountToConvert)] : undefined,
+    args: amountArgs,
     query: {
-      enabled: !!amountToConvert && Number(amountToConvert) > 0,
+      enabled: amountEnabled,
     },
   });
 
@@ -33,9 +45,9 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     address: CONTRACTS.OllaCore.address,
     abi: CONTRACTS.OllaCore.abi,
     functionName: "convertToAssets",
-    args: amountToConvert ? [parseEther(amountToConvert)] : undefined,
+    args: amountArgs,
     query: {
-      enabled: !!amountToConvert && Number(amountToConvert) > 0,
+      enabled: amountEnabled,
     },
   });
 
@@ -43,9 +55,9 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     address: CONTRACTS.OllaVault.address,
     abi: CONTRACTS.OllaVault.abi,
     functionName: "previewDeposit",
-    args: amountToConvert ? [parseEther(amountToConvert)] : undefined,
+    args: amountArgs,
     query: {
-      enabled: !!amountToConvert && Number(amountToConvert) > 0,
+      enabled: amountEnabled,
     },
   });
 
@@ -53,9 +65,9 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     address: CONTRACTS.OllaVault.address,
     abi: CONTRACTS.OllaVault.abi,
     functionName: "previewInstantRedeem",
-    args: amountToConvert ? [parseEther(amountToConvert)] : undefined,
+    args: amountArgs,
     query: {
-      enabled: !!amountToConvert && Number(amountToConvert) > 0,
+      enabled: amountEnabled,
     },
   });
 

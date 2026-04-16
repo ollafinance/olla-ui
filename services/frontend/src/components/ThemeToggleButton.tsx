@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { useTheme } from "@/hooks/useTheme";
 import sunIcon from "@/assets/icons/sun.svg";
 import moonIcon from "@/assets/icons/moon.svg";
@@ -6,7 +7,18 @@ import { ActionButton } from "@/components/ui/ActionButton";
 export function ThemeToggleButton() {
   const { theme, setTheme } = useTheme();
 
-  const isDark = theme === "dark";
+  const [systemPrefersDark, setSystemPrefersDark] = useState(
+    () => window.matchMedia("(prefers-color-scheme: dark)").matches
+  );
+
+  useEffect(() => {
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const onChange = (e: MediaQueryListEvent) => setSystemPrefersDark(e.matches);
+    media.addEventListener("change", onChange);
+    return () => media.removeEventListener("change", onChange);
+  }, []);
+
+  const isDark = theme === "dark" || (theme === "system" && systemPrefersDark);
 
   return (
     <ActionButton

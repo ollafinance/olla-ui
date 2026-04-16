@@ -3,6 +3,7 @@ import { StakingCard, ReceiveCard, ReturnsCard } from "./components";
 import { PortfolioCard } from "@/components/cards";
 import { PageLayout } from "@/components/layout/page-layout";
 import { useProtocolApy } from "@/hooks/protocol";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function StakingFeature() {
   const {
@@ -21,6 +22,8 @@ export function StakingFeature() {
     hash,
   } = useStakingState();
   const { apy } = useProtocolApy();
+  const { stAztecToAztec } = useCurrency({ exchangeRate: parseFloat(exchangeRate) || null });
+  const portfolioAztec = stAztecToAztec(stAztecBalance);
 
   return (
     <PageLayout
@@ -48,7 +51,7 @@ export function StakingFeature() {
       bottomCard={
         <PortfolioCard
           isConnected={isConnected}
-          totalStaked={stAztecBalance}
+          totalStaked={portfolioAztec}
           rewardsEarned={rewardsEarned}
           className="lg:h-card-third"
         />
