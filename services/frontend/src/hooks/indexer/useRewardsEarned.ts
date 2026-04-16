@@ -217,8 +217,7 @@ export function useRewardsEarned() {
       }
 
       const total = realizedGain + unrealizedGain;
-      const clamped = total < 0n ? 0n : total;
-      return Number(formatEther(clamped)).toFixed(2);
+      return Number(formatEther(total)).toFixed(2);
     }
 
     // -------------------------------------------------------------------------
@@ -257,8 +256,7 @@ export function useRewardsEarned() {
     const unrealizedGain = currentValue - costOf(sharesHeld);
 
     const total = realizedGain + unrealizedGain;
-    const clamped = total < 0n ? 0n : total;
-    return Number(formatEther(clamped)).toFixed(2);
+    return Number(formatEther(total)).toFixed(2);
   }, [deposits, completedWithdrawals, accountingHistory, exchangeRate, rawStAztecBalance]);
 
   return { rewardsEarned, isLoading };
