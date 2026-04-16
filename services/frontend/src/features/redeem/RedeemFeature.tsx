@@ -2,6 +2,7 @@ import { useRedeemState } from "./hooks";
 import { ClaimsCard, WithdrawalCard } from "./components";
 import { PortfolioCard } from "@/components/cards";
 import { PageLayout } from "@/components/layout/page-layout";
+import { useCurrency } from "@/hooks/useCurrency";
 
 export function RedeemFeature() {
   const {
@@ -36,6 +37,9 @@ export function RedeemFeature() {
     claimingRequestId,
     claimHash,
   } = useRedeemState();
+
+  const { stAztecToAztec } = useCurrency({ exchangeRate: parseFloat(exchangeRate) || null });
+  const portfolioAztec = stAztecToAztec(stAztecBalance);
 
   return (
     <PageLayout
@@ -77,7 +81,7 @@ export function RedeemFeature() {
       bottomCard={
         <PortfolioCard
           isConnected={isConnected}
-          totalStaked={stAztecBalance}
+          totalStaked={portfolioAztec}
           rewardsEarned={rewardsEarned}
           className="lg:h-card-third"
         />
