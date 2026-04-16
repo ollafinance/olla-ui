@@ -12,7 +12,7 @@ export function TransactionErrorCard({
 }: TransactionErrorCardProps) {
   return (
     <div className="bg-destructive-muted rounded-card flex h-full min-h-[551px] w-full flex-col gap-2 p-8">
-      <div className="text-destructive-dark text-[67px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap">
+      <div className="text-destructive-dark text-4xl leading-none font-medium tracking-[-1.35px] whitespace-nowrap sm:text-5xl md:text-[60px] lg:text-[50px]">
         <p className="mb-0">Transaction</p>
         <p>Failed</p>
       </div>

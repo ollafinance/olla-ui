@@ -26,7 +26,7 @@ export function TransactionSuccessCard({
   if (variant === "staking") {
     return (
       <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
-        <div className="text-text-display text-[67.43px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap">
+        <div className="text-text-display text-4xl leading-none font-medium tracking-[-1.35px] whitespace-nowrap sm:text-5xl md:text-[60px] lg:text-[50px]">
           <p className="mb-0">Transaction</p>
           <p>Successful!</p>
         </div>
@@ -83,7 +83,7 @@ export function TransactionSuccessCard({
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">
-      <div className="text-[60px] leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black">
+      <div className="text-3xl leading-none font-medium tracking-[-1.35px] whitespace-nowrap text-black sm:text-[40px] md:text-[50px] lg:text-[42px]">
         <p className="mb-0">{title}</p>
         <p>{subtitle}</p>
       </div>
