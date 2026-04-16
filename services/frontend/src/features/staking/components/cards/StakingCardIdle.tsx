@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
@@ -7,8 +6,10 @@ import { BalanceBadge } from "@/components/ui/BalanceBadge";
 import { PercentageButtons } from "@/components/ui/PercentageButtons";
 import { ProtocolInfo } from "@/components/ProtocolInfo";
 import { useCurrency } from "@/hooks/useCurrency";
+import { useAmountInput } from "@/hooks/useAmountInput";
+import { usePercentageSelect } from "@/hooks/usePercentageSelect";
 import { STAKING_CONSTANTS } from "../../constants";
-import { sanitizeNumericInput } from "@/lib/utils";
+import { getAmountSizeClass } from "@/lib/utils";
 
 interface StakingCardIdleProps {
   amount: string;
@@ -28,23 +29,24 @@ export function StakingCardIdle({
   onStake,
 }: StakingCardIdleProps) {
   const { isUsdMode, aztecToUsd, usdToAztec } = useCurrency();
-  const [selectedPercentage, setSelectedPercentage] = useState<number | undefined>(0.25);
 
-  const handlePercentageSelect = (percentage: number) => {
-    setSelectedPercentage(percentage);
-    const parsedBalance = parseFloat(balance);
-    if (isNaN(parsedBalance) || parsedBalance <= 0) return;
+  const { inputValue, handleInputChange: handleAmountChange } = useAmountInput({
+    amount,
+    isUsdMode,
+    onAmountChange,
+    usdToToken: usdToAztec,
+    tokenToUsd: aztecToUsd,
+  });
 
-    if (isUsdMode) {
-      const usdBalance = aztecToUsd(parsedBalance);
-      const newUsdAmount = (parseFloat(usdBalance) * percentage).toFixed(2);
-      const convertedAztecAmount = usdToAztec(newUsdAmount);
-      onAmountChange(Number(convertedAztecAmount) > parsedBalance ? balance : convertedAztecAmount);
-    } else {
-      const newAmount = (parsedBalance * percentage).toFixed(2);
-      onAmountChange(Number(newAmount) > parsedBalance ? balance : newAmount);
-    }
-  };
+  const { selectedPercentage, setSelectedPercentage, handlePercentageSelect } =
+    usePercentageSelect({
+      balance,
+      isUsdMode,
+      onAmountChange,
+      usdToToken: usdToAztec,
+      tokenToUsd: aztecToUsd,
+      initialPercentage: 0.25,
+    });
 
   const usdValue = aztecToUsd(amount);
 
@@ -56,24 +58,17 @@ export function StakingCardIdle({
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSelectedPercentage(undefined);
-    const inputValue = sanitizeNumericInput(e.target.value);
-
-    if (isUsdMode) {
-      const usdAmount = parseFloat(inputValue);
-      if (!isNaN(usdAmount) && usdAmount > 0) {
-        onAmountChange(usdToAztec(usdAmount));
-      } else {
-        onAmountChange("0");
-      }
-    } else {
-      onAmountChange(inputValue);
-    }
+    handleAmountChange(e);
   };
 
-  const displayValue = isUsdMode ? usdValue : amount;
   const primaryLabel = isUsdMode ? "USD" : "Aztec";
   const secondaryValue = isUsdMode ? amount : usdValue;
   const secondaryLabel = isUsdMode ? "Aztec" : "$";
+
+  const amountSizeClass = getAmountSizeClass(
+    (isUsdMode ? "$" : "") + (inputValue || "0.00"),
+    "staking"
+  );
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col items-center justify-between p-6">
@@ -90,10 +85,12 @@ export function StakingCardIdle({
           onSelect={handlePercentageSelect}
         />
 
-        <div className="flex w-full items-end justify-between">
-          <div className="flex max-w-[70%] items-end">
+        <div className="flex w-full items-end justify-between gap-2">
+          <div className="flex min-w-0 flex-1 items-end">
             {isUsdMode && (
-              <span className="text-text-display pr-2 text-[67px] leading-[1.16] font-medium tracking-[-1.35px]">
+              <span
+                className={`text-text-display pr-2 ${amountSizeClass} leading-[1.16] font-medium tracking-[-1.35px]`}
+              >
                 $
               </span>
             )}
@@ -101,9 +98,10 @@ export function StakingCardIdle({
               type="text"
               inputMode="decimal"
               placeholder="0.00"
-              value={displayValue}
+              maxLength={22}
+              value={inputValue}
               onChange={handleInputChange}
-              className="text-text-display w-full border-none bg-transparent text-[67px] leading-[1.16] font-medium tracking-[-1.35px] outline-none"
+              className={`text-text-display w-full min-w-0 border-none bg-transparent ${amountSizeClass} leading-[1.16] font-medium tracking-[-1.35px] outline-none`}
             />
           </div>
           <span className="text-text-display shrink-0 text-base leading-[1.8] font-medium text-black">

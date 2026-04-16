@@ -213,7 +213,12 @@ export function useRedeemState(): UseRedeemStateReturn {
   // Liquidity check for instant redemption
   const canInstantRedeem = useMemo(() => {
     if (!isInstantMode || !amount || !reads.availableForInstantRedemption) return true;
-    const requestedShares = parseEther(amount);
+    let requestedShares: bigint;
+    try {
+      requestedShares = parseEther(amount);
+    } catch {
+      return true;
+    }
     return reads.availableForInstantRedemption >= requestedShares;
   }, [isInstantMode, amount, reads.availableForInstantRedemption]);
 
