@@ -9,6 +9,8 @@ export { useWithdrawalRequest } from "./useWithdrawalQueue";
 export { useBlockWatcher } from "./useBlockWatcher";
 export { useProtocolApy } from "./useProtocolApy";
 export { useAztecApr } from "./useAztecApr";
+export { useTransactionFeeEstimate } from "./useTransactionFeeEstimate";
+export type { TransactionType } from "./useTransactionFeeEstimate";
 export { useWithdrawalEvents, type WithdrawalEventData } from "./useWithdrawalEvents";
 export {
   useInstantRedemptionEvents,

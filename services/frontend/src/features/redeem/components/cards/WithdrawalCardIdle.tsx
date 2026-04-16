@@ -6,10 +6,10 @@ import { PercentageButtons } from "@/components/ui/PercentageButtons";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAmountInput } from "@/hooks/useAmountInput";
 import { usePercentageSelect } from "@/hooks/usePercentageSelect";
+import { useTransactionFeeEstimate } from "@/hooks/protocol";
 import { getAmountSizeClass } from "@/lib/utils";
 import infoIcon from "@/assets/icons/info-icon.svg";
 import { BalanceBadge } from "@/components/ui/BalanceBadge";
-import { STAKING_CONSTANTS } from "@/features/staking/constants";
 
 interface WithdrawalCardIdleProps {
   amount: string;
@@ -92,6 +92,10 @@ export function WithdrawalCardIdle({
     }
     onInstantModeChange(checked);
   };
+
+  const transactionFee = useTransactionFeeEstimate(
+    isInstantMode ? "withdraw-instant" : "withdraw-request"
+  );
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col">
@@ -224,7 +228,7 @@ export function WithdrawalCardIdle({
                   Transaction Fee
                 </span>
                 <span className="text-[9px] leading-[1.4] font-medium tracking-[0.27px] text-[#6c6c6c]">
-                  ~{STAKING_CONSTANTS.TRANSACTION_FEE} Aztec
+                  ~{transactionFee} ETH
                 </span>
               </div>
             </div>

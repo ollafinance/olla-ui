@@ -8,7 +8,7 @@ import { ProtocolInfo } from "@/components/ProtocolInfo";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAmountInput } from "@/hooks/useAmountInput";
 import { usePercentageSelect } from "@/hooks/usePercentageSelect";
-import { STAKING_CONSTANTS } from "../../constants";
+import { useTransactionFeeEstimate } from "@/hooks/protocol";
 import { getAmountSizeClass } from "@/lib/utils";
 
 interface StakingCardIdleProps {
@@ -70,6 +70,8 @@ export function StakingCardIdle({
     "staking"
   );
 
+  const transactionFee = useTransactionFeeEstimate("stake");
+
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col items-center justify-between p-6">
       <div className="flex w-full items-center justify-between">
@@ -120,10 +122,7 @@ export function StakingCardIdle({
       </div>
 
       <div className="gap-43px flex w-full flex-col items-center justify-between lg:flex-row">
-        <ProtocolInfo
-          exchangeRate={exchangeRate}
-          transactionFee={STAKING_CONSTANTS.TRANSACTION_FEE}
-        />
+        <ProtocolInfo exchangeRate={exchangeRate} transactionFee={transactionFee} />
         <div className="flex items-center gap-2">
           {isConnected ? (
             isBalanceExceeded ? (
