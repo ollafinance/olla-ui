@@ -21,18 +21,18 @@ export function Footer() {
               className="h-5 w-auto"
             />
           </Link>
-          <a
-            href="/terms"
+          <Link
+            to="/terms"
             className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
           >
             Terms of Use
-          </a>
-          <a
-            href="/privacy"
+          </Link>
+          <Link
+            to="/privacy"
             className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
           >
             Privacy Notice
-          </a>
+          </Link>
         </div>
         <span className="text-muted-foreground text-sm font-medium">v0.1.0</span>
       </div>
