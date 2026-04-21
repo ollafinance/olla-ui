@@ -11,7 +11,6 @@ export function RedeemFeature() {
     amount,
     setAmount,
     isInstantMode,
-    setIsInstantMode,
     withdraw,
     reset,
     error,
@@ -21,8 +20,6 @@ export function RedeemFeature() {
     grossAssets,
     previewAssets,
     minAssetsOut,
-    instantWithdrawFee,
-    instantWithdrawFeePercent,
     canInstantRedeem,
     hash,
     // Claims
@@ -58,9 +55,6 @@ export function RedeemFeature() {
           previewAssets={previewAssets}
           minAssetsOut={minAssetsOut}
           isInstantMode={isInstantMode}
-          onInstantModeChange={setIsInstantMode}
-          instantWithdrawFee={instantWithdrawFee}
-          instantWithdrawFeePercent={instantWithdrawFeePercent}
           canInstantRedeem={canInstantRedeem}
           hash={hash}
         />

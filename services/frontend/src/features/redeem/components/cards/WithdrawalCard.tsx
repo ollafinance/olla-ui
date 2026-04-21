@@ -20,9 +20,6 @@ interface WithdrawalCardProps {
   previewAssets: string;
   minAssetsOut: string;
   isInstantMode: boolean;
-  onInstantModeChange: (val: boolean) => void;
-  instantWithdrawFee: string;
-  instantWithdrawFeePercent: string;
   canInstantRedeem: boolean;
   hash: `0x${string}` | undefined;
 }
@@ -41,9 +38,6 @@ export function WithdrawalCard({
   previewAssets,
   minAssetsOut,
   isInstantMode,
-  onInstantModeChange,
-  instantWithdrawFee,
-  instantWithdrawFeePercent,
   canInstantRedeem,
   hash,
 }: WithdrawalCardProps) {
@@ -61,9 +55,6 @@ export function WithdrawalCard({
           previewAssets={previewAssets}
           minAssetsOut={minAssetsOut}
           isInstantMode={isInstantMode}
-          onInstantModeChange={onInstantModeChange}
-          instantWithdrawFee={instantWithdrawFee}
-          instantWithdrawFeePercent={instantWithdrawFeePercent}
           canInstantRedeem={canInstantRedeem}
         />
       );

@@ -1,6 +1,4 @@
 import { Button } from "@/components/ui/Button";
-import { Tooltip } from "@/components/ui/Tooltip";
-import { Toggle } from "@/components/ui/Toggle";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { PercentageButtons } from "@/components/ui/PercentageButtons";
 import { useCurrency } from "@/hooks/useCurrency";
@@ -8,7 +6,6 @@ import { useAmountInput } from "@/hooks/useAmountInput";
 import { usePercentageSelect } from "@/hooks/usePercentageSelect";
 import { useTransactionFeeEstimate } from "@/hooks/protocol";
 import { getAmountSizeClass } from "@/lib/utils";
-import infoIcon from "@/assets/icons/info-icon.svg";
 import { BalanceBadge } from "@/components/ui/BalanceBadge";
 
 interface WithdrawalCardIdleProps {
@@ -22,9 +19,6 @@ interface WithdrawalCardIdleProps {
   previewAssets: string;
   minAssetsOut: string;
   isInstantMode: boolean;
-  onInstantModeChange: (val: boolean) => void;
-  instantWithdrawFee: string;
-  instantWithdrawFeePercent: string;
   canInstantRedeem: boolean;
 }
 
@@ -37,9 +31,6 @@ export function WithdrawalCardIdle({
   exchangeRate: exchangeRateProp,
   previewAssets,
   isInstantMode,
-  onInstantModeChange,
-  instantWithdrawFee,
-  instantWithdrawFeePercent,
   canInstantRedeem,
 }: WithdrawalCardIdleProps) {
   const exchangeRateNum = parseFloat(exchangeRateProp) || null;
@@ -85,13 +76,6 @@ export function WithdrawalCardIdle({
 
   const receiveDisplay = isUsdMode ? `$${previewUsdValue}` : previewAssets;
   const receiveSizeClass = getAmountSizeClass(receiveDisplay, "withdraw");
-
-  const handleToggleInstantMode = (checked: boolean) => {
-    if (!canInstantRedeem && checked) {
-      return;
-    }
-    onInstantModeChange(checked);
-  };
 
   const transactionFee = useTransactionFeeEstimate(
     isInstantMode ? "withdraw-instant" : "withdraw-request"
@@ -155,37 +139,9 @@ export function WithdrawalCardIdle({
       {/* Bottom section - always at bottom */}
       <div className="px-4 pb-4">
         <div className="flex w-full flex-col gap-3 rounded-[28px] bg-[#efeee6] p-4">
-          <div className="flex w-full items-start justify-between">
-            <p className="text-base leading-[1.16] font-medium text-[rgba(61,0,50,0.82)]">
-              You will receive
-            </p>
-            <div className="flex flex-col items-end gap-1">
-              <div className="flex items-center gap-2">
-                <span className="text-text-display text-xs">Instant withdrawal</span>
-                <div className="relative">
-                  <Toggle
-                    checked={isInstantMode}
-                    onChange={handleToggleInstantMode}
-                    disabled={!canInstantRedeem && !isInstantMode}
-                  />
-                  {!canInstantRedeem && (
-                    <Tooltip content="Insufficient liquidity in the buffer for instant withdrawal">
-                      <img
-                        src={infoIcon}
-                        alt=""
-                        className="absolute -top-1 -right-1 h-3 w-3 opacity-50"
-                      />
-                    </Tooltip>
-                  )}
-                </div>
-              </div>
-              {isInstantMode && (
-                <p className="text-[9px] tracking-[0.27px] text-[#6c6c6c]">
-                  Fee ({instantWithdrawFeePercent}) ~{instantWithdrawFee} Aztec
-                </p>
-              )}
-            </div>
-          </div>
+          <p className="text-base leading-[1.16] font-medium text-[rgba(61,0,50,0.82)]">
+            You will receive
+          </p>
 
           <div className="flex w-full flex-col gap-2">
             {/* Net amount - always shown */}
