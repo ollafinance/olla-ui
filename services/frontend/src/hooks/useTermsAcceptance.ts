@@ -12,6 +12,10 @@ function readAccepted(): boolean {
   }
 }
 
+export function isTermsAccepted(): boolean {
+  return readAccepted();
+}
+
 export function useTermsAcceptance() {
   const [accepted, setAccepted] = useState<boolean>(() => readAccepted());
 
@@ -35,5 +39,15 @@ export function useTermsAcceptance() {
     window.dispatchEvent(new Event(EVENT));
   }, []);
 
-  return { accepted, accept };
+  const reset = useCallback(() => {
+    try {
+      window.localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      /* noop */
+    }
+    setAccepted(false);
+    window.dispatchEvent(new Event(EVENT));
+  }, []);
+
+  return { accepted, accept, reset };
 }
