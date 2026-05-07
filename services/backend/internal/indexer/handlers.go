@@ -124,70 +124,6 @@ func (h *EventHandler) ParseWithdrawalClaimed(log types.Log, contractAddr string
 	}, nil
 }
 
-func (h *EventHandler) ParseInstantRedemption(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
-	if len(log.Topics) < 3 {
-		return nil, fmt.Errorf("invalid InstantRedemption event: expected at least 3 topics, got %d", len(log.Topics))
-	}
-
-	owner := common.BytesToAddress(log.Topics[1].Bytes())
-	recipient := common.BytesToAddress(log.Topics[2].Bytes())
-
-	event, ok := h.abi.Events["InstantRedemption"]
-	if !ok {
-		return nil, fmt.Errorf("InstantRedemption event not found in ABI")
-	}
-
-	unpacked, err := event.Inputs.Unpack(log.Data)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unpack InstantRedemption event: %w", err)
-	}
-
-	if len(unpacked) < 5 {
-		return nil, fmt.Errorf("invalid InstantRedemption event: expected 5 non-indexed fields, got %d", len(unpacked))
-	}
-
-	shares, ok := unpacked[0].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid InstantRedemption event: shares is not *big.Int")
-	}
-
-	grossAssets, ok := unpacked[1].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid InstantRedemption event: grossAssets is not *big.Int")
-	}
-
-	fee, ok := unpacked[2].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid InstantRedemption event: fee is not *big.Int")
-	}
-
-	netAssets, ok := unpacked[3].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid InstantRedemption event: netAssets is not *big.Int")
-	}
-
-	exchangeRate, ok := unpacked[4].(*big.Int)
-	if !ok {
-		return nil, fmt.Errorf("invalid InstantRedemption event: exchangeRate is not *big.Int")
-	}
-
-	return &models.WithdrawalRequest{
-		Contract:     contractAddr,
-		TxHash:       log.TxHash.Hex(),
-		BlockNumber:  int64(log.BlockNumber),
-		LogIndex:     int(log.Index),
-		EventType:    models.EventTypeInstantRedemption,
-		Owner:        owner.Hex(),
-		Recipient:    recipient.Hex(),
-		Shares:       bigIntToStringPtr(shares),
-		GrossAssets:  bigIntToStringPtr(grossAssets),
-		Fee:          bigIntToStringPtr(fee),
-		NetAssets:    bigIntToStringPtr(netAssets),
-		ExchangeRate: bigIntToStringPtr(exchangeRate),
-		Status:       models.StatusCompleted,
-	}, nil
-}
-
 func (h *EventHandler) ParseRedeemRequest(log types.Log, contractAddr string) (*models.WithdrawalRequest, error) {
 	if len(log.Topics) < 4 {
 		return nil, fmt.Errorf("invalid RedeemRequest event: expected at least 4 topics, got %d", len(log.Topics))
@@ -242,8 +178,6 @@ func (h *EventHandler) IdentifyEventType(log types.Log) string {
 		return "Deposit"
 	case h.signatures.IsWithdrawalClaimed(topicHash):
 		return "WithdrawalClaimed"
-	case h.signatures.IsInstantRedemption(topicHash):
-		return "InstantRedemption"
 	case h.signatures.IsRedeemRequest(topicHash):
 		return "RedeemRequest"
 	case h.signatures.IsAccountingUpdated(topicHash):

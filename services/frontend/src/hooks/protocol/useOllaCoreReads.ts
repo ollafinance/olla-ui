@@ -61,16 +61,6 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     },
   });
 
-  const { data: previewRedeemAssets, refetch: refetchPreviewRedeem } = useReadContract({
-    address: CONTRACTS.OllaVault.address,
-    abi: CONTRACTS.OllaVault.abi,
-    functionName: "previewInstantRedeem",
-    args: amountArgs,
-    query: {
-      enabled: amountEnabled,
-    },
-  });
-
   const { data: activeRequestIds } = useReadContract({
     address: CONTRACTS.OllaVault.address,
     abi: CONTRACTS.OllaVault.abi,
@@ -82,34 +72,12 @@ export function useOllaCoreReads(options: UseOllaCoreReadsOptions = {}) {
     },
   });
 
-  const { data: availableForInstantRedemption } = useReadContract({
-    address: CONTRACTS.OllaVault.address,
-    abi: CONTRACTS.OllaVault.abi,
-    functionName: "availableForInstantRedemption",
-    query: {
-      refetchInterval: 5000,
-    },
-  });
-
-  const { data: instantRedemptionFeeBP } = useReadContract({
-    address: CONTRACTS.OllaVault.address,
-    abi: CONTRACTS.OllaVault.abi,
-    functionName: "instantRedemptionFeeBP",
-    query: {
-      refetchInterval: 30000, // Fee changes less frequently
-    },
-  });
-
   return {
     exchangeRate: exchangeRate as bigint | undefined,
     potentialShares: potentialShares as bigint | undefined,
     potentialAssets: potentialAssets as bigint | undefined,
     previewDepositShares: previewDepositShares as bigint | undefined,
-    previewRedeemAssets: previewRedeemAssets as bigint | undefined,
     activeRequestIds: (activeRequestIds as bigint[]) || [],
-    availableForInstantRedemption: availableForInstantRedemption as bigint | undefined,
-    instantRedemptionFeeBP: instantRedemptionFeeBP as bigint | undefined,
     refetchPreviewDeposit,
-    refetchPreviewRedeem,
   };
 }

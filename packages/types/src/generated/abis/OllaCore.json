@@ -136,6 +136,19 @@
   },
   {
     "type": "function",
+    "name": "REWARDS_ACCUMULATOR_DUST_THRESHOLD",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "UPGRADE_INTERFACE_VERSION",
     "inputs": [],
     "outputs": [
@@ -303,12 +316,22 @@
             "internalType": "uint256"
           },
           {
+            "name": "cumulativeSlashingAdjustments",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
             "name": "latestReportCumulativeDeposits",
             "type": "uint256",
             "internalType": "uint256"
           },
           {
             "name": "latestReportCumulativeWithdrawals",
+            "type": "uint256",
+            "internalType": "uint256"
+          },
+          {
+            "name": "latestReportCumulativeSlashingAdjustments",
             "type": "uint256",
             "internalType": "uint256"
           }
@@ -432,6 +455,19 @@
     ],
     "outputs": [],
     "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "lastRebalanceTimestamp",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint48",
+        "internalType": "uint48"
+      }
+    ],
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -639,7 +675,7 @@
     "name": "renounceOwnership",
     "inputs": [],
     "outputs": [],
-    "stateMutability": "nonpayable"
+    "stateMutability": "view"
   },
   {
     "type": "function",
@@ -757,19 +793,6 @@
   },
   {
     "type": "function",
-    "name": "setTargetBufferedAssets",
-    "inputs": [
-      {
-        "name": "newBuffer",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ],
-    "outputs": [],
-    "stateMutability": "nonpayable"
-  },
-  {
-    "type": "function",
     "name": "setTreasuryFeeSplitBP",
     "inputs": [
       {
@@ -835,19 +858,6 @@
         "name": "",
         "type": "bool",
         "internalType": "bool"
-      }
-    ],
-    "stateMutability": "view"
-  },
-  {
-    "type": "function",
-    "name": "targetBufferedAssets",
-    "inputs": [],
-    "outputs": [
-      {
-        "name": "",
-        "type": "uint256",
-        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -932,6 +942,19 @@
         "name": "",
         "type": "address",
         "internalType": "address"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "withdrawalRate",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
       }
     ],
     "stateMutability": "view"
@@ -1334,25 +1357,6 @@
   },
   {
     "type": "event",
-    "name": "TargetBufferedAssetsUpdated",
-    "inputs": [
-      {
-        "name": "oldBuffer",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      },
-      {
-        "name": "newBuffer",
-        "type": "uint256",
-        "indexed": false,
-        "internalType": "uint256"
-      }
-    ],
-    "anonymous": false
-  },
-  {
-    "type": "event",
     "name": "TreasuryFeeSplitUpdated",
     "inputs": [
       {
@@ -1642,37 +1646,10 @@
   },
   {
     "type": "error",
-    "name": "OllaCore__InvalidSlashingDelta",
-    "inputs": [
-      {
-        "name": "previous",
-        "type": "uint256",
-        "internalType": "uint256"
-      },
-      {
-        "name": "current",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
     "name": "OllaCore__InvalidSplitBP",
     "inputs": [
       {
         "name": "splitBP",
-        "type": "uint256",
-        "internalType": "uint256"
-      }
-    ]
-  },
-  {
-    "type": "error",
-    "name": "OllaCore__InvalidTargetBufferedAssets",
-    "inputs": [
-      {
-        "name": "newBuffer",
         "type": "uint256",
         "internalType": "uint256"
       }
