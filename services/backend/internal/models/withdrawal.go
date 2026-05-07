@@ -10,7 +10,6 @@ type EventType string
 
 const (
 	EventTypeWithdrawalClaimed EventType = "withdrawal_claimed"
-	EventTypeInstantRedemption EventType = "instant_redemption"
 	EventTypeRedeemRequest     EventType = "redeem_request"
 )
 

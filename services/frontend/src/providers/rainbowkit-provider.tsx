@@ -5,6 +5,12 @@ import {
 } from "@rainbow-me/rainbowkit";
 import { merge } from "lodash";
 import { useTheme } from "@/hooks/useTheme";
+import { TermsDisclaimer } from "@/components/TermsDisclaimer";
+
+const appInfo = {
+  appName: "Olla Finance",
+  disclaimer: TermsDisclaimer,
+};
 
 const ollaColors = {
   accentColor: "#FFB0F1",
@@ -72,5 +78,9 @@ export function RainbowKitProvider({ children }: { children: React.ReactNode }) 
         ? ollaDarkTheme
         : ollaLightTheme;
 
-  return <RainbowKitProviderLib theme={activeTheme}>{children}</RainbowKitProviderLib>;
+  return (
+    <RainbowKitProviderLib theme={activeTheme} appInfo={appInfo}>
+      {children}
+    </RainbowKitProviderLib>
+  );
 }

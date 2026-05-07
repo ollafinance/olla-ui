@@ -67,8 +67,6 @@ function interpolateEntryRate(
  *     (weighted across deposits using proportional share ownership)
  *
  *   Realized gain (completed exits):
- *     For instant_redemption:
- *       realizedGain += shares × (exitRate - entryRate) / WAD
  *     For redeem_request (completed):
  *       realizedGain += assets_claimed - shares × entryRate / WAD
  *
@@ -184,11 +182,7 @@ export function useRewardsEarned() {
             }
           }
 
-          if (wr.event_type === "instant_redemption" && wr.exchange_rate) {
-            // Instant: proceeds at exit rate minus FIFO cost basis
-            const exitRate = BigInt(wr.exchange_rate);
-            realizedGain += (exitShares * exitRate) / WAD - costBasis;
-          } else if (wr.event_type === "redeem_request" && wr.assets_claimed) {
+          if (wr.event_type === "redeem_request" && wr.assets_claimed) {
             // Queued withdrawal: assets claimed minus FIFO cost basis
             realizedGain += BigInt(wr.assets_claimed) - costBasis;
           }
@@ -242,9 +236,7 @@ export function useRewardsEarned() {
     let realizedGain = 0n;
     for (const wr of completedWithdrawals) {
       try {
-        if (wr.event_type === "instant_redemption" && wr.shares && wr.net_assets) {
-          realizedGain += BigInt(wr.net_assets) - costOf(BigInt(wr.shares));
-        } else if (wr.event_type === "redeem_request" && wr.shares && wr.assets_claimed) {
+        if (wr.event_type === "redeem_request" && wr.shares && wr.assets_claimed) {
           realizedGain += BigInt(wr.assets_claimed) - costOf(BigInt(wr.shares));
         }
       } catch {

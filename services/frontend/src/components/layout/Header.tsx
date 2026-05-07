@@ -1,5 +1,5 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
 import { Link } from "@tanstack/react-router";
+import { ConnectButtonWithTerms } from "@/components/ConnectButtonWithTerms";
 import ollaLogoWhite from "@/assets/logo/olla-logo-white.svg";
 
 export function Header() {
@@ -12,7 +12,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center">
-        <ConnectButton />
+        <ConnectButtonWithTerms />
       </div>
     </header>
   );

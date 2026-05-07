@@ -1,4 +1,4 @@
-import { ConnectButton } from "@rainbow-me/rainbowkit";
+import { ConnectButtonWithTerms } from "@/components/ConnectButtonWithTerms";
 import { Button } from "@/components/ui/Button";
 import { Tooltip } from "@/components/ui/Tooltip";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
@@ -151,7 +151,7 @@ export function StakingCardIdle({
               </Button>
             )
           ) : (
-            <ConnectButton />
+            <ConnectButtonWithTerms />
           )}
         </div>
       </div>

@@ -7,7 +7,6 @@ interface TransactionSuccessCardProps {
   variant: "staking" | "withdrawal";
   amount: string;
   shares?: string;
-  isInstantMode?: boolean;
   hash?: `0x${string}` | undefined;
   onPrimaryAction: () => void;
 }
@@ -16,7 +15,6 @@ export function TransactionSuccessCard({
   variant,
   amount,
   shares,
-  isInstantMode,
   hash,
   onPrimaryAction,
 }: TransactionSuccessCardProps) {
@@ -75,11 +73,9 @@ export function TransactionSuccessCard({
     );
   }
 
-  const title = isInstantMode ? "Instant Withdrawal" : "Withdraw Request";
-  const subtitle = isInstantMode ? "Completed!" : "Created!";
-  const message = isInstantMode
-    ? "Your Aztec tokens are now available in your wallet."
-    : "You can see the status on the right claim section.";
+  const title = "Withdraw Request";
+  const subtitle = "Created!";
+  const message = "You can see the status on the right claim section.";
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col p-8">

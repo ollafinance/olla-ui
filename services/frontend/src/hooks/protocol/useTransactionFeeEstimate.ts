@@ -1,7 +1,7 @@
 import { useEstimateFeesPerGas } from "wagmi";
 import { fromScaledBigInt } from "@/lib/utils";
 
-export type TransactionType = "stake" | "withdraw-request" | "withdraw-instant";
+export type TransactionType = "stake" | "withdraw-request";
 
 // Typical gas units per operation. Exact values vary by path (permit vs
 // approve-then-write) and calldata, but these are close enough for a UI
@@ -9,7 +9,6 @@ export type TransactionType = "stake" | "withdraw-request" | "withdraw-instant";
 const GAS_UNITS: Record<TransactionType, bigint> = {
   stake: 180_000n,
   "withdraw-request": 130_000n,
-  "withdraw-instant": 170_000n,
 };
 
 // 7 decimals shows fees down to ~100 gwei × 100k gas without rounding to zero
