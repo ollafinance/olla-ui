@@ -164,7 +164,7 @@ const config = WALLET_CONNECT_PROJECT_ID
 // session "connected" via emitter.on('connect', ...) without ever calling
 // connector.connect (MetaMask "manually connect to current site", Safe iframe,
 // pre-authorised injected wallets), which bypasses every connector wrapper.
-type InternalConfig = typeof config & {
+type InternalConfig = Omit<typeof config, "_internal"> & {
   _internal: {
     connectors: {
       setup: (fn: CreateConnectorFn) => Connector;
@@ -181,7 +181,7 @@ internalConnectors.subscribe((connectors) => {
 });
 
 const originalSetup = internalConnectors.setup.bind(internalConnectors);
-internalConnectors.setup = (connectorFn) => {
+internalConnectors.setup = (connectorFn: CreateConnectorFn) => {
   const connector = originalSetup(connectorFn);
   applyTermsGate(connector as GatedConnector);
   return connector;
