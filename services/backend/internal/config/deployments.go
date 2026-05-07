@@ -68,14 +68,6 @@ func (d *Deployment) OllaVaultAddress() (string, error) {
 	return addr, nil
 }
 
-func (d *Deployment) WithdrawalQueueAddress() (string, error) {
-	addr, ok := d.Addresses["WithdrawalQueueProxy"]
-	if !ok {
-		return "", fmt.Errorf("WithdrawalQueueProxy address not found in deployment")
-	}
-	return addr, nil
-}
-
 func (d *Deployment) GetStartBlock(configuredBlock int64) (int64, error) {
 	// If START_BLOCK is explicitly set to non--1 value, use it
 	if configuredBlock > 0 {

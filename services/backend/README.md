@@ -14,9 +14,8 @@ A Go-based indexer service for the Olla liquid staking protocol. Indexes Ethereu
 | Event | Description |
 |-------|-------------|
 | `Deposit` | User stakes assets into the vault |
-| `WithdrawalRequested` | User initiates a pending withdrawal |
+| `RedeemRequest` | User initiates a pending withdrawal |
 | `WithdrawalClaimed` | User claims a pending withdrawal |
-| `InstantRedemption` | User performs instant withdrawal with fee |
 
 ## Prerequisites
 

@@ -26,8 +26,6 @@ const ERROR_MESSAGES: Record<string, (args?: ErrorArgs) => string> = {
   // Vault errors
   OllaVault__DepositCapExceeded: (args) =>
     `Deposit cap exceeded (tried ${fmtEth(args?.[0])}, total ${fmtEth(args?.[1])})`,
-  OllaVault__InsufficientLiquidity: (args) =>
-    `Not enough liquidity for instant redemption (requested ${fmtEth(args?.[0])}, available ${fmtEth(args?.[1])})`,
   OllaVault__SlippageExceeded: (args) =>
     `Transaction failed due to price movement (received ${fmtEth(args?.[0])}, minimum ${fmtEth(args?.[1])})`,
   OllaVault__InvalidAmount: () => "Invalid amount",

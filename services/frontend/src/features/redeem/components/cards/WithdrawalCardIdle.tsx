@@ -17,9 +17,6 @@ interface WithdrawalCardIdleProps {
   exchangeRate: string;
   grossAssets: string;
   previewAssets: string;
-  minAssetsOut: string;
-  isInstantMode: boolean;
-  canInstantRedeem: boolean;
 }
 
 export function WithdrawalCardIdle({
@@ -30,8 +27,6 @@ export function WithdrawalCardIdle({
   balance,
   exchangeRate: exchangeRateProp,
   previewAssets,
-  isInstantMode,
-  canInstantRedeem,
 }: WithdrawalCardIdleProps) {
   const exchangeRateNum = parseFloat(exchangeRateProp) || null;
   const { isUsdMode, stAztecToUsd, usdToStAztec, aztecToUsd } = useCurrency({
@@ -77,9 +72,7 @@ export function WithdrawalCardIdle({
   const receiveDisplay = isUsdMode ? `$${previewUsdValue}` : previewAssets;
   const receiveSizeClass = getAmountSizeClass(receiveDisplay, "withdraw");
 
-  const transactionFee = useTransactionFeeEstimate(
-    isInstantMode ? "withdraw-instant" : "withdraw-request"
-  );
+  const transactionFee = useTransactionFeeEstimate("withdraw-request");
 
   return (
     <div className="bg-card rounded-card flex h-full min-h-[551px] w-full flex-col">
@@ -139,9 +132,11 @@ export function WithdrawalCardIdle({
       {/* Bottom section - always at bottom */}
       <div className="px-4 pb-4">
         <div className="flex w-full flex-col gap-3 rounded-[28px] bg-[#efeee6] p-4">
-          <p className="text-base leading-[1.16] font-medium text-[rgba(61,0,50,0.82)]">
-            You will receive
-          </p>
+          <div className="flex w-full items-start justify-between">
+            <p className="text-base leading-[1.16] font-medium text-[rgba(61,0,50,0.82)]">
+              You will receive
+            </p>
+          </div>
 
           <div className="flex w-full flex-col gap-2">
             {/* Net amount - always shown */}
@@ -193,7 +188,7 @@ export function WithdrawalCardIdle({
               variant="pink"
               size="xl"
               onClick={onWithdraw}
-              disabled={!isInputValid || (isInstantMode && !canInstantRedeem)}
+              disabled={!isInputValid}
               className="rounded-full bg-[#ffb0f1] px-6 py-3.5 text-lg font-medium tracking-[-0.36px] text-[#660053]"
             >
               Withdraw

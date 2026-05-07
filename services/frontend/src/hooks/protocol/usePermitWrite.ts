@@ -50,12 +50,12 @@ export interface UsePermitWriteConfig {
   tokenContract: TokenContractConfig;
   /**
    * Vault function to call **with** the EIP-712 permit signature.
-   * e.g. `"depositWithPermit"` | `"instantRedeemWithPermit"` | `"requestRedeemWithPermit"`
+   * e.g. `"depositWithPermit"` | `"requestRedeemWithPermit"`
    */
   vaultFunctionWithPermit: string;
   /**
    * Vault function to call via the approve-then-write fallback path.
-   * e.g. `"deposit"` | `"instantRedeem"` | `"requestRedeem"`
+   * e.g. `"deposit"` | `"requestRedeem"`
    */
   vaultFunctionFallback: string;
   /**
@@ -69,7 +69,7 @@ export interface UsePermitWriteConfig {
   buildArgsFallback: (params: BuildArgsParams) => unknown[];
   /**
    * Optional vault function to call before signing in order to obtain a preview
-   * value (e.g. `"previewDeposit"`, `"previewInstantRedeem"`).
+   * value (e.g. `"previewDeposit"`).
    * The result is forwarded as `params.previewResult` in `buildArgs*`.
    */
   previewFunctionName?: string;
@@ -85,7 +85,7 @@ export interface UsePermitWriteOptions {
 
 /**
  * Generic hook that encapsulates the EIP-712 permit-sign → vault-call flow
- * shared by `useDeposit`, `useInstantRedeem`, and `useRequestRedeem`.
+ * shared by `useDeposit` and `useRequestRedeem`.
  *
  * On wallets/contracts that do **not** support permits it falls back to
  * `approve` + plain vault call automatically.
@@ -152,7 +152,7 @@ export function usePermitWrite(
         const { parseEther } = await import("viem");
         const value = parseEther(amount);
 
-        // Optional preview call (e.g. previewDeposit / previewInstantRedeem)
+        // Optional preview call (e.g. previewDeposit)
         let previewResult: bigint | undefined;
         if (config.previewFunctionName) {
           const result = await readContract(wagmiConfig, {

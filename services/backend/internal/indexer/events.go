@@ -14,7 +14,6 @@ import (
 type EventSignatures struct {
 	Deposit           string
 	WithdrawalClaimed string
-	InstantRedemption string
 	RedeemRequest     string
 	AccountingUpdated string
 }
@@ -83,7 +82,6 @@ func GetEventSignatures() *EventSignatures {
 	return &EventSignatures{
 		Deposit:           crypto.Keccak256Hash([]byte("Deposit(address,address,uint256,uint256)")).Hex(),
 		WithdrawalClaimed: crypto.Keccak256Hash([]byte("WithdrawalClaimed(uint256,address,uint256)")).Hex(),
-		InstantRedemption: crypto.Keccak256Hash([]byte("InstantRedemption(address,address,uint256,uint256,uint256,uint256,uint256)")).Hex(),
 		RedeemRequest:     crypto.Keccak256Hash([]byte("RedeemRequest(address,address,uint256,address,uint256)")).Hex(),
 		// All 8 fields are non-indexed; canonical signature used for topic0 hash
 		AccountingUpdated: crypto.Keccak256Hash([]byte("AccountingUpdated(uint256,uint256,uint256,int256,uint256,uint256,uint256,uint256)")).Hex(),
@@ -96,10 +94,6 @@ func (s *EventSignatures) IsDeposit(topic string) bool {
 
 func (s *EventSignatures) IsWithdrawalClaimed(topic string) bool {
 	return strings.EqualFold(s.WithdrawalClaimed, topic)
-}
-
-func (s *EventSignatures) IsInstantRedemption(topic string) bool {
-	return strings.EqualFold(s.InstantRedemption, topic)
 }
 
 func (s *EventSignatures) IsRedeemRequest(topic string) bool {

@@ -21,7 +21,7 @@
   },
   {
     "question": "How do I Withdraw?",
-    "answer": "There are three ways to exit the protocol: 1) Redeem your Aztec tokens in Olla interface, subject to the network's unstaking period. 2) Use the 'Instant Withdrawal' in Olla interface to immidiately swap your stAztec for Aztec. 3) Swap on the market — Sell your stAztec on a supported DEX for immediate liquidity, with no waiting period."
+    "answer": "There are two ways to exit the protocol: 1) Redeem your Aztec tokens in Olla interface, subject to the network's unstaking period. 2) Swap on the market — Sell your stAztec on a supported DEX for immediate liquidity, with no waiting period."
   },
   {
     "question": "Is there a minimum amount required to deposit?",
@@ -33,7 +33,7 @@
   },
   {
     "question": "What fees are there?",
-    "answer": "There are two fees that Olla charges: 1) One that is charged automatically on all staking rewards. This fee is used to cover the costs of running the protcol and the validators. 2) A fee on instant withdrawals, which is used to cover the costs of providing liquidity for stAztec. The latter fee is distributed to stAztec holders, so it is effectively a boost to the staking rewards for everyone who holds stAztec."
+    "answer": "Olla charges a single protocol fee that is taken automatically from staking rewards. This fee is used to cover the costs of running the protocol and the validators."
   },
   {
     "question": "What are the risks of using Olla?",

@@ -18,9 +18,6 @@ interface WithdrawalCardProps {
   exchangeRate: string;
   grossAssets: string;
   previewAssets: string;
-  minAssetsOut: string;
-  isInstantMode: boolean;
-  canInstantRedeem: boolean;
   hash: `0x${string}` | undefined;
 }
 
@@ -36,9 +33,6 @@ export function WithdrawalCard({
   exchangeRate,
   grossAssets,
   previewAssets,
-  minAssetsOut,
-  isInstantMode,
-  canInstantRedeem,
   hash,
 }: WithdrawalCardProps) {
   switch (state) {
@@ -53,9 +47,6 @@ export function WithdrawalCard({
           exchangeRate={exchangeRate}
           grossAssets={grossAssets}
           previewAssets={previewAssets}
-          minAssetsOut={minAssetsOut}
-          isInstantMode={isInstantMode}
-          canInstantRedeem={canInstantRedeem}
         />
       );
     case "signing":
@@ -67,7 +58,6 @@ export function WithdrawalCard({
         <TransactionSuccessCard
           variant="withdrawal"
           amount={amount}
-          isInstantMode={isInstantMode}
           hash={hash}
           onPrimaryAction={onReset}
         />

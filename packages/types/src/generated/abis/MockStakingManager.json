@@ -33,6 +33,19 @@
   },
   {
     "type": "function",
+    "name": "claimableUnstakedFunds",
+    "inputs": [],
+    "outputs": [
+      {
+        "name": "",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "stateMutability": "view"
+  },
+  {
+    "type": "function",
     "name": "core",
     "inputs": [],
     "outputs": [
@@ -93,11 +106,6 @@
         "type": "tuple",
         "internalType": "struct IStakingManager.ProviderConfig",
         "components": [
-          {
-            "name": "admin",
-            "type": "address",
-            "internalType": "address"
-          },
           {
             "name": "rewardsRecipient",
             "type": "address",
@@ -165,11 +173,6 @@
         "name": "exitAmount",
         "type": "uint256",
         "internalType": "uint256"
-      },
-      {
-        "name": "hasRemainingExits",
-        "type": "bool",
-        "internalType": "bool"
       }
     ],
     "stateMutability": "pure"
@@ -189,7 +192,7 @@
   },
   {
     "type": "function",
-    "name": "hasExitableUnstakes",
+    "name": "hasFinalizedUnstakes",
     "inputs": [],
     "outputs": [
       {
@@ -334,7 +337,20 @@
   },
   {
     "type": "function",
-    "name": "mockSetHasExitableUnstakes",
+    "name": "mockSetClaimableUnstakedFunds",
+    "inputs": [
+      {
+        "name": "amount",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "nonpayable"
+  },
+  {
+    "type": "function",
+    "name": "mockSetHasFinalizedUnstakes",
     "inputs": [
       {
         "name": "value",
@@ -383,6 +399,19 @@
       }
     ],
     "stateMutability": "view"
+  },
+  {
+    "type": "function",
+    "name": "purgeFailedQueueEntry",
+    "inputs": [
+      {
+        "name": "",
+        "type": "address",
+        "internalType": "address"
+      }
+    ],
+    "outputs": [],
+    "stateMutability": "pure"
   },
   {
     "type": "function",
@@ -502,6 +531,37 @@
   },
   {
     "type": "event",
+    "name": "AggregateStateUnderflowClamped",
+    "inputs": [
+      {
+        "name": "attester",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "field",
+        "type": "bytes32",
+        "indexed": true,
+        "internalType": "bytes32"
+      },
+      {
+        "name": "currentAmount",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      },
+      {
+        "name": "requestedDecrease",
+        "type": "uint256",
+        "indexed": false,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "AttesterRemoved",
     "inputs": [
       {
@@ -540,12 +600,114 @@
   },
   {
     "type": "event",
+    "name": "FailedQueueEntryPurged",
+    "inputs": [
+      {
+        "name": "attester",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "recoveredAmount",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "FullySlashedAttesterPurged",
+    "inputs": [
+      {
+        "name": "attester",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "cachedStake",
+        "type": "uint256",
+        "indexed": true,
+        "internalType": "uint256"
+      },
+      {
+        "name": "reason",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardRollupRemoved",
+    "inputs": [
+      {
+        "name": "rollup",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardRollupTracked",
+    "inputs": [
+      {
+        "name": "rollup",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardsHarvestFailed",
+    "inputs": [
+      {
+        "name": "reason",
+        "type": "bytes",
+        "indexed": false,
+        "internalType": "bytes"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
     "name": "RewardsHarvested",
     "inputs": [
       {
         "name": "amount",
         "type": "uint256",
         "indexed": true,
+        "internalType": "uint256"
+      }
+    ],
+    "anonymous": false
+  },
+  {
+    "type": "event",
+    "name": "RewardsHarvestedFromRollup",
+    "inputs": [
+      {
+        "name": "rollup",
+        "type": "address",
+        "indexed": true,
+        "internalType": "address"
+      },
+      {
+        "name": "amount",
+        "type": "uint256",
+        "indexed": false,
         "internalType": "uint256"
       }
     ],
@@ -623,6 +785,28 @@
   },
   {
     "type": "error",
+    "name": "StakingManager__AttesterAlreadyActive",
+    "inputs": [
+      {
+        "name": "attester",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StakingManager__CannotRemoveCanonicalRewardRollup",
+    "inputs": [
+      {
+        "name": "rollup",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "StakingManager__ClaimAmountMismatch",
     "inputs": []
   },
@@ -648,10 +832,48 @@
   },
   {
     "type": "error",
+    "name": "StakingManager__NotFailedQueueEntry",
+    "inputs": [
+      {
+        "name": "attester",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
     "name": "StakingManager__RemoveAttesterFailed",
     "inputs": [
       {
         "name": "attester",
+        "type": "address",
+        "internalType": "address"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StakingManager__RewardRollupHasPendingRewards",
+    "inputs": [
+      {
+        "name": "rollup",
+        "type": "address",
+        "internalType": "address"
+      },
+      {
+        "name": "rewards",
+        "type": "uint256",
+        "internalType": "uint256"
+      }
+    ]
+  },
+  {
+    "type": "error",
+    "name": "StakingManager__RewardRollupNotTracked",
+    "inputs": [
+      {
+        "name": "rollup",
         "type": "address",
         "internalType": "address"
       }

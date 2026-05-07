@@ -32,7 +32,7 @@ CREATE INDEX idx_deposits_recipient ON deposits(recipient);
 CREATE INDEX idx_deposits_block ON deposits(block_number);
 CREATE INDEX idx_deposits_tx_hash ON deposits(tx_hash);
 
--- Withdrawal requests (pending, claimed, and instant)
+-- Withdrawal requests (pending and claimed)
 -- Note: request_id is NOT unique because multiple events (WithdrawalRequested, RedeemRequest)
 -- can share the same request_id for the same withdrawal request
 CREATE TABLE withdrawal_requests (

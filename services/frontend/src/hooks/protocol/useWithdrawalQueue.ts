@@ -3,12 +3,12 @@ import { CONTRACTS } from "@/constants/contracts";
 
 export function useWithdrawalRequest(requestId: bigint) {
   const { data: request, refetch } = useReadContract({
-    address: CONTRACTS.WithdrawalQueue.address,
-    abi: CONTRACTS.WithdrawalQueue.abi,
-    functionName: "getRequest",
+    address: CONTRACTS.OllaVault.address,
+    abi: CONTRACTS.OllaVault.abi,
+    functionName: "getWithdrawalRequest",
     args: [requestId],
     query: {
-      enabled: !!requestId || requestId === 0n, // requestId can be 0, but usually indices start at 1. Wait, let's assume valid ID.
+      enabled: !!requestId || requestId === 0n,
       refetchInterval: 5000,
     },
   });

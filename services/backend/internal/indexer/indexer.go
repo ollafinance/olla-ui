@@ -202,12 +202,11 @@ func (i *Indexer) poll(ctx context.Context, fromBlock int64) (int64, error) {
 func (i *Indexer) getLogs(ctx context.Context, fromBlock, toBlock int64) ([]types.Log, error) {
 	sigs := GetEventSignatures()
 
-	// topic0 filter: match any of the 5 known event signatures across both contracts.
+	// topic0 filter: match any of the 4 known event signatures across both contracts.
 	topics := [][]common.Hash{
 		{
 			common.HexToHash(sigs.Deposit),
 			common.HexToHash(sigs.WithdrawalClaimed),
-			common.HexToHash(sigs.InstantRedemption),
 			common.HexToHash(sigs.RedeemRequest),
 			common.HexToHash(sigs.AccountingUpdated),
 		},
@@ -258,16 +257,6 @@ func (i *Indexer) processLog(ctx context.Context, vLog types.Log) error {
 			return fmt.Errorf("failed to insert WithdrawalClaimed: %w", err)
 		}
 		log.Printf("Indexed WithdrawalClaimed: tx=%s, requestID=%d", wr.TxHash, *wr.RequestID)
-
-	case "InstantRedemption":
-		wr, err := i.handler.ParseInstantRedemption(vLog, i.vaultAddr.Hex())
-		if err != nil {
-			return fmt.Errorf("failed to parse InstantRedemption: %w", err)
-		}
-		if err := i.store.Withdrawals.Insert(ctx, wr); err != nil {
-			return fmt.Errorf("failed to insert InstantRedemption: %w", err)
-		}
-		log.Printf("Indexed InstantRedemption: tx=%s, owner=%s, netAssets=%s", wr.TxHash, wr.Owner, wr.NetAssets)
 
 	case "RedeemRequest":
 		wr, err := i.handler.ParseRedeemRequest(vLog, i.vaultAddr.Hex())
