@@ -70,7 +70,7 @@ export function FAQCard({ onClose }: FAQCardProps) {
                 </button>
                 {expandedIndex === index && (
                   <div className="pr-8 pb-4 md:pr-12">
-                    <p className="text-sm leading-relaxed text-[#aeada9]">{item.answer}</p>
+                    <p className="text-sm leading-relaxed text-[#aeada9]" dangerouslySetInnerHTML={{ __html: item.answer }} />
                   </div>
                 )}
               </div>
