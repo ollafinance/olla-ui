@@ -1,0 +1,43 @@
+{
+  "name": "@olla-ui/types",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./abis": {
+      "types": "./src/generated/abis/index.ts",
+      "default": "./src/generated/abis/index.ts"
+    },
+    "./abis/*.json": {
+      "types": "./src/generated/abis/*.json",
+      "default": "./src/generated/abis/*.json"
+    },
+    "./deployments": {
+      "types": "./src/generated/deployments/index.ts",
+      "default": "./src/generated/deployments/index.ts"
+    },
+    "./contracts": {
+      "types": "./src/constants/contracts.ts",
+      "default": "./src/constants/contracts.ts"
+    },
+    "./schema": {
+      "types": "./src/generated/schema.ts",
+      "default": "./src/generated/schema.ts"
+    }
+  },
+  "scripts": {
+    "generate": "openapi-typescript src/generated/openapi.json -o src/generated/schema.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "openapi-typescript": "^7.13.0",
+    "typescript": "~5.9.3"
+  }
+}

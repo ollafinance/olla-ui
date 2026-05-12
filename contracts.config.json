@@ -1,0 +1,15 @@
+{
+  "source": {
+    "corePath": "../core"
+  },
+  "output": {
+    "dir": "packages/types/src/generated"
+  },
+  "contracts": [
+    "OllaCore",
+    "OllaVault",
+    "StAztec",
+    "MockAztec",
+    "MockStakingManager"
+  ]
+}

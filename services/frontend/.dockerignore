@@ -1,0 +1,48 @@
+# Dependencies
+node_modules
+.yarn/cache
+.yarn/install-state.gz
+
+# Build output
+dist
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Tests
+coverage
+.nyc_output
+
+# Misc
+README.md
+AGENTS.md
+*.md
+
+# Monorepo: exclude non-frontend directories from build context
+services/backend/
+k8s/
+.github/
+docker-compose.yml
+Makefile

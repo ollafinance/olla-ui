@@ -1,0 +1,485 @@
+@import "tailwindcss";
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Regular.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-SemiBold.ttf") format("truetype");
+  font-weight: 600;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Light.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: "Season Sans";
+  src: url("./assets/fonts/SeasonSansTRIAL-Heavy.ttf") format("truetype");
+  font-weight: 900;
+  font-style: normal;
+}
+
+:root {
+  color-scheme: light;
+
+  /* ===========================================
+     PRIMITIVE TOKENS - Base values
+     =========================================== */
+
+  /* Colors - Primitives */
+  --color-cream: #f8f7f0;
+  --color-cream-light: #f8f6ef;
+  --color-black: #1f1f1f;
+  --color-black-deep: #111111;
+  --color-gray-dark: #313131;
+  --color-gray: #6c6c6c;
+  --color-gray-light: #71717a;
+  --color-gray-soft: #dfded9;
+  --color-badge-surface: #ecebe5;
+  --color-badge-text: #3e3e3c;
+  --color-pink: #ffcef8;
+  --color-pink-lightest: #ffd8f8;
+  --color-pink-light: #ffb0f1;
+  --color-pink-muted: #fae5f1;
+  --color-pink-dark: #78175c;
+  --color-pink-accent: #fe74e2;
+  --color-cyan: #c8f2f6;
+  --color-cyan-light: #d2f5f9;
+  --color-cyan-pale: #f0feff;
+  --color-cyan-dark: #1e596d;
+  --color-cyan-accent: #17aac0;
+  --color-orange: #ff4900;
+  --color-orange-light: #ff893b;
+  --color-orange-muted: #ffe7d5;
+  --color-orange-dark: #7a3100;
+  --color-red: #ef4444;
+  --color-red-dark: #7f1d1d;
+  --color-deep-purple: #440034;
+
+  /* Background Pattern Colors */
+  --color-bg-pattern-light: #dfded8;
+  --color-bg-pattern-dark: #1b1b1b;
+
+  /* Spacing - 4px base (multiples of 4) */
+  --space-0: 0px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-9: 36px;
+  --space-10: 40px;
+  --space-11: 44px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --space-20: 80px;
+  --space-24: 96px;
+
+  /* Non-standard spacing (from Figma) */
+  --space-5px: 5px;
+  --space-43px: 43px;
+
+  /* Sizing - Component sizes */
+  --size-card-primary: 551px;
+  --size-card-primary-height: 551px;
+  --size-card-secondary: 344px;
+  --size-card-tertiary-height: 192px;
+  --size-card-claims-height: 356px;
+  --size-header-height: 58px;
+  --size-nav-height: 56px;
+  --size-logo-width: 86px;
+  --size-logo-height: 34px;
+  --size-logo-sm-width: 54px;
+  --size-logo-sm-height: 21px;
+  --size-button-stake-width: 143px;
+  --size-button-height: 51px;
+
+  /* Border Radius */
+  --radius-sm: 8px;
+  --radius-md: 16px;
+  --radius-lg: 24px;
+  --radius-card: 30px;
+  --radius-full: 100px;
+
+  /* Breakpoints (for reference - used in media queries) */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  /* ===========================================
+     SEMANTIC TOKENS - Light Mode
+     =========================================== */
+
+  /* Background & Foreground */
+  --background: #efeee6;
+  --foreground: var(--color-black);
+  --bg-pattern: var(--color-bg-pattern-light);
+
+  /* Surface (Header, NavBar) */
+  --surface: var(--color-black);
+  --surface-foreground: var(--color-cream);
+  --surface-border: var(--color-gray-dark);
+
+  /* Navbar Specific */
+  --nav-bg: var(--color-cream);
+  --nav-border: var(--color-gray-soft);
+  --nav-bg-active: var(--color-gray-soft);
+  --nav-text-inactive: var(--color-black);
+
+  /* Cards */
+  --card: var(--color-cream);
+  --card-foreground: var(--color-black);
+  --card-secondary: var(--color-pink);
+  --card-secondary-foreground: var(--color-pink-dark);
+  --card-tertiary: var(--color-cyan);
+  --card-tertiary-foreground: var(--color-cyan-dark);
+  --card-claims: var(--color-cyan-light);
+  --card-claims-foreground: var(--color-cyan-dark);
+  --card-claims-item: var(--color-cyan-pale);
+
+  /* Primary */
+  --primary: var(--color-pink-light);
+  --primary-foreground: var(--color-black);
+  --primary-muted: var(--color-pink-muted);
+  --primary-accent: var(--color-pink-dark);
+  --primary-line: var(--color-pink-accent);
+
+  /* Secondary */
+  --secondary: var(--color-cyan);
+  --secondary-foreground: var(--color-black);
+  --secondary-accent: var(--color-cyan-accent);
+
+  /* Muted */
+  --muted: var(--color-gray);
+  --muted-foreground: var(--color-gray-light);
+  --muted-soft: var(--color-gray-soft);
+
+  /* Accent */
+  --accent: var(--color-orange);
+  --accent-foreground: #ffffff;
+
+  /* Display text (large numbers) */
+  --text-display: var(--color-deep-purple);
+
+  /* Badge */
+  --badge-bg: var(--color-badge-surface);
+  --badge-text: var(--color-badge-text);
+
+  /* Returns card */
+  --card-returns: var(--color-pink-lightest);
+  --card-returns-foreground: var(--color-pink-dark);
+
+  /* Destructive */
+  --destructive: var(--color-red);
+  --destructive-foreground: #fafafa;
+  --destructive-muted: var(--color-orange-muted);
+  --destructive-accent: var(--color-orange-light);
+  --destructive-dark: var(--color-orange-dark);
+
+  /* Border & Input */
+  --border: #e4e4e7;
+  --input: #e4e4e7;
+  --ring: var(--color-black);
+}
+
+.dark {
+  color-scheme: dark;
+
+  /* ===========================================
+     SEMANTIC TOKENS - Dark Mode
+     =========================================== */
+
+  /* Background & Foreground */
+  --background: var(--color-black-deep);
+  --foreground: var(--color-cream);
+  --bg-pattern: var(--color-bg-pattern-dark);
+
+  /* Surface (Header, NavBar) - same in dark */
+  --surface: #1f1f1f;
+  --surface-foreground: var(--color-cream);
+  --surface-border: #313131;
+
+  /* Navbar Specific */
+  --nav-bg: #1f1f1f;
+  --nav-border: #313131;
+  --nav-bg-active: var(--color-cream);
+  --nav-text-inactive: #aeada9;
+
+  /* Cards - same colors per Figma design */
+  --card: var(--color-cream);
+  --card-foreground: var(--color-black);
+  --card-secondary: var(--color-pink);
+  --card-secondary-foreground: var(--color-pink-dark);
+  --card-tertiary: var(--color-cyan);
+  --card-tertiary-foreground: var(--color-cyan-dark);
+  --card-claims: var(--color-cyan-light);
+  --card-claims-foreground: var(--color-cyan-dark);
+  --card-claims-item: var(--color-cyan-pale);
+
+  /* Primary */
+  --primary: var(--color-pink-light);
+  --primary-foreground: var(--color-black);
+  --primary-muted: var(--color-pink-muted);
+  --primary-accent: var(--color-pink-dark);
+  --primary-line: var(--color-pink-accent);
+
+  /* Secondary */
+  --secondary: var(--color-cyan);
+  --secondary-foreground: var(--color-black);
+  --secondary-accent: var(--color-cyan-accent);
+
+  /* Muted */
+  --muted: var(--color-gray);
+  --muted-foreground: #aeada9;
+  --muted-soft: var(--color-gray-soft);
+
+  /* Accent */
+  --accent: var(--color-orange);
+  --accent-foreground: #ffffff;
+
+  /* Display text (large numbers) */
+  --text-display: var(--color-deep-purple);
+
+  /* Badge */
+  --badge-bg: var(--color-badge-surface);
+  --badge-text: var(--color-badge-text);
+
+  /* Returns card */
+  --card-returns: var(--color-pink-lightest);
+  --card-returns-foreground: var(--color-pink-dark);
+
+  /* Destructive */
+  --destructive: var(--color-red-dark);
+  --destructive-foreground: #fef2f2;
+  --destructive-muted: var(--color-orange-muted);
+  --destructive-accent: var(--color-orange-light);
+  --destructive-dark: var(--color-orange-dark);
+
+  /* Border & Input */
+  --border: var(--color-gray-dark);
+  --input: #27272a;
+  --ring: #d4d4d8;
+}
+
+@theme {
+  /* ===========================================
+     TAILWIND THEME - Maps CSS vars to utilities
+     =========================================== */
+
+  /* Colors */
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-bg-pattern: var(--bg-pattern);
+
+  /* Surface */
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+  --color-surface-border: var(--surface-border);
+
+  /* Navbar */
+  --color-nav-bg: var(--nav-bg);
+  --color-nav-border: var(--nav-border);
+  --color-nav-bg-active: var(--nav-bg-active);
+  --color-nav-text-inactive: var(--nav-text-inactive);
+
+  /* Cards */
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-card-secondary: var(--card-secondary);
+  --color-card-secondary-foreground: var(--card-secondary-foreground);
+  --color-card-tertiary: var(--card-tertiary);
+  --color-card-tertiary-foreground: var(--card-tertiary-foreground);
+  --color-card-claims: var(--card-claims);
+  --color-card-claims-foreground: var(--card-claims-foreground);
+  --color-card-claims-item: var(--card-claims-item);
+
+  /* Primary */
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-muted: var(--primary-muted);
+  --color-primary-accent: var(--primary-accent);
+  --color-primary-line: var(--primary-line);
+
+  /* Secondary */
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary-accent: var(--secondary-accent);
+
+  /* Muted */
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted-soft: var(--muted-soft);
+
+  /* Accent */
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  /* Display text */
+  --color-text-display: var(--text-display);
+
+  /* Badge */
+  --color-badge-bg: var(--badge-bg);
+  --color-badge-text: var(--badge-text);
+
+  /* Returns card */
+  --color-card-returns: var(--card-returns);
+  --color-card-returns-foreground: var(--card-returns-foreground);
+
+  /* Destructive */
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-destructive-muted: var(--destructive-muted);
+  --color-destructive-accent: var(--destructive-accent);
+  --color-destructive-dark: var(--destructive-dark);
+
+  /* Border & Input */
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  /* Spacing - 4px base system */
+  --spacing: 4px;
+
+  /* Component Sizes */
+  --size-card-primary: var(--size-card-primary);
+  --size-card-primary-height: var(--size-card-primary-height);
+  --size-card-secondary: var(--size-card-secondary);
+  --size-card-tertiary-height: var(--size-card-tertiary-height);
+  --size-button-stake-width: var(--size-button-stake-width);
+  --size-button-height: var(--size-button-height);
+
+  /* Non-standard spacing */
+  --space-5px: 5px;
+  --space-43px: 43px;
+
+  /* Font */
+  --font-sans:
+    "Season Sans", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+    "Segoe UI Symbol", "Noto Color Emoji";
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+}
+
+/* ===========================================
+   CUSTOM UTILITY CLASSES
+   =========================================== */
+
+/* Border Radius */
+.rounded-card {
+  border-radius: var(--radius-card);
+}
+
+.rounded-surface {
+  border-radius: var(--radius-full);
+}
+
+/* Component Sizes */
+.w-card-primary {
+  width: var(--size-card-primary);
+}
+
+.h-card-primary {
+  height: var(--size-card-primary-height);
+}
+
+.size-card-primary {
+  width: var(--size-card-primary);
+  height: var(--size-card-primary-height);
+}
+
+.w-card-secondary {
+  width: var(--size-card-secondary);
+}
+
+.h-card-secondary {
+  height: var(--size-card-secondary);
+}
+
+.size-card-secondary {
+  width: var(--size-card-secondary);
+  height: var(--size-card-secondary);
+}
+
+.h-card-tertiary {
+  height: var(--size-card-tertiary-height);
+}
+
+.h-card-claims {
+  height: var(--size-card-claims-height);
+}
+
+.h-card-portfolio-redeem {
+  height: 191px;
+}
+
+.h-card-third {
+  height: 175.67px;
+}
+
+.w-button-stake {
+  width: var(--size-button-stake-width);
+}
+
+.h-button {
+  height: var(--size-button-height);
+}
+
+/* Gap utilities using design system spacing */
+.gap-card {
+  gap: var(--space-3);
+}
+
+.gap-5px {
+  gap: var(--space-5px);
+}
+
+.gap-43px {
+  gap: var(--space-43px);
+}
+
+/* Layout container */
+.container-app {
+  width: 100%;
+  max-width: var(--size-card-primary);
+  margin-inline: auto;
+}
+
+@media (min-width: 1024px) {
+  .container-app {
+    max-width: calc(var(--size-card-primary) + var(--size-card-secondary) + var(--space-3));
+  }
+}

@@ -1,0 +1,74 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Yarn
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+
+# Generated contracts (ABIs and deployments)
+# src/generated/
+src/generated/deployments/local.json
+
+.env
+
+# Go
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+go.work
+go.work.sum
+
+# Backend binaries
+services/backend/bin/
+
+# IDE
+*.swp
+*.swo
+
+# Environment files
+.env.local
+.env.*.local
+
+# PostgreSQL
+*.db
+postgres_data/
+
+# Backend generated docs (except swagger.yaml for type generation)
+services/backend/docs/docs.go
+services/backend/docs/swagger.json
+
+# Backend deployments (copied from packages/types at build time)
+services/backend/deployments/
+
+# Backend ABIs (copied from packages/types at build time)
+services/backend/abis/

@@ -1,0 +1,201 @@
+name: CI/CD Olla Testnet — Backend
+
+on:
+  push:
+    branches: [testnet]
+    paths:
+      - 'services/backend/**'
+      - 'packages/types/src/generated/deployments/**'
+  workflow_dispatch:
+    inputs:
+      wipe_db:
+        description: 'Wipe the testnet database before deploying (DROP SCHEMA + re-migrate)'
+        type: boolean
+        default: false
+        required: false
+
+env:
+  REGISTRY: registry.digitalocean.com/olla-containers
+  CLUSTER_NAME: aztecscan-prod
+
+jobs:
+  set-up:
+    runs-on: ubuntu-latest
+    outputs:
+      tools-cache-key: ${{ steps.cache-key.outputs.key }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up tools directory
+        run: mkdir -p tools
+
+      - name: Install doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Copy doctl to tools directory
+        run: |
+          cp $(which doctl) tools/
+          chmod +x tools/doctl
+
+      - name: Install kubectl
+        run: |
+          curl -Lo tools/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x tools/kubectl
+
+      - name: Generate cache key
+        id: cache-key
+        run: echo "key=${{ runner.os }}-tools-$(date '+%Y-%m-%d')" >> $GITHUB_OUTPUT
+
+      - name: Cache tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ steps.cache-key.outputs.key }}
+
+      - name: Log in to DigitalOcean Container Registry
+        run: tools/doctl registry login --expiry-seconds 1200
+
+  build:
+    runs-on: ubuntu-latest
+    needs: set-up
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Log in to DigitalOcean Container Registry
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+      - run: doctl registry login --expiry-seconds 1200
+
+      - name: Extract metadata for Docker
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/olla-indexer
+          tags: |
+            type=sha,prefix=testnet-
+            type=raw,value=testnet-latest
+
+      - name: Copy deployment JSONs into backend build context
+        run: cp -r packages/types/src/generated/deployments services/backend/deployments
+
+      - name: Copy ABI files into backend build context
+        run: cp -r packages/types/src/generated/abis services/backend/abis
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: services/backend/
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,scope=backend,mode=max
+
+  wipe-db:
+    runs-on: ubuntu-latest
+    needs:
+      - set-up
+      - build
+    if: ${{ github.event.inputs.wipe_db == 'true' }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
+
+      - name: Wipe testnet database
+        run: |
+          POSTGRES_POD=$(kubectl get pod -n olla-prod -l app=postgresql -o jsonpath='{.items[0].metadata.name}')
+          kubectl exec -n olla-prod "$POSTGRES_POD" -- \
+            psql -U admin -d olla_indexer_testnet -c \
+            "DROP SCHEMA public CASCADE; CREATE SCHEMA public; GRANT ALL ON SCHEMA public TO admin; GRANT ALL ON SCHEMA public TO public;"
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs:
+      - set-up
+      - build
+      - wipe-db
+    if: ${{ always() && needs.build.result == 'success' && (needs.wipe-db.result == 'success' || needs.wipe-db.result == 'skipped') }}
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Restore cached tools
+        uses: actions/cache@v4
+        with:
+          path: tools
+          key: ${{ needs.set-up.outputs.tools-cache-key }}
+          fail-on-cache-miss: true
+
+      - name: Add tools to PATH
+        run: |
+          chmod +x tools/*
+          echo "$PWD/tools" >> $GITHUB_PATH
+
+      - name: Configure doctl
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_ACCESS_TOKEN }}
+
+      - name: Save DigitalOcean kubeconfig
+        run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
+
+      - name: Inject olla-secrets
+        run: |
+          kubectl create secret generic olla-secrets-testnet \
+            --from-literal=rpc-url="${{ secrets.RPC_URL_SEPOLIA }}" \
+            --namespace olla-prod \
+            --dry-run=client -o yaml | kubectl apply -f -
+
+      - name: Apply manifests
+        run: kubectl apply -k services/backend/k8s/overlays/testnet/
+
+      - name: Restart deployment
+        run: kubectl rollout restart deployment/olla-indexer -n olla-prod
+
+      - name: Wait for rollout
+        run: kubectl rollout status deployment/olla-indexer -n olla-prod --timeout=300s

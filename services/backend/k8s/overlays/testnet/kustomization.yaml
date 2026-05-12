@@ -1,0 +1,40 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: olla-prod
+
+resources:
+  - ../../base
+
+images:
+  - name: registry.digitalocean.com/olla-containers/olla-indexer
+    newTag: testnet-latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: olla-indexer
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: run-migrations
+                env:
+                  - name: POSTGRES_DB_NAME
+                    value: olla_indexer_testnet
+            containers:
+              - name: olla-indexer
+                env:
+                  - name: POSTGRES_DB_NAME
+                    value: olla_indexer_testnet
+                  - name: RPC_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: olla-secrets-testnet
+                        key: rpc-url
+                  - name: CONTRACTS_ENV
+                    value: "sepolia"
+                  - name: START_BLOCK
+                    value: "10553526"

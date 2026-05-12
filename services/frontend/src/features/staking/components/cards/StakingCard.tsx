@@ -1,0 +1,63 @@
+import { type StakingState } from "../../hooks/useStakingState";
+import { StakingCardIdle } from "./StakingCardIdle";
+import { TransactionPendingCard, TransactionSuccessCard } from "@/components/cards";
+import { TransactionErrorCard } from "@/components/cards";
+
+interface StakingCardProps {
+  state: StakingState;
+  amount: string;
+  isConnected: boolean;
+  balance: string;
+  previewShares: string;
+  exchangeRate: string;
+  onAmountChange: (val: string) => void;
+  onStake: () => void;
+  onReset: () => void;
+  error: string | null;
+  hash?: `0x${string}`;
+}
+
+export function StakingCard({
+  state,
+  amount,
+  isConnected,
+  balance,
+  previewShares,
+  exchangeRate,
+  onAmountChange,
+  onStake,
+  onReset,
+  error,
+  hash,
+}: StakingCardProps) {
+  switch (state) {
+    case "idle":
+      return (
+        <StakingCardIdle
+          amount={amount}
+          balance={balance}
+          isConnected={isConnected}
+          exchangeRate={exchangeRate}
+          onAmountChange={onAmountChange}
+          onStake={onStake}
+        />
+      );
+    case "signing":
+    case "pending":
+    case "confirming":
+      return <TransactionPendingCard state={state} variant="staking" hash={hash} />;
+    case "success":
+      return (
+        <TransactionSuccessCard
+          variant="staking"
+          amount={amount}
+          shares={previewShares}
+          onPrimaryAction={onReset}
+        />
+      );
+    case "error":
+      return <TransactionErrorCard errorMessage={error || undefined} onReturn={onReset} />;
+    default:
+      return null;
+  }
+}
