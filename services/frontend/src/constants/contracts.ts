@@ -1,5 +1,5 @@
 import { OllaCoreABI, OllaVaultABI, MockAztecABI, StAztecABI } from "@olla-ui/types";
-import { local, sepolia } from "@olla-ui/types/deployments";
+import { local, mainnet, sepolia } from "@olla-ui/types/deployments";
 import { CONTRACTS_ENV } from "./environment";
 
 interface DeploymentJson {
@@ -10,6 +10,7 @@ interface DeploymentJson {
 
 const deployments: Record<string, DeploymentJson> = {
   local,
+  mainnet,
   sepolia,
 };
 

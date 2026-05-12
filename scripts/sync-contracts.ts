@@ -12,6 +12,7 @@
  *   npx tsx scripts/sync-contracts.ts         # defaults to "local"
  *   npx tsx scripts/sync-contracts.ts local
  *   npx tsx scripts/sync-contracts.ts sepolia
+ *   npx tsx scripts/sync-contracts.ts mainnet
  */
 
 import * as fs from "fs";
@@ -150,7 +151,7 @@ function copyDeployment(deploymentPath: string, outputDir: string, env: string):
 function main(): void {
   // Parse environment argument (default to "local")
   const env = process.argv[2] || "local";
-  const validEnvs = ["local", "sepolia"];
+  const validEnvs = ["local", "sepolia", "mainnet"];
 
   if (!validEnvs.includes(env)) {
     console.error(colors.red(`Error: Invalid environment "${env}".`));

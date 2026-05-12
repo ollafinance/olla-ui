@@ -1,0 +1,90 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: olla-prod
+nameSuffix: -mainnet
+
+resources:
+  - ../../base
+
+images:
+  - name: registry.digitalocean.com/olla-containers/olla-indexer
+    newTag: mainnet-latest
+
+patches:
+  - patch: |-
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: olla-indexer
+      spec:
+        template:
+          spec:
+            initContainers:
+              - name: run-migrations
+                env:
+                  - name: POSTGRES_DB_NAME
+                    value: olla_indexer_mainnet
+            containers:
+              - name: olla-indexer
+                env:
+                  - name: POSTGRES_DB_NAME
+                    value: olla_indexer_mainnet
+                  - name: RPC_URL
+                    valueFrom:
+                      secretKeyRef:
+                        name: olla-secrets-mainnet
+                        key: rpc-url
+                  - name: CONTRACTS_ENV
+                    value: "mainnet"
+                  - name: START_BLOCK
+                    value: "25072473"
+  - patch: |-
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: olla-indexer
+      spec:
+        parentRefs:
+          - name: olla-gateway
+            sectionName: olla-indexer-mainnet-http
+          - name: olla-gateway
+            sectionName: olla-indexer-mainnet-https
+        hostnames:
+          - api.olla.finance
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: olla-indexer
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/backendRefs/0/name
+        value: olla-indexer-mainnet
+  - target:
+      group: gateway.envoyproxy.io
+      version: v1alpha1
+      kind: SecurityPolicy
+      name: olla-indexer-cors
+    patch: |-
+      - op: replace
+        path: /spec/targetRef/name
+        value: olla-indexer-mainnet
+  - patch: |-
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: olla-indexer-tls
+      spec:
+        dnsNames:
+          - api.olla.finance
+        secretName: olla-indexer-mainnet-tls
+  - patch: |-
+      apiVersion: gateway.envoyproxy.io/v1alpha1
+      kind: SecurityPolicy
+      metadata:
+        name: olla-indexer-cors
+      spec:
+        cors:
+          allowOrigins:
+            - https://app.olla.finance
