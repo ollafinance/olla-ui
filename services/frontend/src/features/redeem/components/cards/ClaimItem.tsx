@@ -1,5 +1,7 @@
 import type { ClaimStatus } from "../../hooks/useClaims";
 import { Button } from "@/components/ui/Button";
+import { Tooltip } from "@/components/ui/Tooltip";
+import { LAUNCH_ACTIVE } from "@/constants/environment";
 
 interface ClaimItemProps {
   id: number;
@@ -41,7 +43,7 @@ export function ClaimItem({
           <div className="border-secondary-accent h-4 w-4 animate-spin rounded-full border-2 border-t-transparent" />
           <span className="text-secondary-accent text-xs">Claiming...</span>
         </div>
-      ) : (
+      ) : LAUNCH_ACTIVE ? (
         <Button
           variant="cyan"
           size="sm"
@@ -50,6 +52,17 @@ export function ClaimItem({
         >
           Claim
         </Button>
+      ) : (
+        <Tooltip content="Claims are disabled until mainnet contracts go live.">
+          <Button
+            variant="cyan"
+            size="sm"
+            disabled
+            className="bg-secondary-accent text-card h-[30px] rounded-full px-[15px] py-2 text-xs font-medium"
+          >
+            Coming Soon
+          </Button>
+        </Tooltip>
       ),
     },
     processing: {

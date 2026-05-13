@@ -4,6 +4,8 @@ import { NavBar } from "./nav-bar";
 import { Footer } from "./Footer";
 import { Background } from "./Background";
 import { ActionButtons } from "./ActionButtons";
+import { LaunchBanner } from "./LaunchBanner";
+import { LAUNCH_ACTIVE } from "@/constants/environment";
 
 interface LayoutShellProps {
   children: ReactNode;
@@ -14,6 +16,11 @@ export function LayoutShell({ children }: LayoutShellProps) {
     <div className="bg-background text-foreground relative flex min-h-screen flex-col items-center transition-colors duration-300">
       <Background />
       <div className="flex w-full flex-1 flex-col items-center p-4">
+        {!LAUNCH_ACTIVE && (
+          <div className="z-10 mt-4 w-full max-w-4xl">
+            <LaunchBanner />
+          </div>
+        )}
         <div className="z-10 mt-4 mb-6 w-full max-w-4xl">
           <Header />
         </div>
