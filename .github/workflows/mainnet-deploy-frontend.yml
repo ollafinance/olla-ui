@@ -1,8 +1,8 @@
-name: CI/CD Olla Testnet — Frontend
+name: CI/CD Olla Mainnet — Frontend
 
 on:
   push:
-    branches: [testnet]
+    branches: [mainnet]
     paths:
       - 'services/frontend/**'
 
@@ -88,8 +88,8 @@ jobs:
         with:
           images: ${{ env.REGISTRY }}/olla-ui
           tags: |
-            type=sha,prefix=testnet-
-            type=raw,value=testnet-latest
+            type=sha,prefix=mainnet-
+            type=raw,value=mainnet-latest
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
@@ -100,11 +100,11 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           build-args: |
             VITE_APP_ENV=production
-            VITE_CONTRACTS_ENV=sepolia
-            VITE_RPC_URL_SEPOLIA=${{ secrets.VITE_RPC_URL_SEPOLIA }}
+            VITE_CONTRACTS_ENV=mainnet
+            VITE_RPC_URL_MAINNET=${{ secrets.VITE_RPC_URL_MAINNET }}
             VITE_WALLET_CONNECT_PROJECT_ID=${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
-            VITE_INDEXER_API_URL=https://api.demo.olla.finance
-            VITE_LAUNCH_ACTIVE=true
+            VITE_INDEXER_API_URL=https://api.olla.finance
+            VITE_LAUNCH_ACTIVE=false
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,scope=frontend,mode=max
 
@@ -139,10 +139,10 @@ jobs:
         run: doctl kubernetes cluster kubeconfig save ${{ env.CLUSTER_NAME }}
 
       - name: Apply manifests
-        run: kubectl apply -k services/frontend/k8s/overlays/testnet/
+        run: kubectl apply -k services/frontend/k8s/overlays/mainnet/
 
       - name: Restart deployment
-        run: kubectl rollout restart deployment/olla-ui -n olla-prod
+        run: kubectl rollout restart deployment/olla-ui-mainnet -n olla-prod
 
       - name: Wait for rollout
-        run: kubectl rollout status deployment/olla-ui -n olla-prod --timeout=300s
+        run: kubectl rollout status deployment/olla-ui-mainnet -n olla-prod --timeout=300s

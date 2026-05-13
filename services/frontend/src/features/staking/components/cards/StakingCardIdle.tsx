@@ -10,6 +10,7 @@ import { useAmountInput } from "@/hooks/useAmountInput";
 import { usePercentageSelect } from "@/hooks/usePercentageSelect";
 import { useTransactionFeeEstimate } from "@/hooks/protocol";
 import { getAmountSizeClass } from "@/lib/utils";
+import { LAUNCH_ACTIVE } from "@/constants/environment";
 
 interface StakingCardIdleProps {
   amount: string;
@@ -124,7 +125,19 @@ export function StakingCardIdle({
       <div className="gap-43px flex w-full flex-col items-center justify-between lg:flex-row">
         <ProtocolInfo exchangeRate={exchangeRate} transactionFee={transactionFee} />
         <div className="flex items-center gap-2">
-          {isConnected ? (
+          {!LAUNCH_ACTIVE ? (
+            <Tooltip content="Staking is disabled until mainnet contracts go live.">
+              <Button
+                variant="muted"
+                size="xl"
+                disabled
+                showArrow
+                className="w-button-stake h-button bg-muted-soft text-black"
+              >
+                Coming Soon
+              </Button>
+            </Tooltip>
+          ) : isConnected ? (
             isBalanceExceeded ? (
               <Tooltip content="You do not have this amount of Aztec tokens in your wallet">
                 <Button

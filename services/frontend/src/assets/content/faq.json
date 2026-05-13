@@ -41,7 +41,7 @@
   },
   {
     "question": "What security measures does Olla have in place?",
-    "answer": "Olla is designed with security as a priority: Open-source codebase available for public review. Smart contract audits by a reputable security firm."
+    "answer": "Olla is designed with security as a priority: Open-source codebase available for public review. The core smart contracts have been independently audited by Pashov Audit Group. <a href=\"https://docs.olla.finance/security/audits\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"text-decoration: underline;\">Read more in our docs</a>."
   },
   {
     "question": "What is the staking APR?",

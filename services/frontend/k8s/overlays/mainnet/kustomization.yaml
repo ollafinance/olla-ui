@@ -1,0 +1,51 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# mainnet overlay — triggers frontend deployment workflow on push to mainnet branch
+namespace: olla-prod
+nameSuffix: -mainnet
+
+labels:
+  - pairs:
+      variant: mainnet
+    includeSelectors: true
+
+resources:
+  - ../../base
+
+images:
+  - name: registry.digitalocean.com/olla-containers/olla-ui
+    newTag: mainnet-latest
+
+patches:
+  - patch: |-
+      apiVersion: gateway.networking.k8s.io/v1
+      kind: HTTPRoute
+      metadata:
+        name: olla-ui
+      spec:
+        parentRefs:
+          - name: olla-gateway
+            sectionName: olla-mainnet-http
+          - name: olla-gateway
+            sectionName: olla-mainnet-https
+        hostnames:
+          - app.olla.finance
+  - target:
+      group: gateway.networking.k8s.io
+      version: v1
+      kind: HTTPRoute
+      name: olla-ui
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/backendRefs/0/name
+        value: olla-ui-mainnet
+  - patch: |-
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: olla-ui-tls
+      spec:
+        dnsNames:
+          - app.olla.finance
+        secretName: olla-ui-mainnet-tls
