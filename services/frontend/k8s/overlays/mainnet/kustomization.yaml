@@ -5,6 +5,11 @@ kind: Kustomization
 namespace: olla-prod
 nameSuffix: -mainnet
 
+labels:
+  - pairs:
+      variant: mainnet
+    includeSelectors: true
+
 resources:
   - ../../base
 
