@@ -12,6 +12,12 @@ const walletConnectProjectIdSchema = z.preprocess((value) => {
   return trimmed.length === 0 ? undefined : trimmed;
 }, z.string().min(1).optional());
 
+const booleanFlagSchema = z.preprocess((value) => {
+  if (typeof value === "boolean") return value;
+  if (typeof value !== "string") return false;
+  return value.trim().toLowerCase() === "true";
+}, z.boolean());
+
 const envSchema = z.object({
   VITE_APP_ENV: z.enum(["development", "production", "test"]).default("development"),
   VITE_CONTRACTS_ENV: z.enum(["local", "sepolia", "mainnet"]).default("local"),
@@ -21,6 +27,7 @@ const envSchema = z.object({
   VITE_WALLET_CONNECT_PROJECT_ID: walletConnectProjectIdSchema,
   VITE_INDEXER_API_URL: optionalUrlSchema,
   VITE_ETHEREUM_EXPLORER_URL: optionalUrlSchema,
+  VITE_LAUNCH_ACTIVE: booleanFlagSchema.default(false),
 });
 
 function validateEnv() {
@@ -34,6 +41,7 @@ function validateEnv() {
     VITE_WALLET_CONNECT_PROJECT_ID: import.meta.env.VITE_WALLET_CONNECT_PROJECT_ID,
     VITE_INDEXER_API_URL: import.meta.env.VITE_INDEXER_API_URL,
     VITE_ETHEREUM_EXPLORER_URL: import.meta.env.VITE_ETHEREUM_EXPLORER_URL,
+    VITE_LAUNCH_ACTIVE: import.meta.env.VITE_LAUNCH_ACTIVE,
   });
 
   if (!result.success) {
@@ -78,3 +86,4 @@ export const RPC_URL_SEPOLIA = env.VITE_RPC_URL_SEPOLIA;
 export const WALLET_CONNECT_PROJECT_ID = env.VITE_WALLET_CONNECT_PROJECT_ID;
 export const INDEXER_API_URL = env.VITE_INDEXER_API_URL;
 export const ETHEREUM_EXPLORER_URL = env.VITE_ETHEREUM_EXPLORER_URL;
+export const LAUNCH_ACTIVE = env.VITE_LAUNCH_ACTIVE;

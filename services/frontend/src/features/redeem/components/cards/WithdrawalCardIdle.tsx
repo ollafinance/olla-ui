@@ -1,12 +1,14 @@
 import { Button } from "@/components/ui/Button";
 import { CurrencySwapButton } from "@/components/ui/CurrencySwapButton";
 import { PercentageButtons } from "@/components/ui/PercentageButtons";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useCurrency } from "@/hooks/useCurrency";
 import { useAmountInput } from "@/hooks/useAmountInput";
 import { usePercentageSelect } from "@/hooks/usePercentageSelect";
 import { useTransactionFeeEstimate } from "@/hooks/protocol";
 import { getAmountSizeClass } from "@/lib/utils";
 import { BalanceBadge } from "@/components/ui/BalanceBadge";
+import { LAUNCH_ACTIVE } from "@/constants/environment";
 
 interface WithdrawalCardIdleProps {
   amount: string;
@@ -184,25 +186,38 @@ export function WithdrawalCardIdle({
               </div>
             </div>
 
-            <Button
-              variant="pink"
-              size="xl"
-              onClick={onWithdraw}
-              disabled={!isInputValid}
-              className="rounded-full bg-[#ffb0f1] px-6 py-3.5 text-lg font-medium tracking-[-0.36px] text-[#660053]"
-            >
-              Withdraw
-              <svg
-                width="11"
-                height="13"
-                viewBox="0 0 11 13"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="ml-2.5 inline-block"
+            {LAUNCH_ACTIVE ? (
+              <Button
+                variant="pink"
+                size="xl"
+                onClick={onWithdraw}
+                disabled={!isInputValid}
+                className="rounded-full bg-[#ffb0f1] px-6 py-3.5 text-lg font-medium tracking-[-0.36px] text-[#660053]"
               >
-                <path d="M10.5 6.5L0.5 12.2735L0.5 0.726497L10.5 6.5Z" fill="currentColor" />
-              </svg>
-            </Button>
+                Withdraw
+                <svg
+                  width="11"
+                  height="13"
+                  viewBox="0 0 11 13"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="ml-2.5 inline-block"
+                >
+                  <path d="M10.5 6.5L0.5 12.2735L0.5 0.726497L10.5 6.5Z" fill="currentColor" />
+                </svg>
+              </Button>
+            ) : (
+              <Tooltip content="Withdrawals are disabled until mainnet contracts go live.">
+                <Button
+                  variant="pink"
+                  size="xl"
+                  disabled
+                  className="rounded-full bg-[#ffb0f1] px-6 py-3.5 text-lg font-medium tracking-[-0.36px] text-[#660053]"
+                >
+                  Coming Soon
+                </Button>
+              </Tooltip>
+            )}
           </div>
         </div>
       </div>

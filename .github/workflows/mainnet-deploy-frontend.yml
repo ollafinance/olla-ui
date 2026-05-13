@@ -104,6 +104,7 @@ jobs:
             VITE_RPC_URL_MAINNET=${{ secrets.VITE_RPC_URL_MAINNET }}
             VITE_WALLET_CONNECT_PROJECT_ID=${{ secrets.VITE_WALLET_CONNECT_PROJECT_ID }}
             VITE_INDEXER_API_URL=https://api.olla.finance
+            VITE_LAUNCH_ACTIVE=false
           cache-from: type=gha,scope=frontend
           cache-to: type=gha,scope=frontend,mode=max
 
