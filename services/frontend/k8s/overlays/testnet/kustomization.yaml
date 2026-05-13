@@ -4,6 +4,11 @@ kind: Kustomization
 # testnet overlay — triggers frontend deployment workflow on push to testnet branch
 namespace: olla-prod
 
+labels:
+  - pairs:
+      variant: testnet
+    includeSelectors: true
+
 resources:
   - ../../base
 
