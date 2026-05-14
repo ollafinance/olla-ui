@@ -109,7 +109,7 @@ yarn preview          # Preview production build locally
 # cd services/backend
 
 # Development
-make run              # Run Go server locally
+make run              # Run the Go server locally
 
 # Build
 make build            # Build binary to bin/server
@@ -187,6 +187,7 @@ Types are generated from backend OpenAPI spec:
 4. Frontend imports types from `@olla-ui/types`
 
 Example:
+
 ```typescript
 import { components } from "@olla-ui/types/src/generated/schema";
 
@@ -238,6 +239,7 @@ export function useMyHook() {
 ### Imports
 
 Order imports as follows:
+
 1. CSS imports
 2. React imports
 3. External libraries
@@ -293,7 +295,7 @@ LOG_LEVEL=info
 
 ## Related Repositories
 
-- **olla-core**: Smart contracts (https://github.com/ollafinance/core)
+- **olla-core**: Smart contracts (<https://github.com/ollafinance/core>)
 - ABIs are generated from olla-core and placed in `services/frontend/src/abis/`
 
 ## Common Pitfalls
