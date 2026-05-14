@@ -34,7 +34,7 @@ export function PrivacyFeature() {
           (together referred to as the "Services").
         </Paragraph>
         <Paragraph>
-          Olla.finance is a Liquid Staking Derivative (LSD) on Ethereum L1, which helps secure the
+          Olla.finance is a Liquid Staking Derivative (LSD) on Ethereum Layer1, which helps secure the
           L2 Aztec network. All interactions with Olla contracts are done on L1 using either the
           stAztec or AZTEC token. This means that the staking contract interactions (on Layer 1)
           are recorded on the public Ethereum blockchain and are not private by default. This
