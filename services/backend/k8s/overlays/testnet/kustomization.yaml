@@ -12,12 +12,24 @@ images:
 
 patches:
   - patch: |-
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: olla-indexer
+      spec:
+        selector:
+          app: olla-indexer
+          variant: testnet
+  - patch: |-
       apiVersion: apps/v1
       kind: Deployment
       metadata:
         name: olla-indexer
       spec:
         template:
+          metadata:
+            labels:
+              variant: testnet
           spec:
             initContainers:
               - name: run-migrations
