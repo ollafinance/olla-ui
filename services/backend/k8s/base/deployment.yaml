@@ -21,6 +21,7 @@ spec:
       initContainers:
         - name: run-migrations
           image: registry.digitalocean.com/olla-containers/olla-indexer
+          imagePullPolicy: Always
           command: ["./tern", "migrate", "--config", "tern.conf", "--migrations", "migrations"]
           env:
             - name: POSTGRES_HOST
