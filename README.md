@@ -84,6 +84,26 @@ src/
 | `yarn sync:contracts:local`   | Sync ABIs and addresses from core repo (local)   |
 | `yarn sync:contracts:sepolia` | Sync ABIs and addresses from core repo (sepolia) |
 
+## Deployment
+
+Production and testnet are deployed manually from the private `aztlan-ops`
+repository. The Ansible deployment builds the pinned `mainnet` and `testnet`
+revisions, runs both indexers with PostgreSQL, and publishes the services through
+the nginx ingress on `gremlin-1`.
+
+From `aztlan-ops`, an authorized operator runs:
+
+```bash
+ANSIBLE_CONFIG=agent-ansible.cfg ansible-playbook -i inventory/ \
+  playbooks/olla-ui.yml --limit gremlin-1 \
+  --vault-password-file <vault-password-file> \
+  -e olla_ui_tls_enabled=true
+```
+
+There are intentionally no GitHub Actions deployment workflows in this
+repository. Update the pinned revisions in
+`roles/olla_ui/defaults/main.yml` before deploying a new release.
+
 ## Contract Sync
 
 The frontend syncs contract ABIs and deployment addresses from the `core` repo using the `sync:contracts` script.
