@@ -55,6 +55,16 @@ const ROLLUP_APR_ABI = [
   },
 ] as const;
 
+const ROLLUP_REGISTRY_ABI = [
+  {
+    inputs: [],
+    name: "getCanonicalRollup",
+    outputs: [{ name: "", type: "address" }],
+    stateMutability: "view",
+    type: "function",
+  },
+] as const;
+
 const SECONDS_PER_YEAR = BigInt(365 * 24 * 60 * 60);
 
 interface UseAztecAprReturn {
@@ -72,44 +82,56 @@ interface UseAztecAprReturn {
  *   rewardsPerValidator = (sequencerBlockReward × slotsPerYear) / totalAttesterCount
  *   APR = (rewardsPerValidator / activationThreshold) × 100
  *
- * @param rollupAddress - Address of the Aztec Rollup contract. Pass `null` to disable.
+ * @param rollupAddress - Address of the Aztec Rollup contract when statically configured.
+ * @param rollupRegistryAddress - Registry used to resolve the canonical rollup when its address is not static.
  */
-export function useAztecApr(rollupAddress: Address | null): UseAztecAprReturn {
+export function useAztecApr(
+  rollupAddress: Address | null | undefined,
+  rollupRegistryAddress?: Address | null
+): UseAztecAprReturn {
   const publicClient = usePublicClient();
   const [apr, setApr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   const calculate = useCallback(async () => {
-    if (!publicClient || !rollupAddress) {
+    if (!publicClient || (!rollupAddress && !rollupRegistryAddress)) {
       setIsLoading(false);
       return;
     }
 
     try {
+      const resolvedRollupAddress =
+        rollupAddress ??
+        (await publicClient.readContract({
+          address: rollupRegistryAddress!,
+          abi: ROLLUP_REGISTRY_ABI,
+          functionName: "getCanonicalRollup",
+        }));
+
       const [rewardConfig, slotDuration, activeCount, queueLength, activationThreshold] =
         await Promise.all([
           publicClient.readContract({
-            address: rollupAddress,
+            address: resolvedRollupAddress,
             abi: ROLLUP_APR_ABI,
             functionName: "getRewardConfig",
           }),
           publicClient.readContract({
-            address: rollupAddress,
+            address: resolvedRollupAddress,
             abi: ROLLUP_APR_ABI,
             functionName: "getSlotDuration",
           }),
           publicClient.readContract({
-            address: rollupAddress,
+            address: resolvedRollupAddress,
             abi: ROLLUP_APR_ABI,
             functionName: "getActiveAttesterCount",
           }),
           publicClient.readContract({
-            address: rollupAddress,
+            address: resolvedRollupAddress,
             abi: ROLLUP_APR_ABI,
             functionName: "getEntryQueueLength",
           }),
           publicClient.readContract({
-            address: rollupAddress,
+            address: resolvedRollupAddress,
             abi: ROLLUP_APR_ABI,
             functionName: "getActivationThreshold",
           }),
@@ -147,7 +169,7 @@ export function useAztecApr(rollupAddress: Address | null): UseAztecAprReturn {
     } finally {
       setIsLoading(false);
     }
-  }, [publicClient, rollupAddress]);
+  }, [publicClient, rollupAddress, rollupRegistryAddress]);
 
   useEffect(() => {
     calculate();

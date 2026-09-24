@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { components } from "@olla-ui/types/schema";
+import { useReadContract } from "wagmi";
 import { CONTRACTS } from "@/constants/contracts";
 import { INDEXER_API_URL } from "@/constants/environment";
 import { useAztecApr } from "./useAztecApr";
@@ -7,12 +8,17 @@ import { useAztecApr } from "./useAztecApr";
 type ApyResponse = components["schemas"]["ApyResponse"];
 
 const APY_REFETCH_INTERVAL_MS = 60_000;
+const BASIS_POINTS = 10_000;
+const EXPECTED_CAPITAL_EFFICIENCY = 0.9;
+const DEFAULT_PROTOCOL_FEE_BP = 2_500;
 
 interface UseProtocolApyReturn {
   /** APY as a percentage string, e.g. "5.20" */
   apy: string;
   /** Whether the APY is derived from on-chain data (vs hardcoded fallback) */
   isLive: boolean;
+  /** Estimated net APR at 90% capital efficiency. */
+  expectedApr: string | null;
   isLoading: boolean;
 }
 
@@ -27,12 +33,20 @@ interface UseProtocolApyReturn {
  * Falls back to `useAztecApr` when the indexer is unavailable or returns `is_live: false`.
  */
 export function useProtocolApy(): UseProtocolApyReturn {
-  const { apr: aztecApr, isLoading: aztecLoading } = useAztecApr(CONTRACTS.AztecRollup.address);
+  const { apr: aztecApr, isLoading: aztecLoading } = useAztecApr(
+    CONTRACTS.AztecRollup.address,
+    CONTRACTS.AztecRollupRegistry.address
+  );
+  const { data: onchainProtocolFeeBP } = useReadContract({
+    address: CONTRACTS.OllaCore.address,
+    abi: CONTRACTS.OllaCore.abi,
+    functionName: "protocolFeeBP",
+    query: {
+      refetchInterval: APY_REFETCH_INTERVAL_MS,
+    },
+  });
 
-  const {
-    data: apyData,
-    isLoading: indexerLoading,
-  } = useQuery({
+  const { data: apyData, isLoading: indexerLoading } = useQuery({
     queryKey: ["indexer", "apy", CONTRACTS.OllaCore.address],
     queryFn: async (): Promise<ApyResponse | null> => {
       if (!INDEXER_API_URL) {
@@ -67,10 +81,22 @@ export function useProtocolApy(): UseProtocolApyReturn {
   // Resolve final APY: Olla's own APY > Aztec base APR > "0.0"
   const apy = ollaApy ?? aztecApr ?? "0.0";
   const isLive = ollaApy !== null || aztecApr !== null;
+  const expectedAprUsesLiveFee = onchainProtocolFeeBP !== undefined;
+  const protocolFeeBP = expectedAprUsesLiveFee
+    ? Number(onchainProtocolFeeBP)
+    : DEFAULT_PROTOCOL_FEE_BP;
+  const parsedAztecApr = aztecApr === null ? null : Number.parseFloat(aztecApr);
+  const expectedApr =
+    parsedAztecApr !== null && Number.isFinite(parsedAztecApr)
+      ? (parsedAztecApr * EXPECTED_CAPITAL_EFFICIENCY * (1 - protocolFeeBP / BASIS_POINTS)).toFixed(
+          2
+        )
+      : null;
 
   return {
     apy,
     isLive,
+    expectedApr,
     isLoading: indexerLoading || aztecLoading,
   };
 }

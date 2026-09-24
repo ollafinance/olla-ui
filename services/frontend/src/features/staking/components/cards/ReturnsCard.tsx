@@ -1,15 +1,12 @@
 import { useState } from "react";
+import { Tooltip } from "@/components/ui/Tooltip";
 import { useCurrency } from "@/hooks/useCurrency";
-import {
-  getAmountSizeClass,
-  toScaledBigInt,
-  fromScaledBigInt,
-  mulScaled,
-} from "@/lib/utils";
+import { getAmountSizeClass, toScaledBigInt, fromScaledBigInt, mulScaled } from "@/lib/utils";
 
 interface ReturnsCardProps {
   amount: string;
   apy: string;
+  expectedApr: string | null;
   exchangeRate: string;
 }
 
@@ -63,7 +60,7 @@ function PeriodButton({
     </button>
   );
 }
-export function ReturnsCard({ amount, apy, exchangeRate }: ReturnsCardProps) {
+export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsCardProps) {
   const [selectedPeriod, setSelectedPeriod] = useState<Period>("daily");
   const { isUsdMode, stAztecToAztec, aztecToUsd } = useCurrency({
     exchangeRate: parseFloat(exchangeRate) || null,
@@ -87,6 +84,9 @@ export function ReturnsCard({ amount, apy, exchangeRate }: ReturnsCardProps) {
 
   const primaryDisplay = (isUsdMode ? "$" : "") + primaryValue;
   const primarySizeClass = getAmountSizeClass(primaryDisplay, "compact");
+  const expectedAprTooltip = expectedApr
+    ? `Expected APR: ${expectedApr}%. Live APY may differ due to validator luck, idle capital, and recent performance.`
+    : "Expected APR is loading. It assumes 90% capital efficiency and uses a 25% protocol fee until the on-chain fee is fetched.";
 
   return (
     <div className="bg-card-returns rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
@@ -113,9 +113,7 @@ export function ReturnsCard({ amount, apy, exchangeRate }: ReturnsCardProps) {
           >
             {primaryDisplay}
           </span>
-          <span className="text-text-display shrink-0 text-base leading-[1.8]">
-            {primaryLabel}
-          </span>
+          <span className="text-text-display shrink-0 text-base leading-[1.8]">{primaryLabel}</span>
         </div>
 
         <div className="bg-primary-line h-px w-full" />
@@ -131,9 +129,20 @@ export function ReturnsCard({ amount, apy, exchangeRate }: ReturnsCardProps) {
               />
             ))}
           </div>
-          <span className="text-card-returns-foreground text-xs tracking-[0.36px]">
-            APY <span className="font-medium tracking-[0.48px]">{apy}%</span>
-          </span>
+          <div className="text-card-returns-foreground flex items-center gap-1 text-xs tracking-[0.36px]">
+            <span>
+              APY <span className="font-medium tracking-[0.48px]">{apy}%</span>
+            </span>
+            <Tooltip content={expectedAprTooltip}>
+              <button
+                type="button"
+                aria-label="Explain live APY and expected APR"
+                className="border-card-returns-foreground/60 text-card-returns-foreground flex size-4 cursor-help items-center justify-center rounded-full border text-[10px] leading-none font-medium"
+              >
+                ?
+              </button>
+            </Tooltip>
+          </div>
         </div>
       </div>
     </div>

@@ -4,6 +4,9 @@ import { CONTRACTS_ENV } from "./environment";
 
 interface DeploymentJson {
   addresses: Record<string, string>;
+  inputs: {
+    rollupRegistry: string;
+  };
   stAztecName: string;
   stAztecVersion: string;
 }
@@ -40,7 +43,12 @@ export const CONTRACTS = {
     abi: StAztecABI,
   },
   AztecRollup: {
-    address: (deployment.addresses.AztecRollup ?? deployment.addresses.MockAztecRollup) as `0x${string}`,
+    address: (deployment.addresses.AztecRollup ?? deployment.addresses.MockAztecRollup) as
+      | `0x${string}`
+      | undefined,
+  },
+  AztecRollupRegistry: {
+    address: deployment.inputs.rollupRegistry as `0x${string}`,
   },
 } as const;
 

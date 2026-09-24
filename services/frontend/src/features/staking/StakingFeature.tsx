@@ -21,7 +21,7 @@ export function StakingFeature() {
     rewardsEarned,
     hash,
   } = useStakingState();
-  const { apy } = useProtocolApy();
+  const { apy, expectedApr } = useProtocolApy();
   const { stAztecToAztec } = useCurrency({ exchangeRate: parseFloat(exchangeRate) || null });
   const portfolioAztec = stAztecToAztec(stAztecBalance);
 
@@ -45,7 +45,12 @@ export function StakingFeature() {
       topCards={
         <>
           <ReceiveCard shares={previewShares} exchangeRate={exchangeRate} />
-          <ReturnsCard amount={amount} apy={apy} exchangeRate={exchangeRate} />
+          <ReturnsCard
+            amount={amount}
+            apy={apy}
+            expectedApr={expectedApr}
+            exchangeRate={exchangeRate}
+          />
         </>
       }
       bottomCard={
