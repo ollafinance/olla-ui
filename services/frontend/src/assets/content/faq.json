@@ -40,6 +40,11 @@
     "answer": "As with any DeFi protocol, there are risks to be aware of: Smart contract risk — While Olla's contracts are audited and open-sourced, there is always an inherent risk of vulnerabilities in any smart contract system. Slashing risk — Validators can be penalized for poor performance or misbehavior, which could affect staked funds. stAztec price risk — The market price of stAztec on secondary markets may temporarily trade below its underlying value due to liquidity conditions or market sentiment. Protocol & network risk — Olla depends on the security and liveness of the underlying Aztec network. Always do your own research and understand the risks before participating."
   },
   {
+    "question": "Have there been any validator incidents?",
+    "answer": "We publish incident reports explaining what went wrong, how we responded, and how we improved.",
+    "link": "/incidents"
+  },
+  {
     "question": "What security measures does Olla have in place?",
     "answer": "Olla is designed with security as a priority: Open-source codebase available for public review. The core smart contracts have been independently audited by Pashov Audit Group. <a href=\"https://docs.olla.finance/security/audits\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"text-decoration: underline;\">Read more in our docs</a>."
   },

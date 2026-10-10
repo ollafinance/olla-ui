@@ -17,6 +17,7 @@ import { Route as stakeRoute } from "./routes/stake";
 import { Route as redeemRoute } from "./routes/redeem";
 import { Route as termsRoute } from "./routes/terms";
 import { Route as privacyRoute } from "./routes/privacy";
+import { Route as incidentsRoute } from "./routes/incidents";
 import { WagmiProvider } from "./providers/wagmi-provider";
 
 // Create Router
@@ -26,6 +27,7 @@ const routeTree = rootRoute.addChildren([
   redeemRoute,
   termsRoute,
   privacyRoute,
+  incidentsRoute,
 ]);
 const router = createRouter({ routeTree });
 

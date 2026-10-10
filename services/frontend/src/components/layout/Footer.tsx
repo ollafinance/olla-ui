@@ -11,7 +11,7 @@ export function Footer() {
     <footer className="relative z-10 mt-auto w-full pt-8">
       <div className="border-border/50 mb-6 w-full border-t" />
       <div className="mx-auto flex w-full items-center justify-between px-4 pb-6">
-        <div className="flex items-center gap-10">
+        <div className="flex flex-wrap items-center gap-x-6 gap-y-3 md:gap-x-10">
           <Link to="/stake" aria-label="Go to stake">
             <img
               src={isDark ? ollaLogoWhite : ollaLogoBlack}
@@ -32,6 +32,12 @@ export function Footer() {
             className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
           >
             Privacy Notice
+          </Link>
+          <Link
+            to="/incidents"
+            className="text-muted-foreground hover:text-foreground text-sm font-medium transition-colors"
+          >
+            Incidents
           </Link>
         </div>
         <span className="text-muted-foreground text-sm font-medium">v0.1.0</span>

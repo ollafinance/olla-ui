@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { Link } from "@tanstack/react-router";
 import faqData from "@/assets/content/faq.json";
 
 interface FAQCardProps {
@@ -70,7 +71,19 @@ export function FAQCard({ onClose }: FAQCardProps) {
                 </button>
                 {expandedIndex === index && (
                   <div className="pr-8 pb-4 md:pr-12">
-                    <p className="text-sm leading-relaxed text-[#aeada9]" dangerouslySetInnerHTML={{ __html: item.answer }} />
+                    <p
+                      className="text-sm leading-relaxed text-[#aeada9]"
+                      dangerouslySetInnerHTML={{ __html: item.answer }}
+                    />
+                    {"link" in item && item.link === "/incidents" && (
+                      <Link
+                        to="/incidents"
+                        onClick={onClose}
+                        className="mt-3 inline-block text-sm text-[#aeada9] underline underline-offset-4 transition-opacity hover:opacity-80"
+                      >
+                        View incident reports →
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
