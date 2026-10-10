@@ -5,7 +5,7 @@
   },
   {
     "question": "What staking options do you offer?",
-    "answer": "We offer two tracks: pooled liquid staking through Olla Protocol, with no minimum stake and stAztec in return, and native delegated staking to our nodes through Aztec's staking contracts, subject to the native 200,000 AZTEC minimum. Both help secure the Aztec network and earn staking rewards."
+    "answer": "We offer two tracks: pooled liquid staking through Olla Protocol, with no minimum stake and stAztec in return, and native delegated staking to our nodes through Aztec's staking contracts, subject to the native 200,000 AZTEC minimum. Both help secure the Aztec network and earn staking rewards. <a href=\"https://stake.aztec.network/providers/4\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"text-decoration: underline;\">Stake natively with our nodes ↗</a>"
   },
   {
     "question": "How do pooled staking and native delegated staking differ?",
