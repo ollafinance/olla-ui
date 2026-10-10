@@ -4,6 +4,14 @@
     "answer": "Olla is a liquid staking protocol built for Aztec. It lets you deposit your tokens, and receive a liquid token (stAztec) in return, so your capital is never locked up. The deposited tokens will be staked to help secure the network and earn staking rewards. You can use your stAztec across DeFi while your rewards keep accruing."
   },
   {
+    "question": "What staking options do you offer?",
+    "answer": "We offer two tracks: pooled liquid staking through Olla Protocol, with no minimum stake and stAztec in return, and native delegated staking to our nodes through Aztec's staking contracts, subject to the native 200,000 AZTEC minimum. Both help secure the Aztec network and earn staking rewards."
+  },
+  {
+    "question": "How do pooled staking and native delegated staking differ?",
+    "answer": "Pooled staking lets you stake any amount through Olla's contracts and receive stAztec, a transferable token representing your share of the pool. Native delegated staking uses Aztec's staking contracts directly, requires at least 200,000 AZTEC, and does not issue stAztec or use Olla's pooled-staking contracts. Native delegation avoids the additional Olla smart-contract layer, but still carries validator, slashing, and Aztec network risks."
+  },
+  {
     "question": "How does Olla work?",
     "answer": "When you deposit Aztec tokens into Olla, you receive stAztec, a yield-bearing token that represents your share of the Olla staking pool. Behind the scenes, Olla pools deposits together and delegates them across a curated set of validators. When you want to exit, you can either burn your stAztec to initiate the unstaking process, or swap it on the open market for immediate liquidity."
   },
@@ -29,11 +37,20 @@
   },
   {
     "question": "How does Olla select validators?",
-    "answer": "For Olla version 1, there is only one staking provider running the validators: Aztecscan. At the highest of priorities for the next version of Olla is to support multiple staking providers and decentralize the protocol."
+    "answer": "For Olla version 1, we operate the validators backing the staking pool ourselves. Supporting multiple staking providers and further decentralizing the protocol is a priority for the next version."
+  },
+  {
+    "question": "Do pooled and native delegated staking use the same infrastructure?",
+    "answer": "Yes. The validators serving Olla's pooled staking and our native delegated staking service run on the same infrastructure. Both tracks share operational risks, including downtime and slashing; choosing a different track does not diversify that infrastructure risk. Pooled staking additionally depends on Olla's smart contracts. An incident's impact depends on which validators and stake were affected.",
+    "link": "/incidents"
+  },
+  {
+    "question": "How long have you been operating Aztec nodes?",
+    "answer": "We have operated Aztec nodes since Genesis and offered pooled staking with no minimum through Olla Protocol since Alpha. Our goals are to help make Aztec a reliable network to use and make staking accessible to everyone."
   },
   {
     "question": "What fees are there?",
-    "answer": "Olla charges a single protocol fee that is taken automatically from staking rewards. This fee is used to cover the costs of running the protocol and the validators."
+    "answer": "Olla Protocol's pooled staking charges a 10% fee on staking rewards. Our native delegated staking service charges a 25% commission on staking rewards. These fees support the operation of the protocol and validator infrastructure; they are taken from rewards, not your deposited stake."
   },
   {
     "question": "What are the risks of using Olla?",
