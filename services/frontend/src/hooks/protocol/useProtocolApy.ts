@@ -10,7 +10,7 @@ type ApyResponse = components["schemas"]["ApyResponse"];
 const APY_REFETCH_INTERVAL_MS = 60_000;
 const BASIS_POINTS = 10_000;
 const EXPECTED_CAPITAL_EFFICIENCY = 0.9;
-const DEFAULT_PROTOCOL_FEE_BP = 2_500;
+const DEFAULT_PROTOCOL_FEE_BP = 1_000;
 
 interface UseProtocolApyReturn {
   /** APY as a percentage string, e.g. "5.20" */
