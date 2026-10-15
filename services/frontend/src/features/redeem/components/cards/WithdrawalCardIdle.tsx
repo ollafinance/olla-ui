@@ -173,7 +173,7 @@ export function WithdrawalCardIdle({
                   Exchange Rate
                 </span>
                 <span className="text-[9px] leading-[1.4] font-medium tracking-[0.27px] text-[#6c6c6c]">
-                  1 Aztec = {exchangeRateProp} stAztec
+                  1 stAztec = {exchangeRateProp} Aztec
                 </span>
               </div>
               <div className="flex flex-col">

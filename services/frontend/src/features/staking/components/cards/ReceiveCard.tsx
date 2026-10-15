@@ -29,7 +29,7 @@ export function ReceiveCard({ shares, exchangeRate }: ReceiveCardProps) {
         <div className="flex w-full items-start justify-between text-xs tracking-[0.36px]">
           <span className="text-gray leading-[1.4]">Exchange Rate</span>
           <span className="text-gray leading-[1.4] font-medium">
-            1 Aztec = {exchangeRate} stAztec
+            1 stAztec = {exchangeRate} Aztec
           </span>
         </div>
       </div>

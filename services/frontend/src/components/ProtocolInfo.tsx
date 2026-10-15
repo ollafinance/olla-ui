@@ -20,7 +20,7 @@ export function ProtocolInfo({
     >
       <div className="flex flex-col">
         <span className="font-normal">Exchange Rate</span>
-        <span className="font-medium tracking-[0.48px]">1 Aztec = {exchangeRate} stAztec</span>
+        <span className="font-medium tracking-[0.48px]">1 stAztec = {exchangeRate} Aztec</span>
       </div>
       <div className="flex flex-col">
         <span className="font-normal">Transaction Fee</span>

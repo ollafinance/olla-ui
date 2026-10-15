@@ -191,7 +191,7 @@ Located in `src/hooks/protocol/`, these hooks wrap smart contract interactions:
 
 The contract's `exchangeRate()` returns the ratio in **18-decimal fixed-point** format:
 
-- **Format**: `stAztec / Aztec` (how many Aztec tokens 1 stAztec represents)
+- **Format**: `Aztec / stAztec` (how many Aztec tokens 1 stAztec represents)
 - **Example**: Rate of `1.111111111111111111` means 1 stAztec = 1.111... Aztec
 
 **Important**: Do NOT invert the exchange rate. Use the value directly from the contract.
