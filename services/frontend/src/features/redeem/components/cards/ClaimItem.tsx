@@ -111,7 +111,7 @@ export function ClaimItem({
           </span>
         </div>
         <span className={`text-base ${amountTextColor} leading-[1.16] font-medium`}>
-          {Number(amount).toFixed(2)} Aztec
+          {amount === "" ? "—" : Number(amount).toFixed(2)} AZTEC
         </span>
       </div>
 

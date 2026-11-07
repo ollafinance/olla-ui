@@ -9,6 +9,7 @@ import { useOllaCoreReads } from "@/hooks/protocol/useOllaCoreReads";
 import { useState, useMemo, useCallback, useEffect } from "react";
 import { formatEther } from "viem";
 import type { components } from "@olla-ui/types/schema";
+import { resolveClaimAssets } from "./claimAssets";
 
 type WithdrawalRequest = components["schemas"]["WithdrawalRequest"];
 
@@ -44,7 +45,7 @@ export function useClaims() {
   const [page, setPage] = useState(1);
 
   // Get active request IDs from contract (non-claimed requests)
-  const { activeRequestIds, exchangeRate } = useOllaCoreReads({
+  const { activeRequestIds } = useOllaCoreReads({
     address: address,
   });
 
@@ -76,10 +77,7 @@ export function useClaims() {
   }, [indexerError]);
 
   // Get currency utilities for USD calculations
-  const exchangeRateNum = exchangeRate ? Number(formatEther(exchangeRate)) : null;
-  const { stAztecToUsd } = useCurrency({
-    exchangeRate: exchangeRateNum,
-  });
+  const { aztecToUsd } = useCurrency();
 
   // Calculate days left until claimable
   const calculateDaysLeft = useCallback((requestedAt?: number): number | undefined => {
@@ -232,15 +230,16 @@ export function useClaims() {
         : undefined;
 
       // Calculate amounts from base event
-      const shares = baseEvent.shares ? BigInt(baseEvent.shares) : 0n;
-
-      const assetsExpected = baseEvent.assets_expected
-        ? BigInt(baseEvent.assets_expected)
-        : 0n;
-
-      const sharesFormatted = formatEther(shares);
-      const assetsFormatted = formatEther(assetsExpected);
-      const usdValue = stAztecToUsd(sharesFormatted);
+      const shares = rpcState?.shares ?? (baseEvent.shares ? BigInt(baseEvent.shares) : 0n);
+      // The indexer also writes assets_claimed onto the original request row.
+      const claimedEvent = withdrawals.find((w) => w.assets_claimed != null);
+      const assets = resolveClaimAssets({
+        activeAssets: rpcState?.assetsExpected,
+        assetsClaimed: claimedEvent?.assets_claimed,
+      });
+      const assetsExpected = assets ?? 0n;
+      const assetsFormatted = assets === undefined ? "" : formatEther(assets);
+      const usdValue = assets === undefined ? "" : aztecToUsd(assetsFormatted);
 
       // Calculate days left for processing requests
       const daysLeft = status === "processing" ? calculateDaysLeft(requestedAt) : undefined;
@@ -268,7 +267,7 @@ export function useClaims() {
     groupedIndexedWithdrawals,
     activeRequestIds,
     activeRequestStateMap,
-    stAztecToUsd,
+    aztecToUsd,
     calculateDaysLeft,
     formatRelativeDate,
   ]);
@@ -300,9 +299,8 @@ export function useClaims() {
         const status: ClaimStatus = rpcState.finalized ? "ready" : "processing";
 
         // Calculate amounts
-        const sharesFormatted = formatEther(rpcState.shares);
         const assetsFormatted = formatEther(rpcState.assetsExpected);
-        const usdValue = stAztecToUsd(sharesFormatted);
+        const usdValue = aztecToUsd(assetsFormatted);
 
         // Calculate days left for processing requests
         const daysLeft =
@@ -323,13 +321,7 @@ export function useClaims() {
         };
       })
       .filter((item): item is NonNullable<typeof item> => item !== null) as ClaimItemData[];
-  }, [
-    missingActiveRequestIds,
-    activeRequestStateMap,
-    eventData,
-    stAztecToUsd,
-    calculateDaysLeft,
-  ]);
+  }, [missingActiveRequestIds, activeRequestStateMap, eventData, aztecToUsd, calculateDaysLeft]);
 
   // Combine all claims: indexed + RPC-only
   const allClaims = useMemo(() => {

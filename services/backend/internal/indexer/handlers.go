@@ -147,23 +147,23 @@ func (h *EventHandler) ParseRedeemRequest(log types.Log, contractAddr string) (*
 		return nil, fmt.Errorf("invalid RedeemRequest event: expected 2 non-indexed fields, got %d", len(unpacked))
 	}
 
-	assets, ok := unpacked[1].(*big.Int)
+	shares, ok := unpacked[1].(*big.Int)
 	if !ok {
-		return nil, fmt.Errorf("invalid RedeemRequest event: assets is not *big.Int")
+		return nil, fmt.Errorf("invalid RedeemRequest event: shares is not *big.Int")
 	}
 
 	reqID := requestID.Int64()
 	return &models.WithdrawalRequest{
-		Contract:       contractAddr,
-		RequestID:      &reqID,
-		TxHash:         log.TxHash.Hex(),
-		BlockNumber:    int64(log.BlockNumber),
-		LogIndex:       int(log.Index),
-		EventType:      models.EventTypeRedeemRequest,
-		Owner:          owner.Hex(),
-		Recipient:      controller.Hex(),
-		AssetsExpected: bigIntToStringPtr(assets),
-		Status:         models.StatusPending,
+		Contract:    contractAddr,
+		RequestID:   &reqID,
+		TxHash:      log.TxHash.Hex(),
+		BlockNumber: int64(log.BlockNumber),
+		LogIndex:    int(log.Index),
+		EventType:   models.EventTypeRedeemRequest,
+		Owner:       owner.Hex(),
+		Recipient:   controller.Hex(),
+		Shares:      bigIntToStringPtr(shares),
+		Status:      models.StatusPending,
 	}, nil
 }
 
