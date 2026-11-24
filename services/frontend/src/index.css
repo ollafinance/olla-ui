@@ -50,9 +50,11 @@
      <appkit-modal> element with `z-index: var(--w3m-z-index)`. If this
      variable is undefined the modal falls back to `z-index: auto` and
      renders behind the page's positioned elements (nav z-10, fixed
-     action buttons z-20, RainbowKit's own dialog at 2147483647).
-     Match RainbowKit's dialog z-index; the modal is appended later in
-     the DOM, so it paints on top on a tie. */
+     action buttons z-20, FAQ overlay z-[100]). Any value far above the
+     page layers works: the CSS minifier rewrites 2147483647 down to
+     2147480000 in the production bundle, which is still above every
+     page layer, and RainbowKit's own dialog (z-index 2147483647) closes
+     before the AppKit modal opens in this flow. */
   --w3m-z-index: 2147483647;
   --apkt-z-index: 2147483647;
 
