@@ -45,6 +45,17 @@
 :root {
   color-scheme: light;
 
+  /* The "official WalletConnect modal" (Reown AppKit, opened from the
+     secondary action in RainbowKit's WalletConnect view) positions its
+     <appkit-modal> element with `z-index: var(--w3m-z-index)`. If this
+     variable is undefined the modal falls back to `z-index: auto` and
+     renders behind the page's positioned elements (nav z-10, fixed
+     action buttons z-20, RainbowKit's own dialog at 2147483647).
+     Match RainbowKit's dialog z-index; the modal is appended later in
+     the DOM, so it paints on top on a tie. */
+  --w3m-z-index: 2147483647;
+  --apkt-z-index: 2147483647;
+
   /* ===========================================
      PRIMITIVE TOKENS - Base values
      =========================================== */
