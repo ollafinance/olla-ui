@@ -12,11 +12,13 @@ interface ReturnsCardProps {
 
 type Period = "daily" | "monthly" | "yearly";
 
-const periodMultiplier: Record<Period, number> = {
-  daily: 1,
-  monthly: 30,
-  yearly: 365,
+const periods: Record<Period, { buttonLabel: string; unitLabel: string; days: number }> = {
+  daily: { buttonLabel: "Daily", unitLabel: "day", days: 1 },
+  monthly: { buttonLabel: "Monthly", unitLabel: "month", days: 30 },
+  yearly: { buttonLabel: "Yearly", unitLabel: "year", days: 365 },
 };
+
+const periodOrder: Period[] = ["daily", "monthly", "yearly"];
 
 /**
  * Calculates the total projected value (Principal + Earnings) over a period.
@@ -66,8 +68,10 @@ export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsC
     exchangeRate: parseFloat(exchangeRate) || null,
   });
 
+  const period = periods[selectedPeriod];
+
   // Calculate total return in stAztec tokens (Principal + Earnings)
-  const stAztecReturn = calculateReturn(amount, periodMultiplier[selectedPeriod], apy);
+  const stAztecReturn = calculateReturn(amount, period.days, apy);
 
   // Convert to Aztec
   const aztecReturn = stAztecToAztec(stAztecReturn);
@@ -91,7 +95,8 @@ export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsC
   return (
     <div className="bg-card-returns rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
       <p className="text-card-returns-foreground text-lg leading-[1.16] font-medium">
-        Estimated Return
+        Estimated Return{" "}
+        <span className="text-card-returns-foreground/70">per {period.unitLabel}</span>
       </p>
 
       <div className="flex-1" />
@@ -103,7 +108,9 @@ export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsC
             {showSecondaryPrefix && "~ $"}
             {secondaryValue}
           </span>
-          <span className="text-text-display">{secondaryLabel}</span>
+          <span className="text-text-display">
+            {secondaryLabel} / {period.unitLabel}
+          </span>
         </div>
 
         {/* Primary Row (large) */}
@@ -113,17 +120,19 @@ export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsC
           >
             {primaryDisplay}
           </span>
-          <span className="text-text-display shrink-0 text-base leading-[1.8]">{primaryLabel}</span>
+          <span className="text-text-display shrink-0 text-base leading-[1.8]">
+            {primaryLabel} / {period.unitLabel}
+          </span>
         </div>
 
         <div className="bg-primary-line h-px w-full" />
 
         <div className="flex w-full items-center justify-between">
           <div className="flex items-center gap-2">
-            {(["daily", "monthly", "yearly"] as Period[]).map((p) => (
+            {periodOrder.map((p) => (
               <PeriodButton
                 key={p}
-                label={p.charAt(0).toUpperCase() + p.slice(1)}
+                label={periods[p].buttonLabel}
                 isActive={selectedPeriod === p}
                 onClick={() => setSelectedPeriod(p)}
               />
