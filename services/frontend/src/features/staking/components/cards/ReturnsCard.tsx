@@ -21,7 +21,7 @@ const periods: Record<Period, { buttonLabel: string; unitLabel: string; days: nu
 const periodOrder: Period[] = ["daily", "monthly", "yearly"];
 
 /**
- * Calculates the total projected value (Principal + Earnings) over a period.
+ * Calculates the projected earnings (excluding principal) over a period.
  * Uses the standard compounding APY formula. Principal is kept as a scaled
  * bigint so we never lose precision when the user's balance is large — only
  * the growth factor uses Number (bounded by realistic APY, so precision is
@@ -32,11 +32,12 @@ function calculateReturn(shares: string, days: number, apyStr: string): string {
   if (principalBig === 0n) return "0";
 
   const apy = parseFloat(apyStr) / 100;
-  if (!Number.isFinite(apy)) return fromScaledBigInt(principalBig, 2);
+  if (!Number.isFinite(apy)) return "0";
 
   const growth = Math.pow(1 + apy, days / 365);
   const growthBig = toScaledBigInt(growth);
-  return fromScaledBigInt(mulScaled(principalBig, growthBig), 2);
+  const totalBig = mulScaled(principalBig, growthBig);
+  return fromScaledBigInt(totalBig - principalBig, 2);
 }
 
 function PeriodButton({
@@ -70,7 +71,7 @@ export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsC
 
   const period = periods[selectedPeriod];
 
-  // Calculate total return in stAztec tokens (Principal + Earnings)
+  // Calculate projected earnings in stAztec tokens (principal excluded)
   const stAztecReturn = calculateReturn(amount, period.days, apy);
 
   // Convert to Aztec
@@ -95,8 +96,7 @@ export function ReturnsCard({ amount, apy, expectedApr, exchangeRate }: ReturnsC
   return (
     <div className="bg-card-returns rounded-card flex min-h-[175px] w-full flex-1 flex-col items-start justify-between p-6 lg:min-h-0 lg:flex-1">
       <p className="text-card-returns-foreground text-lg leading-[1.16] font-medium">
-        Estimated Return{" "}
-        <span className="text-card-returns-foreground/70">per {period.unitLabel}</span>
+        Estimated Return
       </p>
 
       <div className="flex-1" />
